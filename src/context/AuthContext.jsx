@@ -2,106 +2,155 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { store } from '../utils/storage';
 
 const AuthContext = createContext(null);
-
-// Version — changer ce numéro force la réinitialisation des comptes
-const AUTH_VERSION = 'v2';
+const AUTH_VERSION = 'v3';
 
 export const ROLES = {
   admin: {
-    label: 'Admin',
-    icon: '👑',
-    color: '#C9A84C',
-    bg: 'rgba(201,168,76,0.12)',
-    border: 'rgba(201,168,76,0.4)',
+    label: 'Admin', icon: '👑', color: '#B89A6A',
+    bg: 'rgba(184,154,106,0.12)', border: 'rgba(184,154,106,0.4)',
     apps: ['orders','clients','fidelite','agenda','wallet','reseau','catalogue','coach','objections','stats','settings'],
   },
   marraine: {
-    label: 'Marraine',
-    icon: '🌸',
-    color: '#e05584',
-    bg: 'rgba(224,85,132,0.12)',
-    border: 'rgba(224,85,132,0.4)',
+    label: 'Marraine', icon: '🌸', color: '#9e5a7a',
+    bg: 'rgba(158,90,122,0.12)', border: 'rgba(158,90,122,0.4)',
     apps: ['orders','clients','fidelite','agenda','wallet','reseau','catalogue','coach','objections','stats'],
   },
   consultante: {
-    label: 'Consultante',
-    icon: '💼',
-    color: '#5584e0',
-    bg: 'rgba(85,132,224,0.12)',
-    border: 'rgba(85,132,224,0.4)',
+    label: 'Consultante', icon: '💼', color: '#3d6b9e',
+    bg: 'rgba(61,107,158,0.12)', border: 'rgba(61,107,158,0.4)',
     apps: ['orders','clients','fidelite','agenda','wallet','reseau','catalogue','coach','objections'],
   },
 };
 
-const DEFAULT_USERS = [
-  { id:'1', username:'admin',       password:'Admin#2025',       name:'Administratrice', email:'', role:'admin' },
-  { id:'2', username:'marraine',    password:'Marraine#2025',    name:'Marraine',        email:'', role:'marraine' },
-  { id:'3', username:'consultante', password:'Consultante#2025', name:'Consultante',     email:'', role:'consultante' },
-];
+// Seul compte admin fixe — les autres sont créés dynamiquement
+const ADMIN_ACCOUNT = {
+  id: 'admin-root',
+  firstName: 'Admin',
+  lastName: '',
+  displayName: 'Administratrice',
+  role: 'admin',
+  password: 'Admin#2025',
+  locked: false,
+  createdAt: new Date().toISOString(),
+};
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser]     = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Si version différente → réinitialise les comptes par défaut
-    const version = store.get('auth_version');
-    if (version !== AUTH_VERSION) {
-      store.set('users', DEFAULT_USERS);
+    if (store.get('auth_version') !== AUTH_VERSION) {
+      store.set('consultants', []);
       store.set('auth_version', AUTH_VERSION);
       store.remove('session');
     }
-
-    // Restaurer session
     const saved = store.get('session');
     if (saved) {
-      const users = store.get('users', DEFAULT_USERS);
-      const u = users.find(u => u.username === saved);
+      const u = findUser(saved.firstName, saved.lastName, saved.role);
       if (u) setUser(u);
     }
     setLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    const users = store.get('users', DEFAULT_USERS);
-    const u = users.find(u => u.username === username && u.password === password);
-    if (u) {
-      setUser(u);
-      store.set('session', username);
-      const today = new Date().toISOString().split('T')[0];
-      const logs = store.get(`logs_${username}_${today}`, []);
-      logs.push({ section:'Connexion', action:'Connexion au Hub', ts: new Date().toISOString() });
-      store.set(`logs_${username}_${today}`, logs);
-      return { ok: true };
-    }
-    return { ok: false, error: 'Identifiant ou mot de passe incorrect.' };
+  const findUser = (firstName, lastName, role) => {
+    const fn = firstName.trim().toLowerCase();
+    const ln = lastName.trim().toLowerCase();
+    if (role === 'admin' && fn === ADMIN_ACCOUNT.firstName.toLowerCase() && ln === '') return ADMIN_ACCOUNT;
+    if (role === 'admin') return ADMIN_ACCOUNT; // admin peut se connecter juste avec prénom
+    const consultants = store.get('consultants', []);
+    return consultants.find(c =>
+      c.firstName.toLowerCase() === fn &&
+      c.lastName.toLowerCase() === ln &&
+      c.role === role
+    ) || null;
+  };
+
+  const login = (firstName, lastName, password, role) => {
+    const u = findUser(firstName, lastName, role);
+    if (!u) return { ok: false, error: 'Compte introuvable. Vérifiez votre prénom et nom.' };
+    if (u.locked) return { ok: false, error: 'Compte verrouillé. Contactez votre administratrice.' };
+    if (u.password !== password) return { ok: false, error: 'Mot de passe incorrect.' };
+    setUser(u);
+    store.set('session', { firstName: u.firstName, lastName: u.lastName, role: u.role });
+    const today = new Date().toISOString().split('T')[0];
+    const logs  = store.get(`logs_${u.id}_${today}`, []);
+    logs.push({ section: 'Connexion', action: 'Connexion au Hub', ts: new Date().toISOString() });
+    store.set(`logs_${u.id}_${today}`, logs);
+    return { ok: true };
   };
 
   const logout = () => { setUser(null); store.remove('session'); };
 
-  const updateUser = (username, updates) => {
-    const users = store.get('users', DEFAULT_USERS);
-    const idx = users.findIndex(u => u.username === username);
-    if (idx !== -1) {
-      users[idx] = { ...users[idx], ...updates };
-      store.set('users', users);
-      if (user?.username === username) setUser(users[idx]);
+  const changePassword = (userId, newPassword) => {
+    if (userId === 'admin-root') {
+      ADMIN_ACCOUNT.password = newPassword;
+      store.set('admin_password', newPassword);
+      return { ok: true };
     }
-  };
-
-  const addUser = (data) => {
-    const users = store.get('users', DEFAULT_USERS);
-    if (users.find(u => u.username === data.username)) return { ok: false, error: 'Identifiant déjà utilisé.' };
-    store.set('users', [...users, { id: Date.now().toString(), ...data }]);
+    const list = store.get('consultants', []);
+    const idx  = list.findIndex(c => c.id === userId);
+    if (idx === -1) return { ok: false };
+    list[idx].password = newPassword;
+    store.set('consultants', list);
+    if (user?.id === userId) setUser({ ...user, password: newPassword });
     return { ok: true };
   };
 
-  const getByRole  = (role) => store.get('users', DEFAULT_USERS).filter(u => u.role === role);
-  const getAllUsers = () => store.get('users', DEFAULT_USERS);
-  const canAccess  = (appId) => ROLES[user?.role]?.apps.includes(appId) ?? false;
+  // ── Admin only ──────────────────────────────────────────────────
+  const createConsultant = (data) => {
+    const list = store.get('consultants', []);
+    const exists = list.find(c =>
+      c.firstName.toLowerCase() === data.firstName.trim().toLowerCase() &&
+      c.lastName.toLowerCase()  === data.lastName.trim().toLowerCase()  &&
+      c.role === data.role
+    );
+    if (exists) return { ok: false, error: 'Ce compte existe déjà.' };
+    const newUser = {
+      id: Date.now().toString(),
+      firstName:   data.firstName.trim(),
+      lastName:    data.lastName.trim(),
+      displayName: `${data.firstName.trim()} ${data.lastName.trim()}`,
+      role:        data.role,
+      email:       data.email || '',
+      password:    data.password,
+      locked:      false,
+      createdAt:   new Date().toISOString(),
+    };
+    store.set('consultants', [...list, newUser]);
+    return { ok: true, user: newUser };
+  };
+
+  const resetPassword = (userId, newPassword) => {
+    const list = store.get('consultants', []);
+    const idx  = list.findIndex(c => c.id === userId);
+    if (idx === -1) return { ok: false };
+    list[idx].password = newPassword;
+    list[idx].locked   = false;
+    store.set('consultants', list);
+    return { ok: true };
+  };
+
+  const toggleLock = (userId) => {
+    const list = store.get('consultants', []);
+    const idx  = list.findIndex(c => c.id === userId);
+    if (idx === -1) return;
+    list[idx].locked = !list[idx].locked;
+    store.set('consultants', list);
+  };
+
+  const deleteConsultant = (userId) => {
+    store.set('consultants', store.get('consultants', []).filter(c => c.id !== userId));
+  };
+
+  const getAllConsultants = () => store.get('consultants', []);
+  const canAccess = (appId) => ROLES[user?.role]?.apps.includes(appId) ?? false;
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, addUser, getByRole, getAllUsers, canAccess, ROLES }}>
+    <AuthContext.Provider value={{
+      user, loading, login, logout, changePassword,
+      createConsultant, resetPassword, toggleLock, deleteConsultant,
+      getAllConsultants, canAccess, ROLES,
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   );
