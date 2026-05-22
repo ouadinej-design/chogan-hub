@@ -5,7 +5,7 @@ export default function CoachVocal() {
     <AppLayout title="Coach Vocal" icon="🎤">
       <div style={{ height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column' }}>
         <iframe
-          src="https://chogan-coach.vercel.app/"
+          src="/coach-vocal-app.html"
           style={{ flex: 1, border: 'none', width: '100%' }}
           title="Coach Vocal Chogan"
         />
