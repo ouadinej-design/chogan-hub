@@ -16,6 +16,10 @@ const ALL_APPS = [
   { id:'objections',label:'Coach Obj.',   icon:'💬', color:'#3d7a8a', bg:'rgba(61,122,138,0.12)',  path:'/app/objections' },
   { id:'stats',     label:'Statistiques', icon:'📊', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/stats' },
   { id:'settings',  label:'Paramètres',   icon:'⚙️', color:'#7a7069', bg:'rgba(122,112,105,0.12)', path:'/app/settings' },
+  { id:'formation',  label:'Formation',    icon:'🚀', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/formation' },
+  { id:'familles',   label:'Familles',     icon:'💐', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/familles' },
+  { id:'catalogues', label:'Catalogues',   icon:'📖', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/catalogues' },
+  { id:'checklist',  label:'Check-list',   icon:'✨', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/checklist' },
 ];
 
 const DEFAULT_ANNS = [
