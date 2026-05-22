@@ -3,6 +3,9 @@ import { store } from '../utils/storage';
 
 const AuthContext = createContext(null);
 
+// Version — changer ce numéro force la réinitialisation des comptes
+const AUTH_VERSION = 'v2';
+
 export const ROLES = {
   admin: {
     label: 'Admin',
@@ -31,9 +34,9 @@ export const ROLES = {
 };
 
 const DEFAULT_USERS = [
-  { id:'1', username:'admin',      password:'Admin#2025',      name:'Administratrice', email:'', role:'admin' },
-  { id:'2', username:'marraine',   password:'Marraine#2025',   name:'Marraine',        email:'', role:'marraine' },
-  { id:'3', username:'consultante',password:'Consultante#2025',name:'Consultante',     email:'', role:'consultante' },
+  { id:'1', username:'admin',       password:'Admin#2025',       name:'Administratrice', email:'', role:'admin' },
+  { id:'2', username:'marraine',    password:'Marraine#2025',    name:'Marraine',        email:'', role:'marraine' },
+  { id:'3', username:'consultante', password:'Consultante#2025', name:'Consultante',     email:'', role:'consultante' },
 ];
 
 export function AuthProvider({ children }) {
@@ -41,12 +44,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const users = store.get('users', []);
-    if (users.length === 0) store.set('users', DEFAULT_USERS);
+    // Si version différente → réinitialise les comptes par défaut
+    const version = store.get('auth_version');
+    if (version !== AUTH_VERSION) {
+      store.set('users', DEFAULT_USERS);
+      store.set('auth_version', AUTH_VERSION);
+      store.remove('session');
+    }
+
+    // Restaurer session
     const saved = store.get('session');
     if (saved) {
-      const all = store.get('users', DEFAULT_USERS);
-      const u = all.find(u => u.username === saved);
+      const users = store.get('users', DEFAULT_USERS);
+      const u = users.find(u => u.username === saved);
       if (u) setUser(u);
     }
     setLoading(false);
@@ -86,9 +96,9 @@ export function AuthProvider({ children }) {
     return { ok: true };
   };
 
-  const getByRole = (role) => store.get('users', DEFAULT_USERS).filter(u => u.role === role);
+  const getByRole  = (role) => store.get('users', DEFAULT_USERS).filter(u => u.role === role);
   const getAllUsers = () => store.get('users', DEFAULT_USERS);
-  const canAccess = (appId) => ROLES[user?.role]?.apps.includes(appId) ?? false;
+  const canAccess  = (appId) => ROLES[user?.role]?.apps.includes(appId) ?? false;
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, updateUser, addUser, getByRole, getAllUsers, canAccess, ROLES }}>
