@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wallet Chogan">
+<meta name="theme-color" content="#0c0c14">
+<title>Wallet Chogan</title>
+<script>
+const ACCESS_CODE = "CHOGAN2024";
+const ADMIN_CODE  = "ADMIN#2025";
+const ADMIN_EMAIL = "ouadi.nej@gmail.com";
+const W3F_KEY     = "04e1ce0c-3c62-413d-ab06-7fdfe1afd91a";
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0c0c14;--surface:#16161f;--card:#1e1e2a;
+  --text:#fff;--muted:rgba(255,255,255,.48);
+  --gold:#c9a84c;--gold2:#e8c870;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
+  font-family:-apple-system,'Helvetica Neue',sans-serif;color:var(--text);
+  -webkit-font-smoothing:antialiased}
+
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;
+  transition:opacity .38s,transform .38s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.96)}
+
+/* ── SHARED FORM ── */
+.form-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;display:block}
+.finput{width:100%;background:var(--card);border:0.5px solid rgba(255,255,255,.12);
+  border-radius:12px;padding:14px 16px;color:var(--text);font-size:15px;
+  font-family:inherit;outline:none;transition:border-color .2s;margin-bottom:14px}
+.finput:focus{border-color:var(--gold)}
+.finput::placeholder{color:rgba(255,255,255,.25)}
+.btn-g{width:100%;padding:15px;border-radius:14px;
+  background:linear-gradient(135deg,#c9a84c,#8b5e1a);
+  border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+  font-family:inherit;box-shadow:0 4px 20px rgba(201,168,76,.3);
+  transition:opacity .2s,transform .15s;margin-top:4px}
+.btn-g:active{opacity:.85;transform:scale(.98)}
+.btn-g:disabled{opacity:.5;cursor:default}
+.btn-o{width:100%;padding:14px;border-radius:14px;background:transparent;
+  border:0.5px solid rgba(255,255,255,.2);color:var(--text);font-size:14px;
+  font-weight:500;cursor:pointer;font-family:inherit;margin-top:10px}
+.btn-o:active{background:rgba(255,255,255,.07)}
+.code-row{display:flex;gap:8px}
+.cinput{flex:1;background:var(--card);border:0.5px solid rgba(255,255,255,.12);
+  border-radius:12px;padding:14px 16px;color:var(--text);font-size:19px;
+  font-weight:700;font-family:monospace;letter-spacing:.18em;outline:none;
+  text-transform:uppercase}
+.cinput:focus{border-color:var(--gold)}
+.arr{width:52px;height:52px;border-radius:12px;background:var(--gold);
+  border:none;color:#000;font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.or-sep{display:flex;align-items:center;gap:12px;margin:18px 0}
+.or-line{flex:1;height:0.5px;background:rgba(255,255,255,.1)}
+.or-txt{font-size:11px;color:rgba(255,255,255,.3)}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.25);
+  border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── LOCK ── */
+#lock{background:var(--bg);justify-content:flex-end}
+.lock-top{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding-top:calc(60px + var(--st));text-align:center}
+.lock-icon{width:80px;height:80px;border-radius:24px;
+  background:linear-gradient(135deg,#c9a84c,#8b5e1a);
+  display:flex;align-items:center;justify-content:center;font-size:38px;
+  box-shadow:0 12px 40px rgba(201,168,76,.4);margin-bottom:22px}
+.lock-h{font-size:26px;font-weight:700;margin-bottom:8px}
+.lock-s{font-size:14px;color:var(--muted);line-height:1.5;padding:0 36px}
+.lock-ico2{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.06);
+  border:0.5px solid rgba(255,255,255,.1);display:flex;align-items:center;
+  justify-content:center;font-size:20px;margin-top:24px}
+.sheet{background:var(--surface);border-radius:28px 28px 0 0;
+  padding:26px 22px calc(32px + var(--sb));border-top:0.5px solid rgba(255,255,255,.08)}
+.sheet-h{font-size:17px;font-weight:700;margin-bottom:4px}
+.sheet-s{font-size:13px;color:var(--muted);margin-bottom:18px}
+
+/* ── PENDING ── */
+#pend{background:var(--bg);justify-content:flex-end}
+.pend-top{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:40px 28px 0;text-align:center}
+.pulse{width:88px;height:88px;border-radius:50%;background:rgba(201,168,76,.1);
+  border:1.5px solid rgba(201,168,76,.35);display:flex;align-items:center;
+  justify-content:center;margin:0 auto 24px;animation:pu 2s ease-in-out infinite;font-size:36px}
+@keyframes pu{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.3)}50%{box-shadow:0 0 0 22px rgba(201,168,76,0)}}
+.pend-h{font-size:21px;font-weight:700;margin-bottom:10px}
+.pend-s{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.pend-box{background:var(--card);border:0.5px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:14px 18px;font-size:13px;color:var(--muted);
+  line-height:1.7;text-align:left;width:100%}
+
+/* ── MAIN ── */
+#main{background:var(--bg)}
+
+
+
+.wh{padding:6px 22px 4px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.wh-b{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.wh-t{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
+.wh-av{width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,#c9a84c,#8b5e1a);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;cursor:pointer;position:relative;flex-shrink:0}
+.av-dot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;
+  border-radius:50%;background:#32c864;border:1.5px solid var(--bg)}
+
+/* ── PILL NAV (from White Edition) ── */
+.pill-nav{
+  display:flex;gap:8px;padding:6px 18px 8px;
+  overflow-x:auto;flex-shrink:0;scrollbar-width:none;
+}
+.pill-nav::-webkit-scrollbar{display:none}
+.pill{
+  padding:8px 16px;border-radius:20px;
+  background:rgba(255,255,255,.07);
+  border:0.5px solid rgba(255,255,255,.1);
+  color:var(--muted);font-size:12px;font-weight:600;
+  white-space:nowrap;cursor:pointer;flex-shrink:0;
+  transition:all .2s;
+}
+.pill.active{
+  background:rgba(255,255,255,.15);
+  border-color:rgba(255,255,255,.3);
+  color:var(--text);
+}
+
+/* ── CARD STACK ── */
+.stack{position:relative;flex:1;overflow:hidden;margin-top:8px}
+.wcard{position:absolute;left:14px;right:68px;height:186px;border-radius:22px;
+  overflow:hidden;cursor:pointer;
+  transition:top .42s cubic-bezier(.4,0,.2,1),transform .42s,opacity .32s;
+  will-change:transform,top;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.ci{position:relative;width:100%;height:100%;padding:18px 20px;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.cb1,.cb2{position:absolute;border-radius:50%}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2}
+.ct-c{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;opacity:.65;margin-bottom:3px}
+.ct-n{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+.ct-i{width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.14);
+  border:0.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:21px}
+.cbx{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:2}
+.cb-sl{font-size:10px;opacity:.55;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.cb-sv{font-size:22px;font-weight:700;letter-spacing:-.03em}
+.cb-ch{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);
+  border:0.5px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:600}
+.cd{width:6px;height:6px;border-radius:50%}
+.t1{background:linear-gradient(135deg,#1a3380,#0a1840)}
+.t2{background:linear-gradient(135deg,#4a1580,#1a0835)}
+.t3{background:linear-gradient(135deg,#0e5c3a,#052818)}
+.t4{background:linear-gradient(135deg,#7a3010,#2e1005)}
+.t5{background:linear-gradient(135deg,#0b5060,#031e28)}
+.t6{background:linear-gradient(135deg,#7a1010,#2e0505)}
+
+/* ── DOTS ── */
+.dots{display:flex;gap:6px;justify-content:center;padding:8px 0 4px;flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);transition:all .3s}
+.dot.on{width:20px;background:#fff}
+
+/* ── ELEVATOR (right strip) ── */
+.elev-wrap{
+  position:absolute;right:0;top:0;bottom:0;width:54px;
+  display:flex;align-items:center;justify-content:center;
+  z-index:20;touch-action:none;
+  background:linear-gradient(to left,rgba(255,255,255,.05),transparent);
+}
+.elev-track{
+  width:5px;height:70%;
+  background:rgba(255,255,255,.12);border-radius:3px;position:relative;
+}
+.elev-thumb{
+  position:absolute;left:50%;transform:translateX(-50%);
+  width:12px;height:46px;top:0;
+  background:rgba(255,255,255,.7);border-radius:6px;
+  transition:top .12s;box-shadow:0 2px 8px rgba(0,0,0,.4);
+}
+
+/* ── BOTTOM NAV ── */
+.bnav{display:flex;justify-content:space-around;
+  padding:8px 0 calc(8px + var(--sb));
+  border-top:0.5px solid rgba(255,255,255,.08);flex-shrink:0}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:10px;font-weight:500;color:var(--muted);padding:4px 20px;cursor:pointer}
+.ni.on{color:#fff}
+.ni svg{width:22px;height:22px;stroke:currentColor;fill:none;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── DETAIL SHEET ── */
+
+
+
+#dpanel.open{pointer-events:all}
+
+.sht{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;position:relative;z-index:2}
+.shname{font-size:16px;font-weight:700}
+.shemo{font-size:24px}
+.shhv{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1;position:relative;z-index:2}
+.shhl{font-size:10px;opacity:.6;letter-spacing:.05em;text-transform:uppercase;margin-top:5px;position:relative;z-index:2}
+.fpills{display:flex;flex-wrap:wrap;gap:6px;padding:12px 18px 0}
+.fp{padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.08);
+  border:0.5px solid rgba(255,255,255,.14);font-size:12px;font-weight:600}
+.fa{opacity:.28;font-size:14px;align-self:center}
+.shbody{
+  flex:1;
+  overflow-y:scroll !important;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  overscroll-behavior:contain;
+  padding:10px 14px calc(24px + var(--sb)) 18px;
+  scrollbar-width:none;
+}
+.shbody::-webkit-scrollbar{display:none}
+/* Sheet elevator */
+.sheet-elev{
+  position:absolute;right:0;top:0;bottom:0;width:52px;
+  z-index:10;touch-action:none;
+  background:linear-gradient(to left,rgba(255,255,255,.05),transparent);
+  display:flex;align-items:center;justify-content:center;
+}
+.sheet-elev-track{
+  width:5px;height:70%;
+  background:rgba(255,255,255,.12);border-radius:3px;position:relative;
+}
+.sheet-elev-thumb{
+  position:absolute;left:50%;transform:translateX(-50%);
+  width:11px;height:44px;top:0;
+  background:rgba(255,255,255,.65);border-radius:6px;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+}
+.si{display:flex;align-items:flex-start;gap:13px;padding:13px 0;
+  border-bottom:0.5px solid rgba(255,255,255,.07);animation:up .3s both}
+.si:last-child{border-bottom:none}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.sii{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.sit{font-size:14px;font-weight:600;margin-bottom:3px}
+.sid{font-size:12px;color:rgba(255,255,255,.5);line-height:1.55}
+.siq{display:inline-block;margin-top:6px;font-size:11px;font-style:italic;
+  padding:4px 10px;border-radius:8px;background:rgba(255,255,255,.06);
+  border-left:2px solid currentColor;color:rgba(255,255,255,.55)}
+
+/* ── SHEET CLOSE HEADER ── */
+
+
+
+
+
+/* ── ADMIN PW ── */
+#apov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);
+  backdrop-filter:blur(10px);display:flex;align-items:flex-end;
+  justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+#apov.show{opacity:1;pointer-events:all}
+.pw-box{background:var(--surface);border-radius:26px 26px 0 0;
+  border-top:0.5px solid rgba(255,255,255,.1);
+  padding:24px 22px calc(28px + var(--sb));width:100%;max-width:480px}
+.pw-hdl{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin:0 auto 18px}
+
+/* ── TOAST ── */
+#toast{position:fixed;top:calc(var(--st) + 12px);left:16px;right:16px;
+  border-radius:14px;padding:14px 18px;font-size:14px;font-weight:500;
+  text-align:center;transform:translateY(-110px);opacity:0;
+  transition:all .35s cubic-bezier(.4,0,.2,1);z-index:999}
+#toast.show{transform:translateY(0);opacity:1}
+.t-ok{background:rgba(50,200,100,.92);color:#fff}
+.t-er{background:rgba(255,80,80,.92);color:#fff}
+.t-in{background:rgba(40,40,60,.96);border:0.5px solid rgba(255,255,255,.1);color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div id="lock" class="screen hidden">
+  <div class="lock-top">
+    <div class="lock-icon">💼</div>
+    <div class="lock-h">Wallet Chogan</div>
+    <div class="lock-s">Application réservée aux membres autorisés.</div>
+    <div class="lock-ico2">🔒</div>
+  </div>
+  <div class="sheet">
+    <div class="sheet-h">Demander l'accès</div>
+    <div class="sheet-s">Renseignez vos coordonnées — l'admin reçoit un email.</div>
+    <label class="form-label">Votre prénom</label>
+    <input class="finput" id="rn" type="text" placeholder="Prénom">
+    <label class="form-label">Email ou téléphone</label>
+    <input class="finput" id="rc" type="text" placeholder="email@exemple.com ou 06...">
+    <button class="btn-g" id="req-btn" onclick="sendRequest()">📩 Envoyer la demande</button>
+    <div class="or-sep"><div class="or-line"></div><div class="or-txt">ou j'ai déjà un code</div><div class="or-line"></div></div>
+    <div class="code-row">
+      <input class="cinput" id="uc" type="text" placeholder="Code d'accès" maxlength="16">
+      <button class="arr" onclick="tryUnlock('uc')">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- PENDING -->
+<div id="pend" class="screen hidden">
+  <div class="pend-top">
+    <div class="pulse">📬</div>
+    <div class="pend-h">Demande envoyée !</div>
+    <div class="pend-s">L'admin a reçu votre demande. Il vous enverra votre code d'accès.</div>
+    <div class="pend-box" id="pend-box"></div>
+  </div>
+  <div class="sheet" style="margin-top:12px">
+    <label class="form-label" style="margin-bottom:8px;display:block">Vous avez reçu votre code ?</label>
+    <div class="code-row">
+      <input class="cinput" id="pc" type="text" placeholder="Entrez le code reçu" maxlength="16">
+      <button class="arr" onclick="tryUnlock('pc')">→</button>
+    </div>
+    <button class="btn-o" onclick="SS('lock')">← Retour</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main" class="screen hidden">
+  <div style="padding-top:var(--st);height:calc(12px + var(--st));flex-shrink:0"></div>
+  <div class="wh">
+    <div>
+      <div class="wh-b">Wallet Chogan</div>
+      <div class="wh-t" id="wh-title">Catalogue</div>
+    </div>
+    <div class="wh-av" id="av" onclick="avTap()">WC<div class="av-dot"></div></div>
+  </div>
+
+  <!-- PILL NAV -->
+  <div class="pill-nav" id="pill-nav"></div>
+
+  <!-- STACK -->
+  <div class="stack" id="stack">
+    <!-- elevator injected by JS -->
+  </div>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="bnav">
+    <div class="ni on">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Cartes
+    </div>
+    <div class="ni" onclick="showInfo()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Infos
+    </div>
+    <div class="ni" onclick="showAdminPw()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Admin
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL FULL SCREEN -->
+<div id="detail" class="screen hidden" style="background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch">
+  <div id="detail-content"></div>
+</div>
+    <div class="sh-close-row">
+      <button class="sh-back" onclick="cls()">← Retour</button>
+      <button class="sh-x" onclick="cls()">✕</button>
+    </div>
+    <div id="sc"></div>
+    
+  </div>
+
+</div>
+
+
+
+<!-- ADMIN PW -->
+<div id="apov">
+  <div class="pw-box">
+    <div class="pw-hdl"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px">🔐 Accès Admin</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Entrez le code admin.</div>
+    <input class="finput" id="apw" type="password" placeholder="Code admin">
+    <button class="btn-g" onclick="checkAdminPw()">Accéder</button>
+    <button class="btn-o" onclick="closeAdminPw()">Annuler</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ── STORAGE ── */
+const LS={
+  g:k=>{try{return JSON.parse(localStorage.getItem('cg_'+k))}catch{return null}},
+  s:(k,v)=>localStorage.setItem('cg_'+k,JSON.stringify(v)),
+  d:k=>localStorage.removeItem('cg_'+k)
+};
+function devId(){let id=LS.g('did');if(!id){id='D-'+Math.random().toString(36).substr(2,8).toUpperCase();LS.s('did',id);}return id;}
+const DID=devId();
+
+/* ── ROUTING ── */
+const SCRS=['lock','pend','main'];
+function SS(n){
+  SCRS.forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==n));
+  if(n==='main'){buildPills();tick();}
+}
+function init(){
+  if(LS.g('ok')){SS('main');return;}
+  const pr=LS.g('pr');
+  if(pr){showPend(pr);return;}
+  SS('lock');
+}
+
+/* ── REQUEST ── */
+async function sendRequest(){
+  const name=document.getElementById('rn').value.trim();
+  const contact=document.getElementById('rc').value.trim();
+  if(!name||!contact){toast('Remplissez tous les champs','er');return;}
+  const btn=document.getElementById('req-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Envoi…';
+  const now=new Date();
+  const date=now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const body=`Nouvelle demande — Wallet Chogan\n\nNom: ${name}\nContact: ${contact}\nAppareil: ${DID}\nDate: ${date}\n\nCode à partager: ${ACCESS_CODE}`;
+  try{
+    const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({access_key:W3F_KEY,to:ADMIN_EMAIL,subject:`[Wallet Chogan] Demande — ${name}`,message:body,from_name:'Wallet Chogan',botcheck:''})});
+    const d=await r.json();
+    if(d.success){LS.s('pr',{name,contact,date,did:DID});toast("Email envoyé à l'admin ✓","ok");setTimeout(()=>showPend({name,contact,date,did:DID}),700);}
+    else throw new Error(d.message||'Échec');
+  }catch(e){toast('Erreur : '+e.message,'er');}
+  finally{btn.disabled=false;btn.innerHTML='📩 Envoyer la demande';}
+}
+function showPend(req){
+  document.getElementById('pend-box').innerHTML=`<strong>${req.name}</strong> · ${req.contact}<br><span style="font-size:10px;font-family:monospace;opacity:.4">${req.did} · ${req.date}</span>`;
+  SS('pend');
+}
+
+/* ── UNLOCK ── */
+function tryUnlock(id){
+  const code=document.getElementById(id).value.trim().toUpperCase();
+  if(!code){toast('Entrez un code','er');return;}
+  if(code===ACCESS_CODE.toUpperCase()){
+    LS.s('ok',true);LS.d('pr');
+    toast('Accès autorisé ! 🎉','ok');
+    setTimeout(()=>askName(),600);
+  }else{toast('Code incorrect ✗','er');document.getElementById(id).value='';}
+}
+
+/* ── NAME ── */
+function askName(){
+  if(LS.g('consultant_name')){SS('main');return;}
+  const ov=document.createElement('div');
+  ov.id='name-ov';
+  ov.style.cssText='position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);display:flex;align-items:flex-end;justify-content:center';
+  ov.innerHTML=`<div style="background:#1a1a26;border-radius:26px 26px 0 0;padding:28px 22px calc(32px + var(--sb));width:100%;max-width:480px;border-top:0.5px solid rgba(255,255,255,.12)">
+    <div style="width:36px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin:0 auto 22px"></div>
+    <div style="font-size:22px;margin-bottom:6px">👋</div>
+    <div style="font-size:19px;font-weight:700;margin-bottom:6px">Bienvenue !</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:22px">Entrez votre prénom pour personnaliser l'application.</div>
+    <label class="form-label">Votre prénom</label>
+    <input id="cn-input" class="finput" type="text" placeholder="Prénom" autocomplete="given-name">
+    <button class="btn-g" onclick="saveName()">Continuer →</button>
+  </div>`;
+  document.body.appendChild(ov);
+  setTimeout(()=>{const el=document.getElementById('cn-input');if(el){el.focus();el.onkeydown=e=>{if(e.key==='Enter')saveName();};}},400);
+}
+function saveName(){
+  const name=document.getElementById('cn-input').value.trim();
+  if(!name){toast('Entrez votre prénom','er');return;}
+  LS.s('consultant_name',name);
+  document.getElementById('name-ov')?.remove();
+  SS('main');
+}
+function getName(){return LS.g('consultant_name')||'Inconnue';}
+
+/* ── ADMIN ── */
+function showAdminPw(){
+  document.getElementById('apov').classList.add('show');
+  setTimeout(()=>{const el=document.getElementById('apw');if(el){el.focus();el.onkeydown=e=>{if(e.key==='Enter')checkAdminPw();};}},300);
+}
+function closeAdminPw(){document.getElementById('apov').classList.remove('show');document.getElementById('apw').value='';}
+function checkAdminPw(){
+  const v=document.getElementById('apw').value.trim();
+  if(v===ADMIN_CODE){closeAdminPw();showAdminPanel();}
+  else{toast('Code incorrect','er');document.getElementById('apw').value='';}
+}
+function showAdminPanel(){
+  document.getElementById('admin-ov')?.remove();
+  const ov=document.createElement('div');
+  ov.id='admin-ov';
+  ov.style.cssText='position:fixed;inset:0;z-index:300;background:var(--bg);overflow-y:auto';
+  ov.innerHTML=`
+    <div style="padding:calc(20px + var(--st)) 22px 16px;display:flex;align-items:center;gap:14px;border-bottom:0.5px solid rgba(255,255,255,.08);position:sticky;top:0;background:var(--bg);z-index:5">
+      <button onclick="document.getElementById('admin-ov').remove()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
+      <div style="font-size:18px;font-weight:700">Panneau Admin</div>
+      <div style="margin-left:auto;padding:4px 12px;border-radius:20px;background:rgba(201,168,76,.15);border:0.5px solid rgba(201,168,76,.3);font-size:11px;font-weight:600;color:var(--gold)">ADMIN</div>
+    </div>
+    <div style="padding:22px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Code d'accès consultantes</div>
+      <div style="background:rgba(201,168,76,.08);border:0.5px solid rgba(201,168,76,.25);border-radius:16px;padding:16px 20px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Code à partager</div>
+        <div style="font-size:30px;font-weight:700;font-family:monospace;letter-spacing:.12em;color:var(--gold2)">${ACCESS_CODE}</div>
+      </div>
+      <button onclick="navigator.clipboard.writeText('${ACCESS_CODE}').then(()=>{this.textContent='✓ Copié !';setTimeout(()=>this.textContent='Copier le code',2000)})" style="width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.12);color:#fff;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:24px">Copier le code</button>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Rapports automatiques</div>
+      <div style="background:rgba(201,168,76,.08);border:0.5px solid rgba(201,168,76,.2);border-radius:16px;padding:16px 18px;margin-bottom:24px;font-size:13px;color:rgba(255,255,255,.65);line-height:1.8">
+        📬 Un email est envoyé à <strong style="color:#fff">${ADMIN_EMAIL}</strong> à chaque fin de session avec le nom de la consultante et les cartes consultées.
+      </div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Réinitialiser</div>
+      <button onclick="if(confirm('Réinitialiser ?')){LS.d('ok');LS.d('pr');LS.d('consultant_name');document.getElementById('admin-ov').remove();SS('lock');toast('Réinitialisé','in')}" style="width:100%;padding:14px;border-radius:14px;background:transparent;border:0.5px solid rgba(255,80,80,.3);color:#ff5050;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:40px">
+        Réinitialiser l'accès
+      </button>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+let _at=0,_att=null;
+function avTap(){
+  _at++;clearTimeout(_att);_att=setTimeout(()=>_at=0,2000);
+  if(_at>=5){_at=0;showAdminPw();}
+}
+
+/* ── DATA ── */
+const CATEGORIES=[
+  {th:"t1",em:"📊",nm:"Méthodes de Vente",chip:"6 modules",r:80,g:130,b:255,cards:[
+    {th:"t1",em:"🔢",cat:"Méthodes",nm:"Chiffres Clés",sl:"Concentration",sv:"30%",chip:"5 chiffres",r:80,g:130,b:255,hero:{v:"30%",l:"Concentration en extrait de parfum"},flow:null,items:[{i:"30%",t:"30% d'extrait",d:"Contre 12-15% grandes marques."},{i:"24h",t:"8 à 24h tenue",d:"Grâce à la concentration élevée."},{i:"-70",t:"-70% économie",d:"29€ ici vs 120€ en boutique."},{i:"0€",t:"Zéro pub",d:"L'argent va dans les essences.",q:"« 100% qualité, 0% marketing »"},{i:"🌹",t:"Essences Grasse",d:"FragWorld — même source que Chanel.",q:"« Chanel paie Grasse. Nous aussi. »"}]},
+    {th:"t2",em:"🧠",cat:"Méthodes",nm:"SONCAS",sl:"Profils",sv:"6",chip:"Motivations",r:180,g:80,b:255,hero:{v:"SONCAS",l:"Détecter la motivation client"},flow:null,items:[{i:"S",t:"Sécurité",d:"Certifié bio, non testé sur les animaux.",q:"« Les yeux fermés »"},{i:"O",t:"Orgueil",d:"Extrait de parfum = choix des connaisseurs.",q:"« Vous avez l'œil »"},{i:"N",t:"Nouveauté",d:"Concept exclusif, marque émergente.",q:"« Vous êtes parmi les premiers »"},{i:"C",t:"Confort",d:"Test facile, livraison rapide, zéro engagement."},{i:"A",t:"Argent",d:"29€ = rapport imbattable.",q:"« Même odeur, prix différent »"},{i:"S",t:"Sympathie",d:"Moment de plaisir et conseil sans pression."}]},
+    {th:"t3",em:"⚡",cat:"Méthodes",nm:"Q/PA/Si/Arg/Cl",sl:"Étapes",sv:"5",chip:"Séquence",r:30,g:200,b:120,hero:{v:"5 étapes",l:"De l'ouverture à la conclusion"},flow:['Q','PA','Si','Arg','Cl'],items:[{i:"Q",t:"Question — Ouvrir",d:"Lancer le dialogue naturellement.",q:"« C'est quoi ton parfum ? »"},{i:"PA",t:"Alternative — Orienter",d:"2 choix. Le cerveau choisit au lieu de refuser.",q:"« Floral ou boisé ? »"},{i:"Si",t:"Supposition — Avancer",d:"Proposer sans forcer.",q:"« Si tu aimes le frais... »"},{i:"Ar",t:"Argument — Convaincre",d:"Un fait concret et précis.",q:"« 30% d'essence — 24h »"},{i:"Cl",t:"Conclusion — Fermer",d:"Fermer sans silence.",q:"« Je t'envoie le lien ? »"}]},
+    {th:"t4",em:"🎯",cat:"Méthodes",nm:"Méthode PCA",sl:"Panier",sv:"+30%",chip:"3 leviers",r:230,g:130,b:40,hero:{v:"PCA",l:"Promo → Complément → Additionnel"},flow:null,items:[{i:"P",t:"Promo",d:"Toujours commencer par une offre.",q:"« 2 achetés = 3ème à -50% »"},{i:"C",t:"Complément",d:"Après le OUI : proposer le produit assorti.",q:"« Et le lait corporel ? »"},{i:"A",t:"Additionnel",d:"En fin de vente : élargir.",q:"« Aussi des parfums d'ambiance »"}]},
+    {th:"t5",em:"📋",cat:"Méthodes",nm:"VAMP",sl:"Piliers",sv:"4",chip:"Auto-éval",r:30,g:190,b:210,hero:{v:"VAMP",l:"Auto-évaluation sur 4 piliers"},flow:null,items:[{i:"V",t:"Vente",d:"Je propose systématiquement. Je persévère."},{i:"A",t:"Accueil",d:"Je souris. Je remercie toujours."},{i:"M",t:"Méthodes",d:"Je maîtrise les chiffres. J'utilise SONCAS."},{i:"P",t:"Personnalité",d:"Énergie, confiance, j'ose proposer."}]},
+    {th:"t6",em:"🛡️",cat:"Méthodes",nm:"Objections",sl:"Réponses",sv:"3+",chip:"NON→OUI",r:230,g:60,b:60,hero:{v:"NON",l:"Signal d'intérêt — Écouter · Reformuler · Argumenter"},flow:null,items:[{i:"?",t:"« Contrefaçon ? »",d:"Essences de Grasse, même fournisseur que Chanel.",q:"« Légal, traçable, certifié »"},{i:"⏱",t:"« Ça ne tient pas »",d:"30% d'essence = 8 à 24h.",q:"« Testez ce soir »"},{i:"🕐",t:"« Pas le temps »",d:"Laisser un échantillon.",q:"« L'odeur parle d'elle-même »"}]}
+  ]},
+  {th:"t2",em:"🌹",nm:"Parfumerie Olfazeta",chip:"7 cartes",r:200,g:80,b:200,cards:[
+    {th:"t1",em:"🔢",cat:"Parfumerie",nm:"Chiffres Clés",sl:"Argument",sv:"30%",chip:"Argumentaire",r:80,g:130,b:255,hero:{v:"30%",l:"Les chiffres pour convaincre"},flow:null,items:[{i:"30%",t:"30% d'extrait",d:"Contre 12-15% grandes marques. Argument N°1."},{i:"24h",t:"8-24h tenue",d:"Concentration élevée = longue durée."},{i:"-70",t:"-70% économie",d:"29€ ici vs 120€ boutique."},{i:"0€",t:"Zéro pub",d:"L'argent va dans les essences.",q:"« 100% qualité »"},{i:"🌹",t:"Essences Grasse",d:"FragWorld — même source que Chanel.",q:"« Même source, prix différent »"}]},
+    {th:"t2",em:"🌸",cat:"Parfumerie",nm:"Parfums Femme",sl:"Collection",sv:"Féminin",chip:"Femme",r:200,g:80,b:200,hero:{v:"Femme",l:"Fragrances féminines · Grasse · FragWorld"},flow:null,items:[{i:"🌸",t:"Gamme florale",d:"Rose, jasmin, pivoine — féminins légers.",q:"« Légèreté et élégance »"},{i:"🍊",t:"Gamme fruitée",d:"Bergamote, pêche, litchi — fraîcheur.",q:"« Fraîcheur et gourmandise »"},{i:"🌙",t:"Gamme orientale",d:"Oud, ambre, vanille — soirées.",q:"« Mystère et séduction »"},{i:"💎",t:"Gamme prestige",d:"Inspirations Chanel N°5, Miss Dior... à -70%.",q:"« Le luxe accessible »"},{i:"30%",t:"Argument clé",d:"30% d'extrait = sillage intense, longue tenue.",q:"« Cou et poignets »"},{i:"💶",t:"Prix",d:"29€ moyenne vs 80-150€ boutique.",q:"« Même odeur, pas le même prix »"}]},
+    {th:"t1",em:"🧔",cat:"Parfumerie",nm:"Parfums Homme",sl:"Collection",sv:"Masculin",chip:"Homme",r:80,g:130,b:255,hero:{v:"Homme",l:"Boisé · Aromatique · Aquatique"},flow:null,items:[{i:"🌲",t:"Gamme boisée",d:"Cèdre, vétiver, patchouli.",q:"« Force et caractère »"},{i:"🌊",t:"Gamme aquatique",d:"Notes marines et fraîches.",q:"« Fraîcheur toute la journée »"},{i:"🌿",t:"Gamme aromatique",d:"Lavande, menthe, eucalyptus.",q:"« Le classique indémodable »"},{i:"💎",t:"Gamme prestige",d:"Dior Sauvage, Bleu de Chanel... prix Chogan.",q:"« Le prestige sans se ruiner »"},{i:"🎁",t:"Idée cadeau",d:"Noël, fête des pères, anniversaires.",q:"« Le cadeau qui fait toujours effet »"},{i:"⏱",t:"Application",d:"30% d'extrait, tenue 8-24h. Sur la peau.",q:"« Sur la peau uniquement »"}]},
+    {th:"t3",em:"👶",cat:"Parfumerie",nm:"Parfums Enfant",sl:"Collection",sv:"Doux",chip:"Enfant",r:30,g:180,b:120,hero:{v:"Enfant",l:"Fragrances douces · Hypoallergéniques"},flow:null,items:[{i:"🌸",t:"Formulation douce",d:"Pour peaux délicates. Testées dermatologiquement.",q:"« Douceur et sécurité »"},{i:"🛡️",t:"Hypoallergénique",d:"Sans allergènes. Peaux sensibles.",q:"« Sécurité garantie »"},{i:"🍓",t:"Notes gourmandes",d:"Fraise, vanille, pomme.",q:"« Les parfums qu'ils choisiraient »"},{i:"🎁",t:"Cadeau idéal",d:"Format et prix parfaits.",q:"« Sans se tromper »"},{i:"👨‍👩‍👧",t:"Vente famille",d:"Proposer quand un parent achète.",q:"« Toute la famille sent bon »"}]},
+    {th:"t5",em:"✨",cat:"Parfumerie",nm:"Parfums Mixtes",sl:"Collection",sv:"Unisexe",chip:"Mixte",r:30,g:190,b:210,hero:{v:"Mixte",l:"Fragrances unisexes · Moderne"},flow:null,items:[{i:"🌿",t:"Tendance unisexe",d:"Marché en forte croissance. Clientèle moderne.",q:"« La tendance qui s'impose »"},{i:"🪵",t:"Boisés légers",d:"Santal, cèdre doux, bambou.",q:"« L'élégance universelle »"},{i:"🌊",t:"Aquatiques",d:"Notes marines et végétales.",q:"« Fresh et moderne »"},{i:"🎁",t:"Cadeau universel",d:"Quand on ne connaît pas les goûts.",q:"« Zéro risque d'erreur »"},{i:"💡",t:"Conseil",d:"Proposer en premier pour les indécis.",q:"« Pour être sûr de faire plaisir »"}]},
+    {th:"t4",em:"🏺",cat:"Parfumerie",nm:"Essences de Grasse",sl:"Origine",sv:"FragWorld",chip:"Qualité",r:220,g:130,b:40,hero:{v:"Grasse",l:"Capital mondial du parfum · FragWorld"},flow:null,items:[{i:"🌍",t:"Grasse",d:"Capitale mondiale du parfum depuis le XVIe.",q:"« Là où naissent les grands parfums »"},{i:"🏭",t:"FragWorld",d:"Même fournisseur que Chanel, Dior, Hermès.",q:"« Même source »"},{i:"🌹",t:"Qualité essences",d:"Naturelles et synthèse premium.",q:"« Qualité luxe, prix Chogan »"},{i:"🔬",t:"30% concentration",d:"Chogan propose 30% contre 12-15% ailleurs.",q:"« Plus de concentration »"},{i:"💰",t:"Pourquoi moins cher ?",d:"Pas d'égéries, pas de pub TV.",q:"« Marketing zéro »"},{i:"✅",t:"Anti-contrefaçon",d:"Légal, traçable, certifié.",q:"« Inspiration légale »"}]},
+    {th:"t6",em:"🧴",cat:"Parfumerie",nm:"Parfums d'Ambiance",sl:"Intérieur",sv:"Maison",chip:"Ambiance",r:180,g:60,b:60,hero:{v:"Ambiance",l:"Intérieur · Diffuseurs · Voiture"},flow:null,items:[{i:"🏠",t:"Intérieur",d:"Sprays et diffuseurs maison.",q:"« Votre maison sent bon Chogan »"},{i:"🕯️",t:"Bougies",d:"Longue durée, essences Grasse.",q:"« Lumière et parfum »"},{i:"🚗",t:"Voiture",d:"Proposer après chaque vente parfum.",q:"« Votre voiture aussi ? »"},{i:"📦",t:"Pack maison",d:"Parfum + ambiance + voiture. Panier triplé.",q:"« Le kit complet »"},{i:"💡",t:"Conseil",d:"Faire sentir avant d'expliquer.",q:"« Sentez d'abord »"}]}
+  ]},
+  {th:"t3",em:"🐌",nm:"Soin Corps Aurodhea",chip:"6 cartes",r:40,g:190,b:130,cards:[
+    {th:"t3",em:"🐌",cat:"Aurodhea",nm:"Bave d'Escargot",sl:"Action",sv:"Anti-âge",chip:"Réparateur",r:40,g:190,b:130,hero:{v:"Bave",l:"Crèmes · Shampoings · Soins réparateurs"},flow:null,items:[{i:"🔬",t:"Pourquoi ça marche ?",d:"Allantoïne, collagène, élastine. Action prouvée.",q:"« La science derrière le miracle »"},{i:"✨",t:"Anti-âge",d:"Réduit rides en 4 semaines.",q:"« Visible en 4 semaines »"},{i:"🩹",t:"Cicatrisant",d:"Cicatrices d'acné, vergetures.",q:"« Peau neuve »"},{i:"🧴",t:"Shampoing",d:"Réduit la chute, stimule la croissance.",q:"« Cheveux renforcés »"},{i:"💡",t:"Argument",d:"Test sur la main. Le toucher vend.",q:"« Essayez sur le dos de la main »"}]},
+    {th:"t5",em:"🌿",cat:"Aurodhea",nm:"Aloe Vera",sl:"Hydratation",sv:"Pure",chip:"Apaisant",r:30,g:190,b:210,hero:{v:"Aloe",l:"Gels · Dentifrices · Hydratants"},flow:null,items:[{i:"💧",t:"Gel pur",d:"Coups de soleil, irritations, peaux sèches.",q:"« Le multi-usage naturel »"},{i:"🦷",t:"Dentifrice",d:"Blanchissant doux, anti-bactérien.",q:"« Sourire sain au naturel »"},{i:"🌱",t:"Après-soleil",d:"Rafraîchit et répare immédiatement.",q:"« Après le soleil »"},{i:"🤰",t:"Vergetures",d:"Prévient et réduit. Idéal grossesse.",q:"« Soin prévention »"},{i:"💡",t:"Argument",d:"Naturel, polyvalent, sans effets secondaires.",q:"« Naturel et prouvé »"}]},
+    {th:"t4",em:"✨",cat:"Aurodhea",nm:"Huile d'Argan",sl:"Nutrition",sv:"Argan pur",chip:"Or liquide",r:220,g:130,b:40,hero:{v:"Argan",l:"L'or liquide du Maroc · Cheveux · Peau"},flow:null,items:[{i:"🌰",t:"L'or liquide",d:"Vitamine E et acides gras. Précieuse.",q:"« Le luxe marocain »"},{i:"💆",t:"Soin visage",d:"Quelques gouttes le soir. Anti-rides naturel.",q:"« 3 gouttes, peau transformée »"},{i:"💇",t:"Soin cheveux",d:"Brillance, souplesse, protection thermique.",q:"« Brillance et légèreté »"},{i:"🤲",t:"Soin corps",d:"Zones sèches. Pénètre sans graisser.",q:"« Peau soyeuse »"},{i:"💡",t:"Vente croisée",d:"Argan cheveux + argan visage en duo.",q:"« Le duo beauté »"}]},
+    {th:"t6",em:"⚫",cat:"Aurodhea",nm:"Charbon Actif",sl:"Purification",sv:"Détox",chip:"Purifiant",r:180,g:60,b:60,hero:{v:"Charbon",l:"Masques · Détox · Pores resserrés"},flow:null,items:[{i:"⚫",t:"Comment ça marche ?",d:"Absorbe impuretés comme un aimant.",q:"« Aspire les impuretés »"},{i:"🎭",t:"Masque",d:"1-2 fois/semaine. Pores resserrés.",q:"« Résultat dès la 1ère »"},{i:"🧴",t:"Gel nettoyant",d:"Peaux grasses et mixtes. Équilibre sébum.",q:"« Peau nette »"},{i:"🦷",t:"Dentifrice",d:"Blanchissant puissant. Résultats en 7 jours.",q:"« Sourire white »"},{i:"💡",t:"Argument",d:"Tendance forte. Recherché par clients informés.",q:"« La tendance qui dure »"}]},
+    {th:"t1",em:"🌰",cat:"Aurodhea",nm:"Huile de Neem",sl:"Propriétés",sv:"Purifiante",chip:"Anti-bact.",r:80,g:130,b:255,hero:{v:"Neem",l:"Purifiant · Anti-bactérien · Cuir chevelu"},flow:null,items:[{i:"🌿",t:"L'arbre miracle",d:"Millénaires d'utilisation en Ayurveda.",q:"« La pharmacie de la nature »"},{i:"🦠",t:"Anti-bactérien",d:"Anti-fongique et anti-bactérien naturel.",q:"« La nature contre les bactéries »"},{i:"💇",t:"Cuir chevelu",d:"Pellicules, démangeaisons, irritations.",q:"« Adieu pellicules »"},{i:"⚠️",t:"Note",d:"Odeur forte naturelle. À mentionner.",q:"« Odeur forte = action forte »"},{i:"💡",t:"Positionnement",d:"Niche pour clients cherchant solutions naturelles.",q:"« Quand rien d'autre ne marche »"}]},
+    {th:"t2",em:"💆",cat:"Aurodhea",nm:"Conseils Vente Soin",sl:"Méthode",sv:"Diagnostic",chip:"Technique",r:200,g:80,b:200,hero:{v:"Conseil",l:"Identifier · Proposer · Vendre"},flow:null,items:[{i:"🔍",t:"Diagnostic peau",d:"\"Quel est votre problème de peau ?\"",q:"« On commence par le diagnostic »"},{i:"🎯",t:"Bon produit",d:"Sèche→Argan. Grasse→Charbon. Imperfections→Bave.",q:"« J'ai exactement ce qu'il vous faut »"},{i:"🤲",t:"Faire tester",d:"Test sur la main. Le toucher déclenche l'achat.",q:"« Essayez »"},{i:"📦",t:"Duo",d:"Crème + sérum. Plus de valeur.",q:"« Le duo pour de vrais résultats »"},{i:"🔄",t:"Fidélisation",d:"Se consomme régulièrement. Proposer la récurrence.",q:"« Je vous recontacte dans 2 mois »"},{i:"🎁",t:"Cadeau beauté",d:"Coffret soin + parfum = cadeau parfait.",q:"« Le cadeau beauté complet »"}]}
+  ]},
+  {th:"t4",em:"💄",nm:"Maquillage Make-up",chip:"6 cartes",r:220,g:130,b:40,cards:[
+    {th:"t4",em:"🧴",cat:"Make-up",nm:"Teint & Visage",sl:"Base",sv:"Fond de teint",chip:"Teint",r:220,g:130,b:40,hero:{v:"Teint",l:"Fond de teint · BB cream · Poudres"},flow:null,items:[{i:"🎨",t:"Fond de teint",d:"Couvrance légère à complète.",q:"« Votre teint parfait »"},{i:"✨",t:"BB Cream",d:"Hydratation + couvrance + protection.",q:"« 5 soins en 1 geste »"},{i:"💎",t:"Enlumineur",d:"Teint lumineux, tendance.",q:"« Le glow en un geste »"},{i:"🟤",t:"Bronzer",d:"Sculpter, réchauffer le teint.",q:"« Le soleil en pot »"},{i:"💡",t:"Conseil",d:"Fond de teint + poudre fixante = longue durée.",q:"« Tenir toute la journée »"}]},
+    {th:"t5",em:"👁️",cat:"Make-up",nm:"Yeux",sl:"Collection",sv:"Regard",chip:"Yeux",r:30,g:190,b:210,hero:{v:"Yeux",l:"Mascara · Eye-liner · Fards · Crayons"},flow:null,items:[{i:"👁️",t:"Mascara",d:"Volume, allongement. Résistant à l'eau.",q:"« Les cils qui font parler »"},{i:"✏️",t:"Eye-liner",d:"Crayon et liquide. Naturel à intense.",q:"« Du naturel à l'intense »"},{i:"🎨",t:"Fards",d:"Mono et multi-couleurs. Pigmentation intense.",q:"« Toutes les couleurs »"},{i:"🧼",t:"Démaquillant",d:"Proposer avec chaque vente yeux.",q:"« Et le démaquillant ? »"},{i:"💡",t:"Conseil",d:"Mascara + eye-liner = duo yeux.",q:"« Le duo yeux »"}]},
+    {th:"t1",em:"💋",cat:"Make-up",nm:"Lèvres",sl:"Collection",sv:"Lèvres",chip:"Lèvres",r:80,g:130,b:255,hero:{v:"Lèvres",l:"Rouge · Gloss · Baume · Longue tenue"},flow:null,items:[{i:"💄",t:"Rouge à lèvres",d:"Mat, satiné, brillant. Longue tenue 8h.",q:"« La touche finale »"},{i:"✨",t:"Gloss",d:"Volume et brillance.",q:"« Lèvres pulpeuses »"},{i:"💧",t:"Baume",d:"Hydratant avec légère couleur.",q:"« Soin et couleur »"},{i:"🌙",t:"Soin de nuit",d:"Baume réparateur. Vente additionnelle.",q:"« Lèvres douces au réveil »"},{i:"💡",t:"Conseil",d:"Rouge + crayon = tenue doublée.",q:"« Pour tenir toute la journée »"}]},
+    {th:"t2",em:"💅",cat:"Make-up",nm:"Ongles",sl:"Collection",sv:"Vernis",chip:"Ongles",r:200,g:80,b:200,hero:{v:"Ongles",l:"Vernis · Soins · Accessoires"},flow:null,items:[{i:"💅",t:"Vernis longue tenue",d:"Gel et classiques. Brillant ou mat.",q:"« La couleur qui dure »"},{i:"💆",t:"Soins",d:"Base fortifiante, huile cuticules.",q:"« Ongles en bonne santé »"},{i:"🎨",t:"Nail art",d:"Accessoires tendance. Clientèle jeune.",q:"« Exprimez votre style »"},{i:"💡",t:"Conseil",d:"En complément maquillage ou cadeau.",q:"« Et les ongles assortis ? »"}]},
+    {th:"t6",em:"🎁",cat:"Make-up",nm:"Coffrets & Cadeaux",sl:"Occasion",sv:"Cadeau",chip:"Coffrets",r:180,g:60,b:60,hero:{v:"Coffrets",l:"Parfum · Make-up · Occasions spéciales"},flow:null,items:[{i:"🎄",t:"Coffret Noël",d:"Stars des ventes de décembre.",q:"« Plaît à coup sûr »"},{i:"💐",t:"Fête des mères",d:"Le moment le plus fort de l'année.",q:"« Pour gâter maman »"},{i:"💑",t:"Saint-Valentin",d:"Parfum + rouge à lèvres = duo romantique.",q:"« Le duo amoureux »"},{i:"🎂",t:"Anniversaire",d:"Proposer 3 niveaux de prix.",q:"« Pour chaque budget »"},{i:"💡",t:"Conseil",d:"Coffret > produit seul. Marge meilleure.",q:"« Un coffret fait plus plaisir »"}]},
+    {th:"t3",em:"🎨",cat:"Make-up",nm:"Tendances & Conseils",sl:"Saison",sv:"Tips",chip:"Tips",r:40,g:190,b:130,hero:{v:"Tendances",l:"Conseils maquillage · Techniques de vente"},flow:null,items:[{i:"☀️",t:"Printemps-été",d:"Couleurs vives, nude, teint frais.",q:"« Les couleurs de la saison »"},{i:"🍂",t:"Automne-hiver",d:"Bordeaux, cuivres, contours.",q:"« Les tons de la saison froide »"},{i:"📱",t:"Réseaux sociaux",d:"Rapport qualité-prix viral. TikTok/Insta.",q:"« Même qualité que sur Insta »"},{i:"🤝",t:"Démonstration",d:"Tester sur la main. Décuple les ventes.",q:"« Je vous montre »"},{i:"🔄",t:"Fidélisation",d:"Le maquillage s'achète régulièrement.",q:"« Rendez-vous beauté mensuel »"}]}
+  ]},
+  {th:"t5",em:"🧽",nm:"Entretien Brilhome",chip:"6 cartes",r:30,g:185,b:200,cards:[
+    {th:"t5",em:"🍽️",cat:"Brilhome",nm:"Cuisine",sl:"Dégraissage",sv:"Puissant",chip:"Cuisine",r:30,g:185,b:200,hero:{v:"Cuisine",l:"Dégraissants · Multi-usages · Vaisselle"},flow:null,items:[{i:"💪",t:"Dégraissant",d:"Graisses cuites sur plaques, hottes, fours.",q:"« Four comme neuf en 5 min »"},{i:"🍽️",t:"Liquide vaisselle",d:"Concentré, doux. 1 flacon = 3 grande surface.",q:"« 1 flacon = 3 flacons »"},{i:"✨",t:"Multi-usages",d:"Surfaces, plans de travail. Un seul produit.",q:"« Un produit pour tout »"},{i:"🌱",t:"Écolo",d:"Biodégradable, sans phosphates.",q:"« Efficace ET responsable »"},{i:"💰",t:"Économique",d:"3x moins cher. Calculer devant le client.",q:"« Faites le calcul »"}]},
+    {th:"t4",em:"👕",cat:"Brilhome",nm:"Linge",sl:"Résultats",sv:"Pro",chip:"Lessive",r:220,g:130,b:40,hero:{v:"Linge",l:"Lessive · Assouplissant · Détachant"},flow:null,items:[{i:"🧺",t:"Lessive",d:"Concentrée, efficace dès 30°C.",q:"« Propre à basse température »"},{i:"🌸",t:"Assouplissant",d:"Doux et parfumé longue durée.",q:"« Linge doux et parfumé »"},{i:"🩹",t:"Détachant",d:"Taches tenaces, sans javel.",q:"« Plus de taches »"},{i:"🌱",t:"Écologique",d:"Sans phosphates, biodégradable.",q:"« Propre et responsable »"},{i:"💡",t:"Fidélisation",d:"Lessive + assouplissant en duo.",q:"« Je vous recontacte »"}]},
+    {th:"t6",em:"🏠",cat:"Brilhome",nm:"Sols & Surfaces",sl:"Polyvalent",sv:"Maison",chip:"Sol",r:180,g:60,b:60,hero:{v:"Sols",l:"Tous types de sols · Vitres · Surfaces"},flow:null,items:[{i:"🏠",t:"Sols universel",d:"Parquet, carrelage, marbre, vinyle.",q:"« Un seul produit »"},{i:"🔍",t:"Nettoyant vitres",d:"Sans traces, séchage rapide.",q:"« Des vitres impeccables »"},{i:"🛁",t:"Salle de bain",d:"Calcaire, joints, robinetterie.",q:"« Salle de bain brillante »"},{i:"💪",t:"Anticalcaire",d:"Formule acide douce. Calcaire disparaît.",q:"« Le calcaire disparaît »"},{i:"💡",t:"Pack",d:"Sols + vitres + salle de bain = 3 produits.",q:"« La maison pour moins de 40€ »"}]},
+    {th:"t1",em:"💪",cat:"Brilhome",nm:"Dégraissants Pro",sl:"Performance",sv:"Pro",chip:"Pro",r:80,g:130,b:255,hero:{v:"Pro",l:"Haute performance · Usage intensif"},flow:null,items:[{i:"🏭",t:"Qualité pro",d:"Restauration, hôtellerie, industrie.",q:"« La puissance pro chez soi »"},{i:"🔥",t:"Graisses incrustées",d:"Brûlées et incrustées. Aucun autre n'en vient à bout.",q:"« Quand les autres ne suffisent plus »"},{i:"⏱️",t:"Action rapide",d:"Temps de contact court. Résultat immédiat.",q:"« 5 minutes »"},{i:"💰",t:"ROI",d:"3 à 5 fois plus économique sur 1 an.",q:"« Rentabilisé en 3 mois »"}]},
+    {th:"t2",em:"🌱",cat:"Brilhome",nm:"Argument Écologique",sl:"Éco",sv:"Bio",chip:"Éco",r:200,g:80,b:200,hero:{v:"Éco",l:"Biodégradable · Sans phosphates · Responsable"},flow:null,items:[{i:"🌍",t:"Biodégradable",d:"Se dégradent naturellement.",q:"« Propre jusqu'au bout »"},{i:"🚫",t:"Sans phosphates",d:"En avance sur la réglementation.",q:"« En avance sur la loi »"},{i:"📦",t:"Packaging",d:"Flacons recyclables et rechargeables.",q:"« Moins de plastique »"},{i:"👨‍👩‍👧",t:"Famille",d:"Sûrs pour les enfants et animaux.",q:"« Sûr pour toute la famille »"},{i:"💡",t:"Vendre l'écologie",d:"Performance + écologie = argument imparable.",q:"« Aussi efficace, plus responsable »"}]},
+    {th:"t3",em:"💰",cat:"Brilhome",nm:"Argument Économique",sl:"Économie",sv:"×3",chip:"Prix",r:40,g:190,b:130,hero:{v:"×3",l:"3 fois moins cher · Concentré · Calculer"},flow:null,items:[{i:"🔢",t:"Le calcul",d:"1 flacon Brilhome = 3 grande surface.",q:"« Faites le calcul avec moi »"},{i:"📅",t:"Sur 1 an",d:"120€/an grande surface → 40€ Brilhome.",q:"« 80€ d'économie »"},{i:"🧮",t:"Calculer en direct",d:"\"Votre lessive 5€/mois = 60€/an. Ici 15€, dure 4 mois.\"",q:"« Je vous montre »"},{i:"🔄",t:"Récurrence",d:"S'achète tous les mois. Proposer abonnement.",q:"« Je vous programme »"},{i:"🎯",t:"Cible",d:"Familles, petits budgets, grands consommateurs.",q:"« Pour ceux qui font attention »"}]}
+  ]},
+  {th:"t6",em:"🌿",nm:"Hygiène & Bien-être",chip:"6 cartes",r:220,g:55,b:100,cards:[
+    {th:"t6",em:"🦷",cat:"Bien-être",nm:"Soins Dentaires",sl:"Naturel",sv:"Naturel",chip:"Dentaire",r:220,g:55,b:100,hero:{v:"Dental",l:"Dentifrices · Bains de bouche · Blanchissant"},flow:null,items:[{i:"🦷",t:"Dentifrice aloe",d:"Nettoyage doux, protection gencives.",q:"« La nature dans votre sourire »"},{i:"⚫",t:"Dentifrice charbon",d:"Blanchissant naturel. Résultats en 7 jours.",q:"« Sourire white »"},{i:"💧",t:"Bain de bouche",d:"Antibactérien naturel. Protection 12h.",q:"« 12h de protection »"},{i:"💡",t:"Duo",d:"Dentifrice + bain de bouche = soin complet.",q:"« Le duo hygiène parfait »"}]},
+    {th:"t1",em:"💧",cat:"Bien-être",nm:"Huiles Essentielles",sl:"Pureté",sv:"100%",chip:"Aromathérapie",r:80,g:130,b:255,hero:{v:"HE pures",l:"Lavande · Tea tree · Menthe · Et plus"},flow:null,items:[{i:"💜",t:"Lavande",d:"Stress, insomnie, cicatrisation, maux de tête.",q:"« La HE de base »"},{i:"🌿",t:"Tea Tree",d:"Anti-infectieux, anti-fongique.",q:"« La pharmacie en flacon »"},{i:"💚",t:"Menthe poivrée",d:"Énergie, concentration. Effet immédiat.",q:"« L'énergie instantanée »"},{i:"🍊",t:"Orange douce",d:"Anti-déprime, purification d'air.",q:"« La bonne humeur »"},{i:"💡",t:"Conseil",d:"Proposer un diffuseur avec les HE.",q:"« Je vous montre comment les utiliser »"}]},
+    {th:"t3",em:"⚡",cat:"Bien-être",nm:"Énergie & Vitalité",sl:"Naturel",sv:"Naturel",chip:"Énergie",r:40,g:190,b:130,hero:{v:"Énergie",l:"Compléments naturels · Performance"},flow:null,items:[{i:"⚡",t:"Boost énergie",d:"Ginseng, guarana, vitamines B.",q:"« L'énergie au naturel »"},{i:"💪",t:"Sport",d:"Performances sportives et récupération.",q:"« Avant et après l'effort »"},{i:"🧠",t:"Concentration",d:"Omega-3, magnésium, ginkgo biloba.",q:"« Plus net, plus concentré »"},{i:"🌙",t:"Sommeil",d:"Mélatonine naturelle, valériane.",q:"« Dormir pour performer »"},{i:"💡",t:"Conseil",d:"Identifier le besoin : fatigue, sport, stress.",q:"« C'est quoi votre problème ? »"}]},
+    {th:"t4",em:"⚖️",cat:"Bien-être",nm:"Minceur",sl:"Programme",sv:"Naturel",chip:"Minceur",r:220,g:130,b:40,hero:{v:"Minceur",l:"Brûleurs · Coupe-faim · Détox · Drainage"},flow:null,items:[{i:"🔥",t:"Brûleurs",d:"Thé vert, L-carnitine, Cayenne.",q:"« Accélérer naturellement »"},{i:"🥗",t:"Coupe-faim",d:"Glucomannane, psyllium, nopal.",q:"« Moins faim »"},{i:"🌿",t:"Détox",d:"Cure 10 jours. Idéal en début de programme.",q:"« On commence par nettoyer »"},{i:"📋",t:"Programme",d:"1-3 mois : détox + brûleur + coupe-faim.",q:"« Un programme sur mesure »"},{i:"⚠️",t:"Éthique",d:"Avec alimentation équilibrée et sport.",q:"« En complément d'une bonne hygiène »"}]},
+    {th:"t2",em:"🛡️",cat:"Bien-être",nm:"Immunité & Défenses",sl:"Protection",sv:"Naturel",chip:"Immunité",r:200,g:80,b:200,hero:{v:"Immunité",l:"Vitamines · Minéraux · Plantes"},flow:null,items:[{i:"🛡️",t:"Vitamine C",d:"Acérola, sureau. Mieux assimilée.",q:"« La vraie vitamine C »"},{i:"🌿",t:"Adaptogènes",d:"Rhodiola, ashwagandha, ginseng.",q:"« S'adapter à tout »"},{i:"🦠",t:"Probiotiques",d:"70% de l'immunité vient de l'intestin.",q:"« L'immunité commence là »"},{i:"☀️",t:"Vitamine D3+K2",d:"Immunité, os, moral. Indispensable en hiver.",q:"« L'essentiel »"},{i:"💡",t:"Saisonnière",d:"Octobre-novembre : booster immunité.",q:"« Préparez-vous avant l'hiver »"}]},
+    {th:"t5",em:"💊",cat:"Bien-être",nm:"Conseils Compléments",sl:"Méthode",sv:"Programme",chip:"Conseil",r:30,g:185,b:200,hero:{v:"Conseil",l:"Identifier · Programmer · Fidéliser"},flow:null,items:[{i:"🔍",t:"Identifier",d:"Fatigue ? stress ? sommeil ? poids ? immunité ?",q:"« Qu'est-ce qui vous pèse ? »"},{i:"📋",t:"Programme",d:"1-3 mois. Meilleur résultat et fidélisation.",q:"« Je vous fais un programme »"},{i:"📊",t:"Suivi",d:"J+15 et J+30. Le suivi multiplie les renouvellements.",q:"« Comment vous sentez-vous ? »"},{i:"💰",t:"Économique",d:"Chogan vs pharmacie : 30-50% moins cher.",q:"« Même qualité, moins cher »"},{i:"🔄",t:"Abonnement",d:"Commande automatique mensuelle.",q:"« Je vous programme ça »"}]}
+  ]}
+  ,{th:"t3",em:"🤝",nm:"Collabs B2B",chip:"10 collabs",r:40,g:200,b:160,cards:[
+
+    {th:"t3",em:"💇",cat:"Collabs B2B",nm:"Coiffeur / Barbier",sl:"Revenus",sv:"Passifs",chip:"B2B",r:40,g:200,b:160,
+     hero:{v:"Salon",l:"Augmenter le CA sans changer son métier"},flow:null,
+     items:[
+      {i:"💰",t:"Argument revenu passif",d:"Proposez Chogan à vos clients pendant l'attente ou après la prestation. Aucun temps supplémentaire, revenu additionnel direct.",q:"« Vous êtes déjà payé pour être là »"},
+      {i:"🧴",t:"Argument produits capillaires",d:"La gamme Aurodhea (bave d'escargot, argan, neem) est complémentaire à votre activité. Vos clients ont déjà confiance en vous pour leurs cheveux.",q:"« Vos clients suivront votre recommandation »"},
+      {i:"📊",t:"Argument chiffres",d:"En moyenne 3 ventes/semaine à 29€ = 360€/mois de revenus additionnels sans effort supplémentaire.",q:"« 360€/mois pour 0 heure de travail supplémentaire »"},
+      {i:"🎯",t:"Argument clientèle captive",d:"Vos clients sont assis, détendus, réceptifs. Moment idéal pour découvrir un parfum ou un soin. Taux de conversion très élevé.",q:"« Clientèle captive = meilleur taux de transformation »"},
+      {i:"🤝",t:"Argument partenariat",d:"Je gère tout : réassort, conseils, formation. Vous n'avez qu'à présenter les testeurs. Mise en place en 20 minutes.",q:"« Vous ne risquez rien, je m'occupe de tout »"},
+      {i:"🌟",t:"Argument image",d:"Proposer des parfums de Grasse à vos clients renforce votre image de salon haut de gamme.",q:"« Un salon qui sent bon, un client qui revient »"},
+     ]},
+
+    {th:"t5",em:"🧖",cat:"Collabs B2B",nm:"Institut de Beauté",sl:"Synergie",sv:"Naturelle",chip:"B2B",r:30,g:185,b:200,
+     hero:{v:"Institut",l:"Synergie beauté · Soins + Parfums + Cosmétiques"},flow:null,
+     items:[
+      {i:"🌿",t:"Argument synergie produits",d:"Vos clientes viennent pour être belles. Aurodhea (bave d'escargot, argan, charbon) prolonge les soins cabine à domicile. Vente naturelle.",q:"« Continuez le soin chez vous »"},
+      {i:"💄",t:"Argument maquillage",d:"La gamme make-up Chogan (fond de teint, yeux, lèvres) complète parfaitement votre offre sans investissement en stock.",q:"« Votre cliente repart maquillée ET ravitaillée »"},
+      {i:"💰",t:"Argument économique",d:"Commission sur chaque vente sans gestion de stock. Je livre directement, vous touchez votre part automatiquement.",q:"« Revenu additionnel sans stock ni risque »"},
+      {i:"🎁",t:"Argument coffrets",d:"Les coffrets beauté Chogan (soin + parfum) sont des cadeaux parfaits. Proposez-les en vitrine pour les fêtes.",q:"« La vitrine qui vend pour vous »"},
+      {i:"🤝",t:"Argument formation",d:"Je forme votre équipe en 1h : comment présenter, quoi dire, quels produits pour quel profil. Vous serez autonomes.",q:"« Formation offerte, équipe opérationnelle en 1 heure »"},
+      {i:"📈",t:"Argument fidélisation",d:"Une cliente qui achète des soins chez vous revient 2x plus souvent. Les compléments Chogan créent cette récurrence.",q:"« Votre cliente revient pour le soin ET pour le réassort »"},
+     ]},
+
+    {th:"t4",em:"💅",cat:"Collabs B2B",nm:"Salon de Manucure",sl:"Compléments",sv:"Naturels",chip:"B2B",r:220,g:130,b:40,
+     hero:{v:"Manucure",l:"Soins ongles · Parfums · Compléments naturels"},flow:null,
+     items:[
+      {i:"💅",t:"Argument produits ongles",d:"La gamme vernis Chogan (longue tenue, soin, nail art) est complémentaire à votre activité. Vente croisée évidente.",q:"« Même univers, même cliente »"},
+      {i:"🌿",t:"Argument soins mains",d:"Huile d'argan et aloe vera pour les mains — produits naturels que vos clientes adorent après une manucure.",q:"« Les mains parfaites, ça s'entretient »"},
+      {i:"🌹",t:"Argument parfums",d:"Une cliente qui vient se faire les ongles est dans une bulle bien-être. Moment parfait pour présenter un parfum.",q:"« Elle est déjà dans l'humeur d'achat »"},
+      {i:"⏱",t:"Argument temps de séchage",d:"Pendant le séchage (10-15 min), proposer de tester les parfums. Moment idéal : elle ne peut pas partir !",q:"« 15 minutes captives = 15 minutes pour convaincre »"},
+      {i:"💰",t:"Argument rentabilité",d:"Panier moyen Chogan : 29-60€. Sur 10 clientes/semaine, 3 achats = 90-180€/semaine de CA additionnel.",q:"« 90 à 180€ de CA en plus chaque semaine »"},
+      {i:"🎁",t:"Argument cadeau",d:"Coffret vernis + parfum = cadeau parfait à 50€. Se vend spontanément si bien exposé en vitrine.",q:"« Le cadeau que toutes les femmes veulent »"},
+     ]},
+
+    {th:"t1",em:"🏥",cat:"Collabs B2B",nm:"Pharmacie / Parapharmacie",sl:"Naturel",sv:"Certifié",chip:"B2B",r:80,g:130,b:255,
+     hero:{v:"Pharma",l:"Produits naturels · Bio · Certifiés · Santé"},flow:null,
+     items:[
+      {i:"🌿",t:"Argument produits bio",d:"Gamme Aurodhea certifiée : aloe vera, huiles essentielles pures, compléments alimentaires naturels. Répond aux exigences de votre clientèle.",q:"« Vos clients cherchent du naturel, nous l'avons »"},
+      {i:"🦷",t:"Argument hygiène",d:"Dentifrices aloe vera et charbon actif, bains de bouche naturels. Segment hygiène bucco-dentaire très porteur.",q:"« Le dentifrice naturel que vos clients demandent »"},
+      {i:"💊",t:"Argument compléments",d:"Compléments alimentaires Chogan : énergie, immunité, minceur, sommeil. Qualité proche pharmacie à prix plus accessible.",q:"« Même efficacité, prix plus accessible »"},
+      {i:"💧",t:"Argument huiles essentielles",d:"HE 100% pures (lavande, tea tree, menthe). Segment aromathérapie en forte croissance dans les officines.",q:"« La demande HE explose, Chogan répond »"},
+      {i:"🤝",t:"Argument sans risque",d:"Aucun achat en gros requis. Vente à la commande, livraison directe client. Zéro gestion de stock pour vous.",q:"« Zéro stock, zéro risque, 100% marge »"},
+      {i:"📋",t:"Argument traçabilité",d:"Tous les produits sont certifiés, traçables et conformes aux réglementations européennes en vigueur.",q:"« Certification et traçabilité garanties »"},
+     ]},
+
+    {th:"t6",em:"💪",cat:"Collabs B2B",nm:"Salle de Sport / Coach",sl:"Performance",sv:"Naturelle",chip:"B2B",r:180,g:60,b:60,
+     hero:{v:"Sport",l:"Énergie · Récupération · Bien-être · Compléments"},flow:null,
+     items:[
+      {i:"⚡",t:"Argument compléments sport",d:"Gamme énergie & vitalité Chogan : boost pré-entraînement, récupération musculaire, concentration. Parfait pour votre clientèle.",q:"« Vos clients en ont besoin avant ET après »"},
+      {i:"🌿",t:"Argument naturel",d:"Compléments naturels sans produits dopants. Transparence totale sur la composition. Argument fort dans le monde sportif.",q:"« 100% naturel, 0% compromis »"},
+      {i:"💧",t:"Argument récupération",d:"Huiles essentielles (eucalyptus, menthe) et compléments anti-fatigue pour la récupération musculaire et mentale.",q:"« La récupération fait partie de la performance »"},
+      {i:"🌹",t:"Argument parfums post-sport",d:"Les parfums Chogan (longue tenue 8-24h) sont parfaits pour après la douche. Vente évidente dans les vestiaires.",q:"« Sortir de la salle en sentant bon »"},
+      {i:"👥",t:"Argument communauté",d:"Votre communauté de sportifs est captive et confiante. Une recommandation de coach est suivie à 80%.",q:"« Votre recommandation vaut de l'or »"},
+      {i:"📦",t:"Argument programme",d:"Proposer un kit : énergie + récupération + parfum. Pack mensuel récurrent qui fidélise vos clients.",q:"« Un pack mensuel = un client fidèle »"},
+     ]},
+
+    {th:"t2",em:"👗",cat:"Collabs B2B",nm:"Boutique de Vêtements",sl:"Ambiance",sv:"Luxe",chip:"B2B",r:200,g:80,b:200,
+     hero:{v:"Mode",l:"Parfums · Accessoires · Ambiance boutique"},flow:null,
+     items:[
+      {i:"🌹",t:"Argument atmosphère",d:"Un parfum d'ambiance Chogan dans votre boutique crée une expérience sensorielle mémorable. Les clients restent plus longtemps et achètent plus.",q:"« L'ambiance olfactive booste les ventes de 15% »"},
+      {i:"👜",t:"Argument accessoires",d:"Les accessoires et bijoux Chogan (étuis parfum, sacs tendance) complètent parfaitement une collection mode.",q:"« Le même univers, la même cliente »"},
+      {i:"🎁",t:"Argument cadeau",d:"Proposer des coffrets parfum + accessoire en caisse. Achat impulsif parfait pour les clientes qui offrent.",q:"« La vendeuse en caisse multiplie le panier »"},
+      {i:"✨",t:"Argument expérience",d:"Les testeurs sur le comptoir invitent les clientes à s'attarder. Plus de temps en boutique = plus d'achats.",q:"« Chaque minute de plus = 20% de vente en plus »"},
+      {i:"💰",t:"Argument marges",d:"Produits Chogan à forte marge, sans gestion de stock complexe. Je gère le réassort, vous touchez votre part.",q:"« Marge élevée, gestion minimale »"},
+      {i:"📸",t:"Argument réseaux",d:"Une boutique mode qui propose des parfums de Grasse à ce prix = contenu parfait pour Instagram et TikTok.",q:"« Du contenu viral pour vos réseaux »"},
+     ]},
+
+    {th:"t4",em:"🍽️",cat:"Collabs B2B",nm:"Restaurant / Café",sl:"Expérience",sv:"Client",chip:"B2B",r:220,g:130,b:40,
+     hero:{v:"Resto",l:"Ambiance · Cadeau client · Produits entretien"},flow:null,
+     items:[
+      {i:"🏠",t:"Argument entretien pro",d:"Gamme Brilhome : dégraissants puissants, produits ménagers professionnels HACCP. Qualité pro à prix imbattable.",q:"« La propreté professionnelle sans le prix pro »"},
+      {i:"🌸",t:"Argument ambiance",d:"Parfums d'ambiance Chogan dans les toilettes et la salle. Expérience client mémorable et différenciante.",q:"« Un restaurant qui sent bon, ça se remarque »"},
+      {i:"🎁",t:"Argument cadeau fidélité",d:"Offrir un miniparfum Chogan avec l'addition pour les occasions spéciales. Coût faible, impact énorme sur la fidélité.",q:"« Un cadeau à 5€ qui vaut 50€ en fidélité »"},
+      {i:"👨‍🍳",t:"Argument équipe",d:"Les produits entretien Brilhome réduisent les coûts cuisine de 30-40% vs fournisseurs classiques. Argument ROI immédiat.",q:"« -35% sur votre budget entretien »"},
+      {i:"💰",t:"Argument coût",d:"Calculer en direct : 1 flacon Brilhome pro = 3 flacons classiques. Sur une cuisine professionnelle = économie significative.",q:"« Je fais le calcul avec vous »"},
+      {i:"🤝",t:"Argument sans engagement",d:"Commande à l'unité, livraison rapide. Pas d'engagement minimum. Testez et jugez.",q:"« Commandez 1 flacon, jugez le résultat »"},
+     ]},
+
+    {th:"t5",em:"🏨",cat:"Collabs B2B",nm:"Hôtel / Spa",sl:"Prestige",sv:"Premium",chip:"B2B",r:30,g:185,b:200,
+     hero:{v:"Hôtel",l:"Parfums Grasse · Soins · Ambiance premium"},flow:null,
+     items:[
+      {i:"🌹",t:"Argument positionnement",d:"Proposer des parfums de Grasse (FragWorld) à vos clients = positionnement haut de gamme cohérent avec votre image.",q:"« Grasse dans votre hôtel, le luxe s'explique »"},
+      {i:"🧴",t:"Argument soins spa",d:"Huile d'argan, aloe vera, bave d'escargot — soins naturels premium pour vos massages et soins cabine.",q:"« Des soins naturels premium pour votre spa »"},
+      {i:"🏠",t:"Argument entretien",d:"Gamme Brilhome professionnelle pour l'entretien des chambres et espaces communs. Certifiée, biodégradable, efficace.",q:"« Nettoyage pro, certification verte »"},
+      {i:"🎁",t:"Argument boutique",d:"Revendre les parfums Chogan dans votre boutique hôtel ou en miniatures dans les chambres. Marge + expérience client.",q:"« La miniature dans la chambre, le flacon à emporter »"},
+      {i:"💆",t:"Argument bien-être",d:"Compléments alimentaires, huiles essentielles — complètent l'offre bien-être de votre spa de manière naturelle.",q:"« Le bien-être de l'intérieur »"},
+      {i:"📋",t:"Argument sur mesure",d:"Je crée un programme personnalisé selon vos besoins : quels produits, comment les intégrer, formation du personnel.",q:"« Un programme sur mesure pour votre établissement »"},
+     ]},
+
+    {th:"t1",em:"🏢",cat:"Collabs B2B",nm:"Entreprise / Comité d'Entreprise",sl:"Volume",sv:"Groupe",chip:"B2B",r:80,g:130,b:255,
+     hero:{v:"CE",l:"Cadeaux collaborateurs · Volume · Fidélité"},flow:null,
+     items:[
+      {i:"🎁",t:"Argument cadeaux",d:"Les coffrets Chogan (parfum + soin) sont des cadeaux d'entreprise parfaits pour Noël, ancienneté, performance. Budget maîtrisé.",q:"« Le cadeau d'entreprise premium à prix raisonnable »"},
+      {i:"💰",t:"Argument budget CE",d:"Rapport qualité-prix imbattable pour les CE : parfum de Grasse à 29€ vs 80-150€ en boutique. Le budget va plus loin.",q:"« 3x plus de cadeaux pour le même budget »"},
+      {i:"👥",t:"Argument volume",d:"Commandes groupées avec remise volume. Je peux livrer individuellement chaque collaborateur avec son prénom sur le coffret.",q:"« Livraison individuelle avec nom sur le coffret »"},
+      {i:"🤝",t:"Argument partenariat annuel",d:"Un partenariat annuel CE Chogan : Noël, fête des mères, Saint-Valentin, arrivées... Je gère tout, vous validez.",q:"« Je m'occupe de tout, vous validez »"},
+      {i:"🌿",t:"Argument RSE",d:"Produits naturels, certifiés bio, non testés sur les animaux. Cohérent avec les politiques RSE des entreprises modernes.",q:"« Aligné avec votre politique RSE »"},
+      {i:"📊",t:"Argument logistique",d:"Commande unique, livraison groupée ou individuelle, facturation simplifiée. Pas de gestion pour vous.",q:"« Une commande, zéro gestion »"},
+     ]},
+
+    {th:"t6",em:"🩺",cat:"Collabs B2B",nm:"Médecin / Kiné / Ostéo",sl:"Bien-être",sv:"Naturel",chip:"B2B",r:180,g:60,b:60,
+     hero:{v:"Santé",l:"Compléments · HE · Soins naturels · Confiance"},flow:null,
+     items:[
+      {i:"🌿",t:"Argument compléments",d:"Vos patients cherchent des solutions naturelles complémentaires. Compléments Chogan (immunité, énergie, sommeil) répondent à ce besoin.",q:"« Ce que vos patients vous demandent »"},
+      {i:"💧",t:"Argument huiles essentielles",d:"HE 100% pures — lavande, tea tree, eucalyptus. Utilisées en aromathérapie complémentaire dans de nombreux cabinets.",q:"« La nature en complément du soin »"},
+      {i:"🧴",t:"Argument soins naturels",d:"Aloe vera, argan, bave d'escargot — produits naturels recommandables pour les soins de la peau et la récupération.",q:"« Des soins naturels que vous pouvez recommander »"},
+      {i:"🤝",t:"Argument confiance",d:"Votre recommandation a une valeur immense. Un patient suit son médecin à 90%. Votre mot suffit à conclure.",q:"« Votre recommandation vaut plus que toute publicité »"},
+      {i:"📋",t:"Argument présentoir",d:"Un petit présentoir en salle d'attente. Vos patients lisent, testent, achètent sans que vous ayez à vendre.",q:"« La salle d'attente travaille pour vous »"},
+      {i:"💰",t:"Argument sans risque",d:"Aucun investissement initial. Je fournis le présentoir, les testeurs et le stock. Vous touchez votre commission automatiquement.",q:"« Zéro investissement, revenu passif immédiat »"},
+     ]},
+
+    {th:"t3",em:"🧘",cat:"Collabs B2B",nm:"Yoga / Bien-être / Coach de vie",sl:"Harmonie",sv:"Naturel",chip:"B2B",r:40,g:200,b:160,
+     hero:{v:"Zen",l:"HE · Compléments · Parfums naturels · Bien-être global"},flow:null,
+     items:[
+      {i:"💧",t:"Argument huiles essentielles",d:"HE pures Chogan utilisées en séance : lavande (relaxation), menthe (concentration), orange (bien-être). Intégration naturelle.",q:"« Vos HE pendant la séance »"},
+      {i:"🌿",t:"Argument alignement",d:"Chogan = naturel, bio, éthique. Parfaitement aligné avec les valeurs de votre pratique et de votre communauté.",q:"« Les mêmes valeurs que votre pratique »"},
+      {i:"⚡",t:"Argument énergie",d:"Compléments adaptogènes (ashwagandha, rhodiola) pour gérer le stress. Recommandés par de nombreux coachs bien-être.",q:"« Ce que votre communauté cherche »"},
+      {i:"🌹",t:"Argument sensorialité",d:"Diffuser un parfum Chogan avant/pendant la séance. L'olfactif est le sens le plus puissant pour créer une ambiance.",q:"« L'ambiance olfactive transforme la séance »"},
+      {i:"👥",t:"Argument communauté",d:"Votre communauté vous fait confiance. Une recommandation organique sur vos réseaux génère des ventes immédiates.",q:"« Post Instagram = 20 commandes »"},
+      {i:"🎁",t:"Argument kit bien-être",d:"Créer un kit 'Bien-être' avec HE + complément + parfum naturel. À vendre lors de vos ateliers ou retraites.",q:"« Le kit bien-être de votre coaching »"},
+     ]},
+
+    {th:"t2",em:"🏠",cat:"Collabs B2B",nm:"Agent Immobilier",sl:"Home staging",sv:"Olfactif",chip:"B2B",r:200,g:80,b:200,
+     hero:{v:"Immo",l:"Home staging olfactif · Cadeaux clients · Ambiance"},flow:null,
+     items:[
+      {i:"🌹",t:"Argument home staging",d:"L'olfactif est le 1er sens que l'acheteur ressent en entrant. Un parfum d'ambiance Chogan lors des visites booste les coups de cœur.",q:"« Le coup de cœur commence par l'odeur »"},
+      {i:"🎁",t:"Argument cadeau signature",d:"Offrir un coffret Chogan lors de la remise des clés = cadeau mémorable et différenciant. Votre client se souvient de vous.",q:"« La remise de clés qu'ils n'oublieront jamais »"},
+      {i:"💰",t:"Argument cadeau clé",d:"Un coffret parfum à 29-60€ pour un achat immobilier à 200K€+. ROI de l'image indiscutable, coût marginal.",q:"« 50€ pour fidéliser un client à vie »"},
+      {i:"🏡",t:"Argument visites",d:"Diffuseurs Chogan dans les biens en vente/location. Crée une atmosphère chaleureuse qui accélère les décisions.",q:"« Une maison qui sent bon se vend 20% plus vite »"},
+      {i:"👥",t:"Argument réseau",d:"Vos clients satisfaits parlent. Un cadeau Chogan déclenche systématiquement la conversation et les recommandations.",q:"« Un cadeau qui génère du bouche-à-oreille »"},
+      {i:"🤝",t:"Argument partenariat",d:"Partenariat exclusif : vous êtes le seul agent de votre secteur à offrir Chogan. Différenciation forte et mémorable.",q:"« L'agent qui offre Chogan, on s'en souvient »"},
+     ]},
+  ]}
+
+];
+
+/* ── WALLET ENGINE ── */
+let curCat=0, curCard=0;
+let elevUpdater=null;
+const PEEK=15;
+
+function buildPills(){
+  const nav=document.getElementById('pill-nav');
+  if(nav.children.length) return; // already built
+  CATEGORIES.forEach((cat,i)=>{
+    const p=document.createElement('div');
+    p.className='pill'+(i===0?' active':'');
+    p.id='pill-'+i;
+    p.innerHTML=cat.em+' '+cat.nm;
+    p.onclick=()=>switchCat(i);
+    nav.appendChild(p);
+  });
+  buildCards(0);
+  tick();
+}
+
+function switchCat(idx){
+  curCat=idx; curCard=0;
+  // Update pills
+  document.querySelectorAll('.pill').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  // Update title
+  const cat=CATEGORIES[idx];
+  document.getElementById('wh-title').textContent=cat.nm;
+  // Rebuild cards
+  buildCards(idx);
+}
+
+function buildCards(catIdx){
+  const cat=CATEGORIES[catIdx];
+  const se=document.getElementById('stack');
+  const de=document.getElementById('dots');
+  // Clear existing cards and elevator (not the elevator wrapper)
+  Array.from(se.querySelectorAll('.wcard')).forEach(el=>el.remove());
+  Array.from(se.querySelectorAll('.elev-wrap')).forEach(el=>el.remove());
+  de.innerHTML='';
+
+  cat.cards.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.className='wcard '+c.th;
+    el.id='wc'+i;
+    el.innerHTML=`<div class="ci">
+      <div class="cb1" style="width:150px;height:150px;background:rgba(${c.r},${c.g},${c.b},.9);top:-45px;right:-35px"></div>
+      <div class="cb2" style="width:75px;height:75px;background:rgba(${c.r},${c.g},${c.b},.8);bottom:-15px;left:25px"></div>
+      <div class="ct">
+        <div><div class="ct-c">${c.cat}</div><div class="ct-n">${c.nm}</div></div>
+        <div class="ct-i">${c.em}</div>
+      </div>
+      <div class="cbx">
+        <div><div class="cb-sl">${c.sl}</div><div class="cb-sv">${c.sv}</div></div>
+        <div class="cb-ch"><div class="cd" style="background:rgba(${c.r},${c.g},${c.b},.9)"></div>${c.chip}</div>
+      </div>
+    </div>`;
+    el.addEventListener('click',()=>{
+      if(i===curCard && Math.abs(0)<6) openCard(c);
+      else goCard(i);
+    });
+    se.appendChild(el);
+    const d=document.createElement('div');
+    d.className='dot'+(i===0?' on':'');
+    d.id='dt'+i;
+    d.onclick=()=>goCard(i);
+    de.appendChild(d);
+  });
+
+  // Build elevator
+  buildElev(se, cat.cards.length);
+  posCards(false);
+}
+
+function posCards(anim=true){
+  const cat=CATEGORIES[curCat];
+  cat.cards.forEach((_,i)=>{
+    const el=document.getElementById('wc'+i); if(!el) return;
+    const diff=i-curCard;
+    let top,scale,opacity;
+    if(diff===0){top=14;scale=1;opacity=1}
+    else if(diff<0){top=-210;scale=1;opacity=0}
+    else{top=14+diff*PEEK;scale=1-diff*.04;opacity=diff<=7?Math.max(0.2,1-diff*.14):0}
+    el.style.transition=anim?'top .42s cubic-bezier(.4,0,.2,1),transform .42s,opacity .32s':'none';
+    el.style.top=top+'px';el.style.transform=`scale(${scale})`;el.style.opacity=opacity;
+    el.style.zIndex=20-Math.abs(i-curCard);
+    const d=document.getElementById('dt'+i);
+    if(d) d.className='dot'+(i===curCard?' on':'');
+  });
+  if(elevUpdater) elevUpdater(curCard, CATEGORIES[curCat].cards.length);
+}
+
+function goCard(i){
+  const n=CATEGORIES[curCat].cards.length;
+  if(i<0||i>=n)return;
+  curCard=i; posCards(true);
+}
+
+/* ── ELEVATOR ── */
+function buildElev(stackEl, total){
+  const wrap=document.createElement('div');
+  wrap.className='elev-wrap';
+  wrap.id='elev-wrap';
+  wrap.innerHTML=`<div class="elev-track" id="elev-track"><div class="elev-thumb" id="elev-thumb"></div></div>`;
+  stackEl.appendChild(wrap);
+
+  let active=false;
+
+  function getIdx(clientY){
+    const track=document.getElementById('elev-track');
+    if(!track) return 0;
+    const rect=track.getBoundingClientRect();
+    const pct=Math.max(0,Math.min(1,(clientY-rect.top)/rect.height));
+    return Math.round(pct*(total-1));
+  }
+
+  function updateThumb(cur,tot){
+    const thumb=document.getElementById('elev-thumb');
+    const track=document.getElementById('elev-track');
+    if(!thumb||!track||tot<=1) return;
+    const h=track.getBoundingClientRect().height-46;
+    thumb.style.top=(cur/Math.max(1,tot-1)*h)+'px';
+  }
+
+  wrap.addEventListener('touchstart',e=>{
+    e.stopPropagation();active=true;
+    goCard(getIdx(e.touches[0].clientY));
+  },{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    if(!active)return;e.stopPropagation();
+    goCard(getIdx(e.touches[0].clientY));
+  },{passive:true});
+  wrap.addEventListener('touchend',()=>{active=false;},{passive:true});
+
+  elevUpdater=updateThumb;
+  updateThumb(0,total);
+}
+
+/* ── DETAIL SHEET ── */
+const SESSION={cards:[],sent:false};
+
+function trackCard(card){
+  const now=new Date();
+  SESSION.cards.push({em:card.em,nm:card.nm,time:now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
+}
+
+function openCard(c){
+  trackCard(c);
+  const {r,g,b}=c;
+  const ib=`rgba(${r},${g},${b},.15)`;
+  const ic=`rgb(${Math.min(255,r+60)},${Math.min(255,g+60)},${Math.min(255,b+60)})`;
+  let flow='';
+  if(c.flow) flow=`<div class="fpills">${c.flow.map((s,i)=>`<span class="fp">${s}</span>${i<c.flow.length-1?'<span class="fa">›</span>':''}`).join('')}</div>`;
+  const rows=c.items.map((it,i)=>`
+    <div class="si" style="animation-delay:${i*.05}s">
+      <div class="sii" style="background:${ib};color:${ic}">${it.i}</div>
+      <div><div class="sit">${it.t}</div><div class="sid">${it.d}</div>
+      ${it.q?`<div class="siq" style="border-color:${ic}">${it.q}</div>`:''}</div>
+    </div>`).join('');
+  document.getElementById('detail-content').innerHTML=`
+    <div style="position:sticky;top:0;background:var(--bg);z-index:10;padding:calc(12px + var(--st)) 18px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid rgba(255,255,255,.08)">
+      <button onclick="cls()" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.18);border-radius:20px;padding:8px 16px;color:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">← Retour</button>
+      <button onclick="cls()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit">✕</button>
+    </div>
+    <div class="shcard ${c.th}" style="margin:14px 18px 0">
+      <div class="cb1" style="width:130px;height:130px;background:rgba(${r},${g},${b},.9);top:-30px;right:-30px"></div>
+      <div class="sht"><div class="shname">${c.nm}</div><div class="shemo">${c.em}</div></div>
+      <div class="shhv">${c.hero.v}</div><div class="shhl">${c.hero.l}</div>
+    </div>${flow}<div style="padding:10px 18px calc(40px + var(--sb)) 18px">${rows}</div>`;
+
+  // Show detail screen
+  document.getElementById('detail').classList.remove('hidden');
+  document.getElementById('main').classList.add('hidden');
+  // Reset scroll to top
+  document.getElementById('detail').scrollTop=0;
+}
+
+function renderCardPage(){
+  const c = window._curCard;
+  if(!c) return;
+  const idx = window._curIdx;
+  const it = c.items[idx];
+  const {r,g,b} = c;
+  const ib = `rgba(${r},${g},${b},.15)`;
+  const ic = `rgb(${Math.min(255,r+60)},${Math.min(255,g+60)},${Math.min(255,b+60)})`;
+
+  let flow = '';
+  if(c.flow) flow = `<div class="fpills">${c.flow.map((s,i)=>`<span class="fp">${s}</span>${i<c.flow.length-1?'<span class="fa">›</span>':''}`).join('')}</div>`;
+
+  document.getElementById('sc').innerHTML = `
+    <div class="shcard ${c.th}">
+      <div class="cb1" style="width:130px;height:130px;background:rgba(${r},${g},${b},.9);top:-30px;right:-30px"></div>
+      <div class="sht"><div class="shname">${c.nm}</div><div class="shemo">${c.em}</div></div>
+      <div class="shhv">${c.hero.v}</div><div class="shhl">${c.hero.l}</div>
+    </div>
+    ${flow}
+    <div class="shbody" style="padding:20px 22px 8px">
+      <div style="display:flex;align-items:flex-start;gap:14px;animation:up .3s both">
+        <div class="sii" style="background:${ib};color:${ic};width:48px;height:48px;font-size:14px">${it.i}</div>
+        <div style="flex:1">
+          <div class="sit" style="font-size:17px;margin-bottom:6px">${it.t}</div>
+          <div class="sid" style="font-size:14px;line-height:1.6">${it.d}</div>
+          ${it.q?`<div class="siq" style="border-color:${ic};font-size:13px;padding:8px 14px;margin-top:10px">${it.q}</div>`:''}
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px calc(20px + var(--sb));border-top:0.5px solid rgba(255,255,255,.08);flex-shrink:0;background:#1a1a26">
+      <button onclick="prevPage()" ${idx===0?'disabled':''} style="
+        padding:12px 20px;border-radius:24px;
+        background:${idx===0?'rgba(255,255,255,.05)':'rgba(255,255,255,.12)'};
+        border:0.5px solid rgba(255,255,255,.2);
+        color:${idx===0?'rgba(255,255,255,.3)':'#fff'};
+        font-size:14px;font-weight:600;
+        cursor:${idx===0?'default':'pointer'};
+        font-family:inherit;">← Précédent</button>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);font-weight:600">${idx+1} / ${c.items.length}</div>
+      <button onclick="nextPage()" ${idx===c.items.length-1?'disabled':''} style="
+        padding:12px 20px;border-radius:24px;
+        background:${idx===c.items.length-1?'rgba(255,255,255,.05)':'rgba(201,168,76,.8)'};
+        border:0.5px solid rgba(255,255,255,.2);
+        color:${idx===c.items.length-1?'rgba(255,255,255,.3)':'#fff'};
+        font-size:14px;font-weight:600;
+        cursor:${idx===c.items.length-1?'default':'pointer'};
+        font-family:inherit;">Suivant →</button>
+    </div>
+  `;
+}
+
+function prevPage(){
+  if(window._curIdx > 0){ window._curIdx--; renderCardPage(); }
+}
+function nextPage(){
+  if(window._curIdx < window._curCard.items.length - 1){ window._curIdx++; renderCardPage(); }
+}
+
+function cls(){
+  document.getElementById('detail').classList.add('hidden');
+  document.getElementById('main').classList.remove('hidden');
+}
+
+// Close sheet: swipe down on header
+const dshHeader=document.getElementById('dsheet');
+let _dsy=0;
+if(dshHeader){
+  dshHeader.addEventListener('touchstart',e=>{_dsy=e.touches[0].clientY;},{passive:true});
+  dshHeader.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-_dsy>60)cls();},{passive:true});
+}
+try{document.getElementById('dov').addEventListener('touchend',cls,{passive:true});}catch(e){}
+
+/* ── CLOCK / TOAST ── */
+function tick(){
+  const t=new Date();
+  const s=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  try{document.getElementById('clk').textContent=s;}catch(e){}
+}
+tick();setInterval(tick,15000);
+
+let _tt=null;
+function toast(msg,type='in'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='show t-'+type;
+  clearTimeout(_tt);_tt=setTimeout(()=>el.className='',3200);
+}
+
+/* ── INFO ── */
+function showInfo(){
+  const old=document.getElementById('info-ov'); if(old){old.remove();return;}
+  const ov=document.createElement('div');
+  ov.id='info-ov';
+  ov.style.cssText='position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.78);backdrop-filter:blur(12px);display:flex;align-items:flex-end;justify-content:center';
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  ov.innerHTML=`<div style="background:#1a1a26;border-radius:26px 26px 0 0;padding:26px 22px calc(32px + var(--sb));width:100%;max-width:480px;border-top:0.5px solid rgba(255,255,255,.1)">
+    <div style="width:36px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin:0 auto 22px"></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:42px;margin-bottom:10px">💼</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Wallet Chogan</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase">Guide de vente professionnel</div>
+    </div>
+    <div style="background:rgba(201,168,76,.08);border:0.5px solid rgba(201,168,76,.2);border-radius:14px;padding:14px 16px;font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px;line-height:1.7">
+      6 catégories · 6 cartes chacune<br>
+      Utilisez les <strong style="color:#fff">pills de navigation</strong> en haut pour changer de catégorie.<br>
+      L'<strong style="color:#fff">ascenseur droit</strong> fait défiler les cartes.<br>
+      Appuyez sur une carte pour voir le détail.
+    </div>
+    <button onclick="document.getElementById('info-ov').remove()" style="width:100%;padding:14px;border-radius:14px;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.12);color:#fff;font-size:14px;cursor:pointer;font-family:inherit">Fermer</button>
+  </div>`;
+  document.getElementById('main').appendChild(ov);
+}
+
+/* ── SESSION REPORT ── */
+async function sendReport(){
+  if(SESSION.sent||SESSION.cards.length===0)return;
+  if(!LS.g('ok'))return;
+  SESSION.sent=true;
+  const consultant=getName();
+  const now=new Date();
+  const date=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const time=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const lines=SESSION.cards.map((c,i)=>(i+1)+'. '+c.em+' '+c.nm+' — '+c.time).join('\n');
+  const body=`📊 RAPPORT SESSION — Wallet Chogan\n\n👤 Consultante : ${consultant}\n📅 Date : ${date}\n🕐 Fin : ${time}\n📋 Cartes : ${SESSION.cards.length}\n\n${lines}\n\n— Wallet Chogan`;
+  try{
+    await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({access_key:W3F_KEY,to:ADMIN_EMAIL,subject:'[Wallet Chogan] Rapport — '+consultant+' ('+SESSION.cards.length+' cartes)',message:body,from_name:'Wallet Chogan',botcheck:''})});
+  }catch(e){}
+}
+try{
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')sendReport();});
+  window.addEventListener('pagehide',sendReport);
+  window.addEventListener('beforeunload',sendReport);
+}catch(e){}
+
+/* ── KEY LISTENERS ── */
+try{document.getElementById('uc').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock('uc');});}catch(e){}
+try{document.getElementById('pc').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock('pc');});}catch(e){}
+
+/* ── START ── */
+init();
+</script>
+</body>
+</html>
