@@ -71,10 +71,10 @@ export default function Home() {
 
           {/* Bonjour + heure */}
           <div style={S.greetBlock}>
-            <div style={S.bigTime}>{timeStr}</div>
             <div style={S.greetLine}>
               Bonjour, <strong>{user?.firstName || user?.displayName}</strong> {roleInfo.icon}
             </div>
+            <div style={S.greetDate}>{dateStr}</div>
           </div>
 
           {/* Annonces — grande zone scroll vertical */}
@@ -177,8 +177,8 @@ const S = {
   newsPage: { flex: 1, overflowY: 'auto' },
 
   greetBlock: { padding: '20px 18px 16px', borderBottom: '1px solid var(--or-border)' },
-  bigTime: { fontFamily: 'var(--font-display)', fontSize: 52, color: 'var(--taupe)', letterSpacing: '0.04em', lineHeight: 1 },
-  greetLine: { fontSize: 15, color: 'var(--text-muted)', marginTop: 8 },
+  greetLine: { fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--taupe)', letterSpacing: '0.05em' },
+  greetDate: { fontSize: 12, color: 'var(--text-muted)', marginTop: 6, textTransform: 'capitalize' },
 
   // Annonces
   annSection: { padding: '18px 16px 0' },
