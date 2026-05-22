@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#C9A84C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Chogan Coach">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Coach Objections · Chogan</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#C9A84C;--gold-light:#E8C875;--gold-dark:#8A6820;
+  --bg:#080810;--surface:#0F0F1A;--surface2:#161626;
+  --text:#F5EDD8;--muted:#7A6E58;--green:#4CAF82;--red:#E85C4C;
+}
+html{height:100%;}
+body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* SPLASH */
+#splash{align-items:center;justify-content:center;gap:24px;}
+.splash-logo{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold),var(--gold-dark));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:8px;}
+.splash-sub{font-size:.65rem;letter-spacing:6px;color:var(--muted);text-transform:uppercase;}
+.splash-loader{width:120px;height:2px;background:rgba(201,168,76,.15);border-radius:2px;overflow:hidden;margin-top:40px;}
+.loader-bar{height:100%;width:0;background:linear-gradient(90deg,var(--gold-dark),var(--gold-light));
+  border-radius:2px;animation:loadFill 1.8s ease forwards;}
+@keyframes loadFill{to{width:100%;}}
+
+/* LOCK */
+#lock{align-items:center;justify-content:center;padding:40px 24px 60px;}
+.lock-inner{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;}
+.lock-brand{text-align:center;margin-bottom:32px;}
+.brand-name{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:6px;}
+.brand-sub{font-size:.55rem;letter-spacing:5px;color:var(--muted);text-transform:uppercase;margin-top:4px;}
+.lock-icon{font-size:2.5rem;margin-bottom:16px;}
+.lock-title{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:8px;text-align:center;}
+.lock-desc{font-size:.8rem;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:28px;max-width:300px;}
+
+.tabs{display:flex;width:100%;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:24px;border:1px solid rgba(201,168,76,.1);}
+.tab{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;
+  font-size:.7rem;letter-spacing:1px;cursor:pointer;border-radius:8px;text-transform:uppercase;transition:all .2s;}
+.tab.active{background:var(--surface2);color:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+.tab-content{display:none;width:100%;flex-direction:column;align-items:center;}
+.tab-content.active{display:flex;}
+
+.field{width:100%;margin-bottom:12px;}
+.field input{width:100%;padding:14px 16px;background:var(--surface);
+  border:1px solid rgba(201,168,76,.2);border-radius:12px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:rgba(201,168,76,.6);}
+.field input::placeholder{color:var(--muted);}
+
+.btn-gold{width:100%;padding:15px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--gold-dark),var(--gold),var(--gold-light));
+  color:#0A0A0F;font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;
+  letter-spacing:2px;cursor:pointer;transition:all .25s;text-transform:uppercase;margin-top:4px;}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,.35);}
+.btn-gold:disabled{opacity:.5;transform:none;cursor:not-allowed;}
+
+.btn-outline{width:100%;padding:14px;border:1px solid rgba(201,168,76,.35);border-radius:12px;
+  background:transparent;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:.85rem;
+  font-weight:500;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;margin-top:4px;}
+.btn-outline:hover{background:rgba(201,168,76,.08);}
+
+.code-input{text-align:center;font-size:1.2rem;letter-spacing:6px;font-weight:600;text-transform:uppercase;}
+.msg{font-size:.75rem;text-align:center;padding:10px 14px;border-radius:8px;margin-top:10px;display:none;width:100%;}
+.msg.error{background:rgba(232,92,76,.15);color:var(--red);border:1px solid rgba(232,92,76,.3);}
+.msg.success{background:rgba(76,175,130,.15);color:var(--green);border:1px solid rgba(76,175,130,.3);}
+.msg.info{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.2);}
+
+/* SUCCESS */
+#success{align-items:center;justify-content:center;padding:40px 24px 60px;}
+.success-inner{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;}
+.success-icon{font-size:3.5rem;margin-bottom:20px;}
+.success-title{font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:8px;text-align:center;color:var(--gold);}
+.success-desc{font-size:.85rem;color:var(--muted);text-align:center;line-height:1.7;margin-bottom:28px;}
+.success-box{background:var(--surface2);border:1px solid rgba(201,168,76,.2);border-radius:12px;
+  padding:18px;margin-bottom:24px;width:100%;}
+.success-box p{font-size:.82rem;color:var(--text);line-height:1.7;}
+.success-box strong{color:var(--gold);}
+
+/* APP */
+#app{background:var(--bg);}
+.app-header{padding:16px 24px 12px;background:rgba(8,8,16,.95);
+  border-bottom:1px solid rgba(201,168,76,.1);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;}
+.app-brand{font-family:'Playfair Display',serif;font-size:1rem;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;}
+.logout-btn{background:none;border:1px solid rgba(201,168,76,.25);color:var(--muted);
+  padding:6px 14px;border-radius:20px;font-size:.6rem;letter-spacing:2px;
+  cursor:pointer;text-transform:uppercase;transition:all .2s;}
+.logout-btn:hover{color:var(--gold);}
+
+.app-body{padding:24px;max-width:1400px;margin:0 auto;width:100%;}
+.app-headline{text-align:center;padding:8px 0 24px;}
+.app-headline h1{font-family:'Playfair Display',serif;font-size:1.6rem;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold),var(--gold-dark));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.app-headline p{font-size:.72rem;color:var(--muted);letter-spacing:1px;}
+
+.progress-row{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+.progress-track{flex:1;height:3px;background:rgba(201,168,76,.12);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold-light));border-radius:2px;transition:width .4s ease;}
+.progress-label{font-size:.65rem;color:var(--muted);white-space:nowrap;letter-spacing:1px;}
+.reset-link{font-size:.6rem;color:var(--gold);opacity:.6;cursor:pointer;letter-spacing:1px;background:none;border:none;text-decoration:underline;}
+
+.cards-grid{display:grid;gap:12px;grid-template-columns:1fr;}
+@media(min-width:480px){.cards-grid{grid-template-columns:repeat(2,1fr);gap:14px;}}
+@media(min-width:768px){.cards-grid{grid-template-columns:repeat(3,1fr);gap:18px;}}
+@media(min-width:1100px){.cards-grid{grid-template-columns:repeat(4,1fr);gap:22px;}}
+@media(min-width:1400px){.cards-grid{grid-template-columns:repeat(5,1fr);gap:24px;}}
+
+.card-wrap{perspective:1000px;height:200px;cursor:pointer;}
+@media(min-width:768px){.card-wrap{height:220px;}}
+@media(min-width:1100px){.card-wrap{height:240px;}}
+
+.card-inner{position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);}
+.card-wrap.flipped .card-inner{transform:rotateY(180deg);}
+.card-face{position:absolute;inset:0;border-radius:16px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;padding:18px;overflow:hidden;}
+@media(min-width:768px){.card-face{padding:22px;}}
+
+.card-front{background:linear-gradient(145deg,#13132A,#0E0E1E);
+  border:1px solid rgba(201,168,76,.2);box-shadow:0 4px 20px rgba(0,0,0,.5);}
+.card-front::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5;}
+.card-meta{display:flex;justify-content:space-between;margin-bottom:8px;}
+.card-cat{font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.card-num{font-family:'Playfair Display',serif;font-size:.6rem;color:var(--gold-dark);}
+.card-objection{font-family:'Playfair Display',serif;font-size:.92rem;font-style:italic;
+  color:var(--text);line-height:1.5;flex:1;}
+@media(min-width:768px){.card-objection{font-size:1rem;}}
+.card-quote{color:var(--gold);font-style:normal;font-size:1.3rem;line-height:0;vertical-align:-3px;}
+.card-tap{display:flex;align-items:center;gap:6px;margin-top:10px;
+  font-size:.55rem;letter-spacing:2px;color:var(--gold);opacity:.45;text-transform:uppercase;}
+.card-tap::before{content:'';flex:1;height:1px;background:rgba(201,168,76,.15);}
+
+.card-back{background:linear-gradient(145deg,#152214,#101B0C);
+  border:1px solid rgba(76,175,130,.22);box-shadow:0 4px 20px rgba(0,0,0,.5);
+  transform:rotateY(180deg);}
+.card-back::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#4CAF82,transparent);opacity:.4;}
+.card-answer-lbl{font-size:.52rem;letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:8px;}
+.card-solution{font-family:'Playfair Display',serif;font-size:.9rem;color:var(--text);line-height:1.55;flex:1;}
+@media(min-width:768px){.card-solution{font-size:.95rem;}}
+.card-back-tap{display:flex;align-items:center;gap:6px;margin-top:10px;
+  font-size:.5rem;letter-spacing:2px;color:rgba(76,175,130,.4);text-transform:uppercase;}
+.card-back-tap::before{content:'';flex:1;height:1px;background:rgba(76,175,130,.12);}
+
+.card-wrap{opacity:0;transform:translateY(14px);animation:cardIn .35s ease forwards;}
+@keyframes cardIn{to{opacity:1;transform:translateY(0);}}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--surface2);border:1px solid rgba(201,168,76,.3);border-radius:10px;
+  padding:10px 20px;font-size:.78rem;color:var(--text);z-index:9999;
+  transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" class="screen active">
+  <div class="splash-logo">CHOGAN</div>
+  <div class="splash-sub">Coach Objections</div>
+  <div class="splash-loader"><div class="loader-bar"></div></div>
+</div>
+
+<!-- LOCK -->
+<div id="lock" class="screen">
+  <div class="lock-inner">
+    <div class="lock-brand">
+      <div class="brand-name">CHOGAN</div>
+      <div class="brand-sub">Coach Objections</div>
+    </div>
+    <div class="lock-icon">🔒</div>
+    <h2 class="lock-title">Accès réservé</h2>
+    <p class="lock-desc">Espace réservé aux consultantes Chogan autorisées.</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('demande')">✉ Demander l'accès</button>
+      <button class="tab" onclick="switchTab('code')">🔑 J'ai mon code</button>
+    </div>
+
+    <div class="tab-content active" id="tab-demande">
+      <div class="field"><input type="text" id="inp-prenom" placeholder="Votre prénom"></div>
+      <div class="field"><input type="text" id="inp-nom" placeholder="Votre nom de famille"></div>
+      <div class="field"><input type="email" id="inp-email" placeholder="Votre adresse email"></div>
+      <button class="btn-gold" id="btn-send" onclick="envoyerDemande()">✉ ENVOYER MA DEMANDE</button>
+      <div class="msg" id="msg-demande"></div>
+    </div>
+
+    <div class="tab-content" id="tab-code">
+      <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:16px;line-height:1.6;">
+        Entrez le code reçu de votre administratrice.
+      </p>
+      <div class="field"><input type="text" id="inp-code" placeholder="VOTRE CODE" class="code-input" maxlength="12" oninput="this.value=this.value.toUpperCase()"></div>
+      <button class="btn-gold" onclick="validerCode()">DÉBLOQUER →</button>
+      <div class="msg" id="msg-code"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="success" class="screen">
+  <div class="success-inner">
+    <div class="success-icon">✅</div>
+    <h2 class="success-title">Demande envoyée !</h2>
+    <p class="success-desc">Votre administratrice a reçu votre demande. Elle vous contactera avec votre code d'accès dès validation.</p>
+    <div class="success-box">
+      <p>📱 Dès réception de votre code, revenez ici et cliquez <strong>"J'ai mon code"</strong>.</p>
+    </div>
+    <button class="btn-outline" onclick="show('lock');switchTab('code')">🔑 Entrer mon code</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="screen">
+  <div class="app-header">
+    <div class="app-brand">CHOGAN</div>
+    <button class="logout-btn" onclick="logout()">⎋ Quitter</button>
+  </div>
+  <div class="app-body">
+    <div class="app-headline">
+      <h1>20 Objections Clés</h1>
+      <p>Cliquez sur une carte pour révéler la réponse idéale</p>
+    </div>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-label" id="prog-label">0 / 20</div>
+      <button class="reset-link" onclick="resetCards()">↺ Reset</button>
+    </div>
+    <div class="cards-grid" id="cards-grid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const W3F_KEY   = "eedbc8ee-c8ab-4c5b-a04a-db28b4e472e3";
+const ADM_EMAIL = "ouadi.nej@gmail.com";
+const ACC_CODE  = "CHOGAN2025";
+
+const CARDS = [
+  {n:"01",cat:"Prix",       q:"C'est trop cher pour moi.",            a:"C'est un extrait à 30%. Un flacon 100ml dure 4 mois : moins de 25 cts par jour pour l'excellence italienne."},
+  {n:"02",cat:"Confiance",  q:"Je ne connais pas la marque.",          a:"Nous ne faisons pas de pub TV. Notre seule pub c'est votre satisfaction et le bouche-à-oreille."},
+  {n:"03",cat:"Tenue",      q:"Le parfum ne tient pas.",               a:"Vaporisez sur vos vêtements ou utilisez notre lait corps assorti pour fixer l'odeur 24h."},
+  {n:"04",cat:"Légalité",   q:"C'est de la copie ?",                   a:"Non, c'est une inspiration légale. Nous achetons les essences chez Fragworld, le même fournisseur que les grandes marques."},
+  {n:"05",cat:"Choix",      q:"Il y a trop de références.",            a:"Dites-moi ce que vous portez d'habitude, je vais vous trouver son jumeau olfactif en quelques secondes."},
+  {n:"06",cat:"Échantillon",q:"Je veux un échantillon gratuit.",       a:"Le format 15ml est conçu pour ça. Vivez avec le parfum plusieurs jours avant de choisir votre grand format."},
+  {n:"07",cat:"Comparaison",q:"Ça ressemble aux parfums de supermarché ?",a:"Pas du tout. Nos essences de Grasse ont une tenue et un sillage dignes des plus grandes maisons."},
+  {n:"08",cat:"Puissance",  q:"C'est trop fort pour moi.",             a:"C'est un extrait ! Une seule pression suffit. Vous en utiliserez bien moins qu'avec une EDT classique."},
+  {n:"09",cat:"Économie",   q:"J'attends les soldes.",                 a:"Nous sommes en prix direct usine toute l'année. Nos prix sont déjà inférieurs à n'importe quelle solde."},
+  {n:"10",cat:"Origine",    q:"Je préfère les magasins.",              a:"En magasin vous payez 80% de marketing. Chez Chogan vous payez 100% de jus provenant de Grasse."},
+  {n:"11",cat:"Alcool",     q:"Ça sent trop l'alcool au début.",       a:"C'est normal, l'alcool transporte l'essence. Attendez 30 secondes pour découvrir les 30% d'huiles essentielles."},
+  {n:"12",cat:"Éthique",    q:"Est-ce testé sur les animaux ?",        a:"Non, Chogan respecte les normes européennes interdisant les tests sur les animaux."},
+  {n:"13",cat:"Naturel",    q:"Est-ce que c'est bio ?",                a:"Non certifié bio, mais nous minimisons les fixateurs chimiques au profit d'essences naturelles de haute qualité."},
+  {n:"14",cat:"Routine",    q:"J'ai déjà mon parfum depuis 10 ans.",   a:"Votre nez s'y est habitué. Essayez une alternative pour vos week-ends ou soirées, vous serez surprise !"},
+  {n:"15",cat:"Cadeau",     q:"J'ai peur de me tromper.",              a:"Avec nos prix, offrez un coffret complet pour le prix d'un seul parfum en grande parfumerie."},
+  {n:"16",cat:"Conclusion", q:"Bon, je vais réfléchir.",               a:"Gardez ce testeur sur votre poignet. Si demain vous le sentez encore et qu'il vous plaît, rappelez-moi !"},
+  {n:"17",cat:"Budget",     q:"Je n'ai pas de budget ce mois-ci.",     a:"Je peux mettre de côté un format 15ml à petit prix pour ne pas manquer votre fragrance préférée."},
+  {n:"18",cat:"Luxe",       q:"Si c'est pas cher, c'est bas de gamme.",a:"Au restaurant vous payez le décor. Ici vous payez le plat. La qualité du jus est identique aux grandes maisons."},
+  {n:"19",cat:"Flacon",     q:"Le design du flacon est trop simple.",  a:"Le luxe est à l'intérieur. En uniformisant nos flacons, tout votre argent va dans l'essence, pas dans le verre."},
+  {n:"20",cat:"Intensité",  q:"Le parfum me donne mal à la tête.",     a:"C'est souvent dû aux fixateurs des grandes marques. Nos extraits sont plus naturels — essayez sur les chevilles."},
+];
+
+const KEY = 'cg_auth_v1';
+let flipped = new Set();
+function isAuth(){return localStorage.getItem(KEY)==='true';}
+function setAuth(){localStorage.setItem(KEY,'true');}
+function clearAuth(){localStorage.removeItem(KEY);}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.tab')[tab==='demande'?0:1].classList.add('active');
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  setTimeout(()=>{
+    if(isAuth()){buildCards();show('app');}
+    else show('lock');
+  },2000);
+});
+
+async function envoyerDemande(){
+  const prenom = document.getElementById('inp-prenom').value.trim();
+  const nom    = document.getElementById('inp-nom').value.trim();
+  const email  = document.getElementById('inp-email').value.trim();
+  const msg    = document.getElementById('msg-demande');
+  const btn    = document.getElementById('btn-send');
+
+  if(!prenom||!nom){showMsg(msg,'error','Veuillez renseigner votre prénom et nom.');return;}
+  if(!email||!email.includes('@')){showMsg(msg,'error','Adresse email invalide.');return;}
+
+  btn.disabled=true;
+  btn.textContent='Envoi en cours...';
+  showMsg(msg,'info','Envoi de votre demande...');
+
+  try{
+    const res = await fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify({
+        access_key : W3F_KEY,
+        subject    : '🔔 Demande accès Coach Chogan — '+prenom+' '+nom,
+        from_name  : prenom+' '+nom,
+        email      : ADM_EMAIL,
+        replyto    : email,
+        message    : 'Prénom : '+prenom+'\nNom : '+nom+'\nEmail : '+email+'\n\n✅ CODE À ENVOYER : '+ACC_CODE
+      })
+    });
+    const data = await res.json();
+    if(data.success){
+      show('success');
+    } else {
+      throw new Error(data.message||'Erreur');
+    }
+  } catch(err){
+    showMsg(msg,'error','Erreur : '+err.message+'. Contactez votre administratrice directement.');
+    btn.disabled=false;
+    btn.textContent='✉ ENVOYER MA DEMANDE';
+  }
+}
+
+function validerCode(){
+  const code = document.getElementById('inp-code').value.trim().toUpperCase();
+  const msg  = document.getElementById('msg-code');
+  if(!code){showMsg(msg,'error','Entrez votre code d\'accès.');return;}
+  if(code===ACC_CODE){
+    showMsg(msg,'success','✓ Code valide ! Accès autorisé.');
+    setAuth();
+    setTimeout(()=>{buildCards();show('app');},800);
+  } else {
+    showMsg(msg,'error','Code incorrect. Vérifiez avec votre administratrice.');
+  }
+}
+
+function logout(){if(confirm('Quitter ?')){clearAuth();show('lock');}}
+
+function buildCards(){
+  flipped.clear();updateProgress();
+  const grid=document.getElementById('cards-grid');
+  grid.innerHTML='';
+  CARDS.forEach((c,i)=>{
+    const wrap=document.createElement('div');
+    wrap.className='card-wrap';
+    wrap.style.animationDelay=(i*0.04)+'s';
+    wrap.innerHTML=`
+      <div class="card-inner">
+        <div class="card-face card-front">
+          <div class="card-meta">
+            <span class="card-cat">${c.cat}</span>
+            <span class="card-num">N°${c.n}</span>
+          </div>
+          <div class="card-objection"><span class="card-quote">"</span>${c.q}<span class="card-quote">"</span></div>
+          <div class="card-tap">Voir la réponse ✦</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-answer-lbl">✓ Réponse idéale</div>
+          <div class="card-solution">${c.a}</div>
+          <div class="card-back-tap">Retourner ↺</div>
+        </div>
+      </div>`;
+    wrap.addEventListener('click',()=>{
+      wrap.classList.toggle('flipped');
+      if(wrap.classList.contains('flipped'))flipped.add(i);else flipped.delete(i);
+      updateProgress();
+    });
+    grid.appendChild(wrap);
+  });
+}
+
+function updateProgress(){
+  const pct=(flipped.size/CARDS.length)*100;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent=flipped.size+' / '+CARDS.length;
+}
+
+function resetCards(){
+  document.querySelectorAll('.card-wrap').forEach(c=>c.classList.remove('flipped'));
+  flipped.clear();updateProgress();
+  toast('Cartes remises à zéro ↺');
+}
+
+function showMsg(el,type,text){el.textContent=text;el.className='msg '+type;el.style.display='block';}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+</body>
+</html>
