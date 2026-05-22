@@ -50,7 +50,7 @@ export default function Login() {
           <div>
             <p style={S.question}>Qui êtes-vous ?</p>
             <div style={S.roleGrid}>
-              {Object.entries(ROLES).map(([key, r]) => (
+              {(['consultante', 'marraine', 'admin']).map(key => { const r = ROLES[key]; return (
                 <button key={key}
                   style={{ ...S.roleCard, borderColor: r.color + '66', background: r.bg }}
                   onClick={() => handleRoleSelect(key)}>
@@ -63,7 +63,7 @@ export default function Login() {
                   </div>
                   <span style={{ color: r.color, fontSize: 18 }}>›</span>
                 </button>
-              ))}
+              )})}
             </div>
           </div>
         )}
