@@ -64,7 +64,7 @@ export default function Home() {
         {/* Bonjour */}
         <div style={S.greet}>
           <span style={S.bigTime}>{timeStr}</span>
-          <span style={S.greetName}>Bonjour, {user?.name || user?.username} 👋</span>
+          <span style={S.greetName}>Bonjour, {user?.firstName || user?.displayName || user?.name} 👋</span>
         </div>
       </div>
 
