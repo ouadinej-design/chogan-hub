@@ -489,24 +489,48 @@ function Evenements({onToast}){
 // ── VENTE
 function Vente({user,sales,setSales,onToast}){
   const [editId,setEditId]=useState(null);
-  const [f,setF]=useState({consultant:'',client:'',prod:'',qty:'1',cat:'Parfum',amt:'',cur:'DA',date:new Date().toISOString().split('T')[0],note:'',email:'',tel:''});
+  const CATS=['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
+  const emptyItem=()=>({id:Date.now()+Math.random(),prod:'',qty:'1',cat:'Parfum',amt:''});
+  const [f,setF]=useState({consultant:'',client:'',items:[emptyItem()],cur:'DA',date:new Date().toISOString().split('T')[0],note:'',email:'',tel:''});
   const upd=k=>e=>setF(p=>({...p,[k]:e.target.value}));
-  const cats=['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
   const mySales=user.role==='admin'?sales:sales.filter(s=>s.consultant===user.name);
   const allClients=[...new Set(mySales.map(s=>s.client))];
   const allCons=[...new Set(sales.map(s=>s.consultant))];
 
-  function openEdit(s){setEditId(s.id);setF({consultant:s.consultant,client:s.client,prod:s.product,qty:String(s.qty),cat:s.category,amt:String(s.amount),cur:s.currency,date:s.date,note:s.note||'',email:s.email||'',tel:s.tel||''});}
+  const updItem=(idx,k,v)=>setF(p=>({...p,items:p.items.map((it,i)=>i===idx?{...it,[k]:v}:it)}));
+  const addItem=()=>setF(p=>({...p,items:[...p.items,emptyItem()]}));
+  const removeItem=idx=>setF(p=>({...p,items:p.items.filter((_,i)=>i!==idx)}));
+  const totalAmt=f.items.reduce((s,it)=>s+(parseFloat(it.amt)||0),0);
+
+  function openEdit(s){
+    setEditId(s.id);
+    const items=s.items&&s.items.length>0?s.items:[{id:1,prod:s.product||'',qty:String(s.qty||1),cat:s.category||'Parfum',amt:String(s.amount||0)}];
+    setF({consultant:s.consultant||'',client:s.client||'',items,cur:s.currency||'DA',date:s.date||'',note:s.note||'',email:s.email||'',tel:s.tel||''});
+  }
 
   function save(){
-    if(!f.client.trim()||!f.prod.trim()||!f.date){onToast('⚠️ Client, produit et date requis');return;}
+    if(!f.client.trim()||!f.date){onToast('⚠️ Client et date requis');return;}
+    if(f.items.some(it=>!it.prod.trim())){onToast('⚠️ Remplissez tous les produits');return;}
     const consultant=user.role==='admin'?(f.consultant.trim()||'Manager'):user.name;
-    const rec={consultant,client:f.client.trim(),product:f.prod.trim(),qty:parseInt(f.qty)||1,amount:parseFloat(f.amt)||0,currency:f.cur,category:f.cat,date:f.date,note:f.note.trim(),email:f.email.trim(),tel:f.tel.trim()};
+    const rec={
+      consultant,
+      client:f.client.trim(),
+      items:f.items.map(it=>({prod:it.prod.trim(),qty:parseInt(it.qty)||1,cat:it.cat,amt:parseFloat(it.amt)||0})),
+      product:f.items.map(it=>it.prod.trim()).join(', '),
+      qty:f.items.reduce((s,it)=>s+(parseInt(it.qty)||1),0),
+      amount:totalAmt,
+      currency:f.cur,
+      category:f.items.map(it=>it.cat).join(', '),
+      date:f.date,
+      note:f.note.trim(),
+      email:f.email.trim(),
+      tel:f.tel.trim()
+    };
     let ns;
     if(editId){ns=sales.map(s=>s.id===editId?{...s,...rec}:s);onToast('✦ Vente modifiée !');}
     else{ns=[{id:Date.now().toString(),...rec,createdAt:new Date().toISOString()},...sales];onToast('✦ Vente enregistrée !');}
     setSales(ns);LS.putSales(ns);
-    setEditId(null);setF(p=>({...p,client:'',prod:'',qty:'1',amt:'',note:'',email:'',tel:'',consultant:''}));
+    setEditId(null);setF({consultant:'',client:'',items:[emptyItem()],cur:'DA',date:new Date().toISOString().split('T')[0],note:'',email:'',tel:''});
   }
 
   return<div>
@@ -518,23 +542,42 @@ function Vente({user,sales,setSales,onToast}){
         <div><p className="lbl">E-mail cliente</p><input className="inp" type="email" placeholder="client@email.com" value={f.email} onChange={upd('email')}/></div>
         <div><p className="lbl">Téléphone</p><input className="inp" type="tel" placeholder="+33 6..." value={f.tel} onChange={upd('tel')}/></div>
       </div>
-      <p className="lbl">Produit Chogan</p><input className="inp" placeholder="Ex: Parfum N°197..." value={f.prod} onChange={upd('prod')}/>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-        <div><p className="lbl">Quantité</p><input className="inp" type="number" min="1" value={f.qty} onChange={upd('qty')}/></div>
-        <div><p className="lbl">Catégorie</p><select className="inp" value={f.cat} onChange={upd('cat')}>{cats.map(c=><option key={c}>{c}</option>)}</select></div>
+
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'12px 0 8px'}}>
+        <p className="lbl" style={{margin:0}}>Produits ({f.items.length})</p>
+        <button onClick={addItem} style={{background:'linear-gradient(135deg,#D4AF37,#B8860B)',border:'none',borderRadius:8,color:'white',padding:'5px 12px',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:'Poppins'}}>＋ Ajouter</button>
       </div>
-      <p className="lbl">Montant</p>
-      <div style={{display:'flex',gap:8,marginBottom:6}}>
-        <input className="inp" type="number" placeholder="0.00" value={f.amt} onChange={upd('amt')} style={{flex:1,marginBottom:0}}/>
-        <div style={{display:'flex',background:'#fafafa',border:'1px solid #f0f0f0',borderRadius:12,overflow:'hidden',flexShrink:0}}>
-          {['DA','€'].map(c=><div key={c} onClick={()=>setF(p=>({...p,cur:c}))} style={{padding:'9px 13px',cursor:'pointer',fontSize:11,fontWeight:700,background:f.cur===c?'linear-gradient(135deg,#D4AF37,#B8860B)':'transparent',color:f.cur===c?'white':'#9ca3af'}}>{c}</div>)}
+
+      {f.items.map((it,idx)=>(
+        <div key={it.id} style={{background:'#fffbf0',border:'1px solid #f5e6c8',borderRadius:12,padding:'10px 12px',marginBottom:8}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+            <span style={{fontSize:10,fontWeight:700,color:'#B8860B'}}>Produit {idx+1}</span>
+            {f.items.length>1&&<button onClick={()=>removeItem(idx)} style={{background:'none',border:'none',color:'#e44258',cursor:'pointer',fontSize:14,padding:'0 4px'}}>✕</button>}
+          </div>
+          <input className="inp" placeholder="Ex: Parfum N°001..." value={it.prod} onChange={e=>updItem(idx,'prod',e.target.value)} style={{marginBottom:8}}/>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6}}>
+            <div><p className="lbl" style={{fontSize:9}}>Qté</p><input className="inp" type="number" min="1" value={it.qty} onChange={e=>updItem(idx,'qty',e.target.value)}/></div>
+            <div><p className="lbl" style={{fontSize:9}}>Catégorie</p><select className="inp" value={it.cat} onChange={e=>updItem(idx,'cat',e.target.value)}>{CATS.map(c=><option key={c}>{c}</option>)}</select></div>
+            <div><p className="lbl" style={{fontSize:9}}>Montant</p><input className="inp" type="number" placeholder="0.00" value={it.amt} onChange={e=>updItem(idx,'amt',e.target.value)}/></div>
+          </div>
+        </div>
+      ))}
+
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#fef3c7',borderRadius:10,padding:'8px 12px',marginBottom:10}}>
+        <span style={{fontSize:12,fontWeight:700,color:'#92400e'}}>TOTAL</span>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:16,fontWeight:800,color:'#B8860B'}}>{totalAmt.toFixed(2)}</span>
+          <div style={{display:'flex',background:'#fafafa',border:'1px solid #f0f0f0',borderRadius:10,overflow:'hidden'}}>
+            {['DA','€'].map(c=><div key={c} onClick={()=>setF(p=>({...p,cur:c}))} style={{padding:'6px 11px',cursor:'pointer',fontSize:11,fontWeight:700,background:f.cur===c?'linear-gradient(135deg,#D4AF37,#B8860B)':'transparent',color:f.cur===c?'white':'#9ca3af'}}>{c}</div>)}
+          </div>
         </div>
       </div>
+
       <p className="lbl">Date</p><input className="inp" type="date" value={f.date} onChange={upd('date')}/>
       <p className="lbl">Notes & commentaires</p><textarea className="inp" rows={2} placeholder="Préférences, allergies..." value={f.note} onChange={upd('note')} style={{resize:'none'}}/>
       <div style={{display:'flex',gap:8}}>
         <button className="btn-g" onClick={save} style={{flex:1}}>{editId?'Enregistrer la modification':'✦ Valider la transaction'}</button>
-        {editId&&<button onClick={()=>{setEditId(null);setF(p=>({...p,client:'',prod:'',qty:'1',amt:'',note:'',email:'',tel:''}));}} style={{background:'#f3f4f6',border:'none',borderRadius:10,padding:'10px 14px',cursor:'pointer',fontFamily:'Poppins',fontSize:11}}>Annuler</button>}
+        {editId&&<button onClick={()=>{setEditId(null);setF({consultant:'',client:'',items:[emptyItem()],cur:'DA',date:new Date().toISOString().split('T')[0],note:'',email:'',tel:''});}} style={{background:'#f3f4f6',border:'none',borderRadius:10,padding:'10px 14px',cursor:'pointer',fontFamily:'Poppins',fontSize:11}}>Annuler</button>}
       </div>
     </div>
     <div className="grp-lbl">Dernières ventes</div>
