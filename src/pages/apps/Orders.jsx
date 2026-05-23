@@ -57,10 +57,15 @@ function BonCommandeTab() {
   })();
 
   const allProducts = (() => {
+    // Normalise une ref : enlève les préfixes lettres, garde la partie numérique
+    // Ex: "T076" → "076", "147M" → "147", "164M" → "164"
+    const normalizeRef = r => (r || '').replace(/^[A-Za-z]+/, '').replace(/[A-Za-z]+$/, '').trim();
+
     // Convertir les produits custom en format PERFUMES
     const customList = Object.values(customPrix).map(p => ({
       id: `c-${p.ref}`,
-      ref: p.ref || '',
+      ref: normalizeRef(p.ref),       // ref normalisée pour le match
+      refOriginal: p.ref || '',       // ref originale affichée
       name: p.nom || '',
       gender: p.genre === 'homme' ? 'h' : p.genre === 'femme' ? 'f' : 'm',
       sizes: Object.entries(p.prix||{}).filter(([,v])=>v!=null).map(([s])=>s),
@@ -68,10 +73,14 @@ function BonCommandeTab() {
       custom: true,
     })).filter(p => p.ref && p.name && p.sizes.length > 0);
 
-    // Merge : les produits custom remplacent les statiques si même ref
+    // Les refs custom normalisées écrasent les statiques
     const customRefs = new Set(customList.map(p => p.ref));
-    const staticFiltered = PERFUMES.filter(p => !customRefs.has(p.ref));
-    return [...customList, ...staticFiltered].sort((a,b) => a.ref.localeCompare(b.ref, undefined, {numeric:true}));
+    const staticFiltered = PERFUMES.filter(p => !customRefs.has(normalizeRef(p.ref)));
+    return [...customList, ...staticFiltered].sort((a,b) => {
+      const na = parseInt(a.ref) || 0;
+      const nb = parseInt(b.ref) || 0;
+      return na - nb;
+    });
   })();
 
   const filtered = allProducts.filter(p => {
