@@ -221,7 +221,7 @@ function BonCommandeTab() {
   return (
     <div style={S.pad}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <p style={S.secLabel}>Catalogue ({PERFUMES.length} réf.)</p>
+        <p style={S.secLabel}>Catalogue ({allProducts.length} réf.)</p>
         <button className="btn-gold" style={{ padding:'8px 14px', width:'auto' }} onClick={() => setShowForm(true)}>
           🛒 {cart.reduce((s,c)=>s+c.qty,0)} — Récap
         </button>
