@@ -190,7 +190,23 @@ function InspirationsTab() {
     loadingRef.current = false;
   };
 
-  const getImg = (p) => p.img || images[`${p.ref}-${p.name}`] || null;
+  const getImg = (p) => {
+    if (p.img) return p.img;
+    if (p.imgCrop?.sourceImg) return null; // handled separately with CSS crop
+    return images[`${p.ref}-${p.name}`] || null;
+  };
+
+  const getCropStyle = (p) => {
+    const crop = p.imgCrop;
+    if (!crop?.sourceImg || !crop?.crop) return null;
+    const c = crop.crop;
+    return {
+      backgroundImage: `url(${crop.sourceImg})`,
+      backgroundSize: `${10000/c.w}%`,
+      backgroundPosition: `${-c.x*(10000/c.w)/100}px ${-c.y*(10000/c.w)/100}px`,
+      backgroundRepeat: 'no-repeat',
+    };
+  };
 
   const filtered = allProducts.filter(p => {
     const gMap = {h:'homme',f:'femme',m:'mixte'};
@@ -267,7 +283,9 @@ function InspirationsTab() {
               <div style={{...S.cardPhoto, background:`linear-gradient(135deg, ${GC[p.gender]||'var(--or)'}15, ${GC[p.gender]||'var(--or)'}05)`}}>
                 {img
                   ? <img src={img} alt={p.name} style={{width:'100%',height:'100%',objectFit:'contain',padding:6}} onError={e=>{e.target.style.display='none';}} />
-                  : <span style={{fontSize:36}}>{BOTTLE[p.gender]||'💎'}</span>
+                  : getCropStyle(p)
+                    ? <div style={{width:'100%',height:'100%',...getCropStyle(p)}} />
+                    : <span style={{fontSize:36}}>{BOTTLE[p.gender]||'💎'}</span>
                 }
                 {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
               </div>
@@ -416,63 +434,86 @@ function ConvertisseurTab() {
   );
 }
 
-// ── MISE À JOUR (copie depuis Commandes) ─────────────────────────
+// ── MISE À JOUR ──────────────────────────────────────────────────
 function MajPrixTab() {
-  const [file, setFile]         = useState(null);
-  const [preview, setPreview]   = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [result, setResult]     = useState(null);
-  const [error, setError]       = useState('');
-  const [saved, setSaved]       = useState(false);
+  const [file, setFile]       = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [imgB64, setImgB64]   = useState(null);
+  const [imgType, setImgType] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult]   = useState(null);
+  const [error, setError]     = useState('');
+  const [saved, setSaved]     = useState(false);
   const [manualText, setManual] = useState('');
-  const [mode, setMode]         = useState('upload');
+  const [mode, setMode]       = useState('upload');
 
-  const toBase64 = f => new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(f); });
+  const toBase64 = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(f); });
+  const toDataURL = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
 
-  const analyzeWithClaude = async (content, mediaType, isText=false) => {
+  const handleFile = async f => {
+    if (!f) return;
+    setFile(f); setResult(null); setSaved(false); setError('');
+    if (f.type.startsWith('image/')) {
+      const dataUrl = await toDataURL(f);
+      setPreview(dataUrl);
+      setImgB64(dataUrl.split(',')[1]);
+      setImgType(f.type);
+    } else {
+      setPreview(null);
+      setImgB64(await toBase64(f));
+      setImgType(f.type);
+    }
+  };
+
+  const handleAnalyze = async () => {
     setLoading(true); setError(''); setResult(null);
     try {
       const res = await fetch('/api/analyze', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ content, mediaType, isText }),
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(mode==='paste'
+          ? { content:manualText, isText:true }
+          : { content:imgB64, mediaType:imgType }
+        ),
       });
       if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error||`Erreur ${res.status}`); }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       const text = data.content?.find(b=>b.type==='text')?.text||'';
       const parsed = JSON.parse(text);
-      if (!parsed.produits?.length) throw new Error('Aucun produit extrait.');
-      setResult(parsed);
+      if (!parsed.produits?.length) throw new Error('Aucun produit extrait. Essayez avec une photo.');
+      setResult({ ...parsed, sourceImg: preview });
     } catch(e) { setError(e.message); }
     setLoading(false);
-  };
-
-  const handleFile = async f => {
-    if (!f) return; setFile(f); setResult(null); setSaved(false);
-    if (f.type.startsWith('image/')) setPreview(URL.createObjectURL(f)); else setPreview(null);
-  };
-
-  const handleAnalyze = async () => {
-    if (mode==='paste') { if (!manualText.trim()) return; await analyzeWithClaude(manualText,null,true); return; }
-    if (!file) return;
-    const b64 = await toBase64(file);
-    await analyzeWithClaude(b64, file.type);
   };
 
   const handleSave = () => {
     if (!result?.produits?.length) return;
     const existing = JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}');
-    const updated  = {...existing};
+    const updated = {...existing};
     const norm = r => (r||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
-    result.produits.forEach(p => { updated[norm(p.ref)] = { ref:norm(p.ref), nom:p.nom, genre:p.genre||'mixte', marque:p.marque||'', categorie:p.categorie||'Parfum', prix:p.prix, img:p.img||null, maj:new Date().toISOString() }; });
+
+    result.produits.forEach(p => {
+      const ref = norm(p.ref);
+      // Générer une image cropée si on a l'image source et les coords
+      let imgCrop = null;
+      if (result.sourceImg && p.crop && p.crop.x != null) {
+        imgCrop = { sourceImg: result.sourceImg, crop: p.crop };
+      }
+      updated[ref] = {
+        ref, nom:p.nom, genre:p.genre||'mixte', marque:p.marque||'',
+        categorie:p.categorie||'Parfum', prix:p.prix,
+        imgCrop, img:null, maj:new Date().toISOString(),
+      };
+    });
     localStorage.setItem('chogan_prix_custom', JSON.stringify(updated));
     setSaved(true);
   };
 
   const handleReset = () => {
-    if (!window.confirm('Réinitialiser tous les prix ?')) return;
-    localStorage.removeItem('chogan_prix_custom'); setSaved(false); setResult(null); setFile(null); setPreview(null);
+    if (!window.confirm('Réinitialiser tous les produits mis à jour ?')) return;
+    localStorage.removeItem('chogan_prix_custom');
+    localStorage.removeItem('chogan_img_cache_v2');
+    setSaved(false); setResult(null); setFile(null); setPreview(null);
   };
 
   const customCount = Object.keys(JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}')).length;
@@ -481,74 +522,97 @@ function MajPrixTab() {
     <div style={S.pad}>
       <div style={S.majInfo}>
         <p style={S.majTitle}>🔄 Mise à jour produits & prix</p>
-        <p style={S.majDesc}>Importez un PDF ou une photo du catalogue Chogan pour mettre à jour automatiquement les prix, références et photos.</p>
+        <p style={S.majDesc}>Importez une <strong>photo</strong> ou un PDF du catalogue Chogan. Claude extrait automatiquement les prix et les images de chaque flacon.</p>
         {customCount > 0 && (
           <div style={S.majStatus}>
             <span style={{color:'var(--green)',fontWeight:700}}>✅ {customCount} produit(s) mis à jour</span>
-            <button style={{...S.resetBtnSm}} onClick={handleReset}>Réinitialiser tout</button>
+            <button style={S.resetBtnSm} onClick={handleReset}>Réinitialiser tout</button>
           </div>
         )}
       </div>
+
       <div style={S.modeRow}>
-        {[['upload','📎 Fichier / Photo'],['paste','✏️ Coller du texte']].map(([m,l])=>(
+        {[['upload','📎 Photo / PDF'],['paste','✏️ Texte']].map(([m,l])=>(
           <button key={m} style={{...S.modeBtn,...(mode===m?S.modeBtnActive:{})}} onClick={()=>setMode(m)}>{l}</button>
         ))}
       </div>
+
       {mode==='upload' && (
         <label style={S.dropZone}>
           <input type="file" accept=".pdf,image/*" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])} />
           {file ? (
             <div style={{textAlign:'center'}}>
-              {preview && <img src={preview} alt="aperçu" style={{maxWidth:'100%',maxHeight:160,borderRadius:10,marginBottom:10}} />}
+              {preview && <img src={preview} alt="aperçu" style={{maxWidth:'100%',maxHeight:200,borderRadius:10,marginBottom:10,objectFit:'contain'}} />}
               <p style={{fontSize:13,fontWeight:600,color:'var(--taupe)'}}>{file.name}</p>
-              <p style={{fontSize:11,color:'var(--text-muted)',marginTop:4}}>{(file.size/1024).toFixed(0)} KB · {file.type.includes('pdf')?'PDF':'Image'}</p>
-              <p style={{fontSize:11,color:'var(--or-deep)',marginTop:6}}>Cliquez pour changer</p>
+              <p style={{fontSize:11,color:'var(--text-muted)',marginTop:4}}>{(file.size/1024).toFixed(0)} KB</p>
+              <p style={{fontSize:11,color:'var(--or-deep)',marginTop:6}}>Touchez pour changer</p>
             </div>
           ) : (
-            <div style={{textAlign:'center',padding:'10px 0'}}>
-              <p style={{fontSize:32,marginBottom:8}}>📎</p>
-              <p style={{fontSize:14,fontWeight:600,color:'var(--taupe)'}}>Glissez ou cliquez pour importer</p>
-              <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6}}>PDF ou image (JPG, PNG, WEBP)</p>
+            <div style={{textAlign:'center',padding:'20px 0'}}>
+              <p style={{fontSize:40,marginBottom:8}}>📸</p>
+              <p style={{fontSize:14,fontWeight:600,color:'var(--taupe)'}}>Photo ou PDF du catalogue</p>
+              <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6}}>JPG · PNG · WEBP · PDF</p>
             </div>
           )}
         </label>
       )}
+
       {mode==='paste' && (
         <div className="field">
           <label className="label">Collez votre liste de prix</label>
           <textarea rows={8} value={manualText} onChange={e=>setManual(e.target.value)}
-            placeholder={"N°001 One Million 70ml = 35€\nN°002 Acqua Di Gio 30ml = 18€\n..."}
+            placeholder={"N°001 One Million 70ml = 35€\nN°002 Acqua Di Gio 30ml = 18€"}
             style={{resize:'vertical',fontFamily:'var(--font-body)',fontSize:13}} />
         </div>
       )}
+
       <button className="btn-gold" style={{marginTop:12}} onClick={handleAnalyze}
         disabled={loading||(mode==='upload'&&!file)||(mode==='paste'&&!manualText.trim())}>
         {loading ? '🔍 Analyse en cours...' : '✨ Analyser avec Claude AI'}
       </button>
-      {loading && <div style={{textAlign:'center',padding:'24px 0'}}><div style={S.spinner}/><p style={{fontSize:13,color:'var(--text-muted)',marginTop:10}}>Analyse en cours...</p></div>}
+
+      {loading && (
+        <div style={{textAlign:'center',padding:'24px 0'}}>
+          <div style={S.spinner}/>
+          <p style={{fontSize:13,color:'var(--text-muted)',marginTop:10}}>Claude extrait les produits et les images...</p>
+        </div>
+      )}
       {error && <div style={S.errorBox}>{error}</div>}
+
       {result && !loading && (
         <div style={{marginTop:16}} className="fade-in">
-          <p style={{fontSize:14,fontWeight:700,color:'var(--taupe)',marginBottom:10}}>✅ {result.produits?.length||0} produit(s) extraits</p>
+          <p style={{fontSize:14,fontWeight:700,color:'var(--taupe)',marginBottom:10}}>
+            ✅ {result.produits?.length||0} produit(s) trouvés
+            {result.sourceImg && <span style={{fontSize:11,color:'var(--green)',marginLeft:8}}>📸 avec images</span>}
+          </p>
           <div style={S.resultList}>
             {result.produits?.map((p,i)=>(
-              <div key={i} style={S.resultItem}>
-                <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  {p.img && <img src={p.img} alt={p.nom} style={{width:32,height:32,objectFit:'contain',borderRadius:4}} onError={e=>{e.target.style.display='none';}} />}
-                  <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)'}}>N°{p.ref}</span>
-                  <span style={{fontSize:13,fontWeight:600}}>{p.nom}</span>
-                  {p.marque && <span style={{fontSize:10,color:'var(--text-muted)'}}>{p.marque}</span>}
-                </div>
-                <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
-                  {p.prix && Object.entries(p.prix).filter(([,v])=>v!=null).map(([sz,px])=>(
-                    <span key={sz} style={S.priceTag}>{sz}: {px}€</span>
-                  ))}
+              <div key={i} style={{...S.resultItem,display:'flex',alignItems:'center',gap:10}}>
+                {result.sourceImg && p.crop && (
+                  <div style={{
+                    width:40,height:40,borderRadius:8,overflow:'hidden',
+                    flexShrink:0,border:'1px solid var(--or-border)',
+                    backgroundImage:`url(${result.sourceImg})`,
+                    backgroundSize:`${10000/p.crop.w}%`,
+                    backgroundPosition:`${-p.crop.x*(10000/p.crop.w)/100}px ${-p.crop.y*(10000/p.crop.w)/100}px`,
+                  }}/>
+                )}
+                <div style={{flex:1}}>
+                  <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                    <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)'}}>N°{p.ref}</span>
+                    <span style={{fontSize:13,fontWeight:600}}>{p.nom}</span>
+                  </div>
+                  <div style={{display:'flex',gap:4,flexWrap:'wrap',marginTop:3}}>
+                    {p.prix && Object.entries(p.prix).filter(([,v])=>v!=null).map(([sz,px])=>(
+                      <span key={sz} style={S.priceTag}>{sz}: {px}€</span>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
           {saved
-            ? <div style={S.savedBox}>✅ Prix et photos enregistrés ! Le catalogue est mis à jour.</div>
+            ? <div style={S.savedBox}>✅ Produits et images enregistrés !</div>
             : <button className="btn-gold" onClick={handleSave}>💾 ENREGISTRER</button>
           }
         </div>
