@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import AppLayout from '../../components/AppLayout';
-import { PERFUMES, PRODUITS_PROMO, GENDER_COLOR } from '../../utils/choganData';
 
 const TABS = [
-  { id:'orders',      label:'🛒 Commandes' },
-  { id:'inspirations',label:'🌹 Inspirations' },
-  { id:'bon',         label:'📋 Bon de commande' },
-  { id:'promo',       label:'🏷 Promo' },
-  { id:'convert',     label:'💱 Convertisseur' },
+  { id:'bon',     label:'📋 Bon de commande' },
+  { id:'ventes',  label:'💰 Ventes' },
+  { id:'clients', label:'👥 Clients' },
 ];
 
 export default function Orders() {
-  const [tab, setTab] = useState('orders');
+  const [tab, setTab] = useState('bon');
   return (
     <AppLayout title="Commandes" icon="🛒">
       <div style={S.tabsWrap}>
@@ -22,181 +19,44 @@ export default function Orders() {
           </button>
         ))}
       </div>
-      {tab === 'orders'       && <CommandesTab />}
-      {tab === 'inspirations' && <InspirationsTab />}
-      {tab === 'bon'          && <BonCommandeTab />}
-      {tab === 'promo'        && <PromoTab />}
-      {tab === 'convert'      && <ConvertisseurTab />}
+      {tab === 'bon'     && <BonCommandeTab />}
+      {tab === 'ventes'  && <VentesTab />}
+      {tab === 'clients' && <ClientsTab />}
     </AppLayout>
   );
 }
 
-// ── COMMANDES ────────────────────────────────────────────────────
-function CommandesTab() {
-  const { getOrders, addOrder, updateOrderStatus } = useData();
-  const [view, setView] = useState('list');
-  const [form, setForm] = useState({ clientFirstName:'',clientLastName:'',clientEmail:'',clientPhone:'',notes:'' });
-  const [cart, setCart] = useState([]);
-  const [success, setSuccess] = useState('');
-  const orders = getOrders();
-
-  const addToCart = (p, size) => {
-    const key = `${p.id}-${size}`;
-    setCart(prev => {
-      const ex = prev.find(i => i.key === key);
-      if (ex) return prev.map(i => i.key===key?{...i,qty:i.qty+1}:i);
-      return [...prev, { key, id:p.id, name:p.name, ref:p.ref, size, price:p.prices?.[size]||35, qty:1 }];
-    });
-  };
-  const cartTotal = cart.reduce((s,i) => s+i.price*i.qty, 0);
-
-  const handleSubmit = () => {
-    if (!form.clientFirstName || !form.clientLastName || cart.length === 0) { alert('Remplissez le client et ajoutez des produits.'); return; }
-    const order = addOrder({ ...form, items: cart, total: cartTotal });
-    setSuccess(`✓ Commande ${order.id} créée ! Client, fidélité et agenda mis à jour automatiquement.`);
-    setForm({ clientFirstName:'',clientLastName:'',clientEmail:'',clientPhone:'',notes:'' });
-    setCart([]);
-    setTimeout(() => { setSuccess(''); setView('list'); }, 3000);
-  };
-
-  return (
-    <div style={S.pad}>
-      <div style={S.miniTabs}>
-        <button style={{ ...S.miniTab, ...(view==='list'?S.miniActive:{}) }} onClick={() => setView('list')}>Liste ({orders.length})</button>
-        <button style={{ ...S.miniTab, ...(view==='new'?S.miniActive:{}) }} onClick={() => setView('new')}>➕ Nouvelle</button>
-      </div>
-
-      {view === 'list' && (
-        orders.length === 0 ? <div style={S.empty}>Aucune commande</div> :
-        orders.slice().reverse().map(o => (
-          <div key={o.id} style={S.card}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
-              <span style={{ fontSize:11, color:'var(--text-muted)' }}>{o.id}</span>
-              <span className="badge badge-gold">{o.status}</span>
-            </div>
-            <p style={{ fontSize:14, fontWeight:700 }}>{o.clientName}</p>
-            <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, color:'var(--text-muted)', marginTop:4 }}>
-              <span>{o.items?.length||0} produit(s)</span>
-              <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{o.total}€</span>
-            </div>
-            <div style={{ display:'flex', gap:6, marginTop:10 }}>
-              {['En cours','Livré','Annulé'].map(s => (
-                <button key={s} style={{ flex:1, padding:'6px 4px', background: o.status===s?'var(--or-pale)':'transparent', border:'1px solid var(--or-border)', borderRadius:8, fontSize:10, color: o.status===s?'var(--or-deep)':'var(--text-muted)', cursor:'pointer' }}
-                  onClick={() => updateOrderStatus(o.id, s)}>{s}</button>
-              ))}
-            </div>
-          </div>
-        ))
-      )}
-
-      {view === 'new' && (
-        <div>
-          {success && <div style={S.successMsg}>{success}</div>}
-          <div style={S.section}>
-            <p style={S.secLabel}>👤 Client</p>
-            <div className="grid-2">
-              <div className="field"><label className="label">Prénom *</label><input value={form.clientFirstName} onChange={e=>setForm(p=>({...p,clientFirstName:e.target.value}))} placeholder="Prénom" /></div>
-              <div className="field"><label className="label">Nom *</label><input value={form.clientLastName} onChange={e=>setForm(p=>({...p,clientLastName:e.target.value}))} placeholder="Nom" /></div>
-            </div>
-            <div className="field"><label className="label">Email</label><input type="email" value={form.clientEmail} onChange={e=>setForm(p=>({...p,clientEmail:e.target.value}))} /></div>
-            <div className="field"><label className="label">Téléphone</label><input type="tel" value={form.clientPhone} onChange={e=>setForm(p=>({...p,clientPhone:e.target.value}))} /></div>
-          </div>
-          <div style={S.section}>
-            <p style={S.secLabel}>💎 Produits (cliquez pour ajouter)</p>
-            <div style={S.prodGrid}>
-              {PERFUMES.slice(0, 24).map(p => (
-                <div key={p.id} style={S.prodCard} onClick={() => addToCart(p, p.sizes[0])}>
-                  <span style={{ fontSize:10, color: GENDER_COLOR[p.gender], fontWeight:700 }}>N°{p.ref}</span>
-                  <span style={{ fontSize:11, fontWeight:600, lineHeight:1.3 }}>{p.name}</span>
-                  <span style={{ fontSize:12, color:'var(--or-deep)', fontWeight:700 }}>{p.prices?.[p.sizes[0]]}€</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          {cart.length > 0 && (
-            <div style={S.section}>
-              <p style={S.secLabel}>🛒 Panier</p>
-              {cart.map(i => (
-                <div key={i.key} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                  <div style={{ flex:1 }}>
-                    <p style={{ fontSize:13, fontWeight:600 }}>{i.name} — {i.size}</p>
-                    <p style={{ fontSize:11, color:'var(--text-muted)' }}>{i.qty} × {i.price}€</p>
-                  </div>
-                  <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{i.qty*i.price}€</span>
-                  <button style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer' }} onClick={() => setCart(c=>c.filter(x=>x.key!==i.key))}>✕</button>
-                </div>
-              ))}
-              <div style={{ display:'flex', justifyContent:'space-between', fontWeight:700, fontSize:16, borderTop:'1px solid var(--or-border)', paddingTop:10 }}>
-                <span>Total</span><span style={{ color:'var(--or-deep)' }}>{cartTotal}€</span>
-              </div>
-            </div>
-          )}
-          <button className="btn-gold" onClick={handleSubmit}>CRÉER LA COMMANDE</button>
-          <p style={{ textAlign:'center', fontSize:11, color:'var(--text-muted)', marginTop:8 }}>Crée automatiquement : fiche client · carte fidélité · agenda</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── INSPIRATIONS ─────────────────────────────────────────────────
-function InspirationsTab() {
-  const [search, setSearch] = useState('');
-  const [gender, setGender] = useState('tous');
-  const filtered = PERFUMES.filter(p => {
-    if (gender !== 'tous' && p.gender !== gender) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.ref.includes(search);
-    }
-    return true;
-  });
-  return (
-    <div style={S.pad}>
-      <input placeholder="🔍 Nom, marque ou référence..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
-      <div style={S.filterRow}>
-        {[['tous','Tous'],['homme','♂ Homme'],['femme','♀ Femme'],['mixte','⚧ Mixte']].map(([v,l]) => (
-          <button key={v} style={{ ...S.filterBtn, ...(gender===v?S.filterActive:{}) }} onClick={() => setGender(v)}>{l}</button>
-        ))}
-      </div>
-      <p style={{ fontSize:11, color:'var(--text-muted)', marginBottom:10 }}>{filtered.length} référence(s)</p>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-        {filtered.map(p => (
-          <div key={p.id} style={{ ...S.card, borderLeft:`3px solid ${GENDER_COLOR[p.gender]}` }}>
-            <p style={{ fontSize:11, fontWeight:700, color:GENDER_COLOR[p.gender] }}>N°{p.ref}</p>
-            <p style={{ fontSize:12, fontWeight:600, lineHeight:1.3, margin:'3px 0' }}>{p.name}</p>
-            <p style={{ fontSize:10, color:'var(--text-muted)' }}>{p.brand}</p>
-            <div style={{ marginTop:6 }}>
-              {p.sizes.map(s => (
-                <div key={s} style={{ display:'flex', justifyContent:'space-between', fontSize:10, padding:'2px 0' }}>
-                  <span style={{ color:'var(--text-muted)' }}>{s}</span>
-                  <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{p.prices?.[s]}€</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── BON DE COMMANDE ──────────────────────────────────────────────
-const CATS = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
+const CATS  = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
+const PERFUMES_LIGHT = [
+  { id:1,  ref:'001', name:'One Million',          gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:2,  ref:'002', name:'Acqua Di Gio',         gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:3,  ref:'007', name:"J'Adore",              gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:4,  ref:'019', name:'Lady Million',         gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:5,  ref:'038', name:'Bleu de Chanel',       gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:6,  ref:'042', name:'La Vie est Belle',     gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:7,  ref:'055', name:'Black Opium',          gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:8,  ref:'061', name:'Invictus',             gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:9,  ref:'064', name:'Sauvage',              gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':48,'30ml':25.50,'15ml':14.90} },
+  { id:10, ref:'085', name:'Chance',               gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:11, ref:'094', name:'Coco Mademoiselle',    gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
+  { id:12, ref:'118', name:'Baccarat Rouge 540',   gender:'m', sizes:['50ml','15ml'],        prices:{'50ml':52,'15ml':19.90} },
+  { id:13, ref:'122', name:'Libre',                gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':48,'30ml':25.50,'15ml':14.90} },
+  { id:14, ref:'131', name:'Good Girl',            gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':48,'30ml':25.50,'15ml':14.90} },
+];
 
 function BonCommandeTab() {
   const [cart, setCart]       = useState([]);
   const [search, setSearch]   = useState('');
-  const [showCart, setShowCart] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [saved, setSaved]     = useState(false);
   const [copied, setCopied]   = useState(false);
 
-  // Champs identiques à la rubrique Vente de l'agenda
   const [client, setClient]         = useState('');
   const [email, setEmail]           = useState('');
   const [tel, setTel]               = useState('');
   const [prod, setProd]             = useState('');
-  const [qty, setQty]               = useState('1');
+  const [qty, setQty]               = useState('0');
   const [cat, setCat]               = useState('Parfum');
   const [amt, setAmt]               = useState('');
   const [cur, setCur]               = useState('€');
@@ -204,60 +64,51 @@ function BonCommandeTab() {
   const [note, setNote]             = useState('');
   const [consultant, setConsultant] = useState('');
 
-  const filtered = PERFUMES.filter(p => {
+  const filtered = PERFUMES_LIGHT.filter(p => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.ref.includes(search);
+    return p.name.toLowerCase().includes(q) || p.ref.includes(search);
   });
 
-  // Recalcule prod / qty / amt à chaque changement du panier
   useEffect(() => {
     if (cart.length === 0) { setProd(''); setQty('0'); setAmt(''); return; }
-    // Format compatible agenda : "N°ref Nom Taille ×qty" séparés par virgule — sans prix ni retour ligne
-    const prodStr = cart.map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', ');
-    const totalQ  = cart.reduce((s,c) => s + c.qty, 0);
-    const totalA  = cart.reduce((s,c) => s + c.price * c.qty, 0);
-    setProd(prodStr);
-    setQty(String(totalQ));
-    setAmt(totalA.toFixed(2));   // nombre pur sans symbole : "123.50"
+    setProd(cart.map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', '));
+    setQty(String(cart.reduce((s,c) => s+c.qty, 0)));
+    setAmt(cart.reduce((s,c) => s+c.price*c.qty, 0).toFixed(2));
   }, [cart]);
 
   const addToCart = (p, size) => {
     const key = `${p.id}-${size}`;
     setCart(prev => {
-      const ex = prev.find(c => c.key === key);
-      if (ex) return prev.map(c => c.key===key ? {...c, qty:c.qty+1} : c);
-      return [...prev, { key, name:p.name, ref:p.ref, size, price:p.prices?.[size]||35, qty:1 }];
+      const ex = prev.find(c => c.key===key);
+      if (ex) return prev.map(c => c.key===key ? {...c,qty:c.qty+1} : c);
+      return [...prev, { key, id:p.id, name:p.name, ref:p.ref, size, price:p.prices?.[size]||35, qty:1 }];
     });
   };
 
+  const updateCart = (newCart) => setCart(newCart);
   const totalEur = cart.reduce((s,c) => s+c.price*c.qty, 0);
-  const totalQty = cart.reduce((s,c) => s+c.qty, 0);
-  const updateCartFields = (newCart) => setCart(newCart);
 
-  // ✦ Enregistrer dans le_sales (rubrique Vente de l'agenda original)
   const saveToAgenda = () => {
     if (!client.trim()) { alert('Entrez le nom de la cliente.'); return; }
     try {
-      const existing = JSON.parse(localStorage.getItem('le_sales') || '[]');
+      const existing = JSON.parse(localStorage.getItem('le_sales')||'[]');
+      const items = cart.map(c => ({ prod:`N°${c.ref} ${c.name} ${c.size}`, qty:c.qty, cat, amt:parseFloat((c.price*c.qty).toFixed(2)) }));
       const sale = {
-        id:         `BC-${Date.now()}`,
-        client,
-        prod,                                        // format: "N°001 Nom Taille ×2, ..."
-        qty,
-        cat,
-        amt:        String(parseFloat(amt) || 0),   // nombre pur sans symbole
-        cur,
-        date,
-        note,
-        email,
-        tel,
-        consultant,
+        id: `BC-${Date.now()}`,
+        client, email, tel,
+        items,
+        product: prod,
+        qty: String(cart.reduce((s,c)=>s+c.qty,0)),
+        amount: parseFloat(amt)||0,
+        currency: cur,
+        category: cat,
+        date, note, consultant,
         createdAt: new Date().toISOString(),
       };
       localStorage.setItem('le_sales', JSON.stringify([sale, ...existing]));
       setSaved(true);
-      setTimeout(() => setSaved(false), 3500);
+      setTimeout(() => setSaved(false), 3000);
     } catch(e) { console.warn(e); }
   };
 
@@ -269,133 +120,88 @@ function BonCommandeTab() {
       '─────────────────',
       ...cart.map(c => `• N°${c.ref} ${c.name} ${c.size} ×${c.qty} = ${(c.price*c.qty).toFixed(2)}€`),
       '─────────────────',
-      `💶 Total : ${amt} ${cur}`,
+      `💶 TOTAL : ${amt} ${cur}`,
       ...(note ? [`📝 ${note}`] : []),
     ];
     navigator.clipboard?.writeText(lines.join('\n'))
       .then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2500); });
   };
 
-  if (showCart) return (
+  if (showForm) return (
     <div style={S.pad}>
-      <button style={S.backLink} onClick={() => setShowCart(false)}>← Retour catalogue</button>
+      <button style={S.back} onClick={() => setShowForm(false)}>← Retour catalogue</button>
+      {saved && <div style={S.ok}>✅ Vente enregistrée dans l'Agenda !</div>}
 
-      {saved && (
-        <div style={{ background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.3)', borderRadius:10, padding:'10px 14px', marginBottom:12, color:'var(--green)', fontSize:13, fontWeight:600 }}>
-          ✅ Vente enregistrée dans la rubrique Agenda !
-        </div>
-      )}
+      <div style={S.fiche}>
+        <p style={S.ficheTitle}>✦ Nouvelle transaction</p>
 
-      <div style={S.venteFiche}>
-        <p style={S.venteTitle}>✦ Nouvelle transaction</p>
-
-        {/* Cliente */}
-        <div className="field">
-          <label className="label">Cliente *</label>
-          <input value={client} onChange={e=>setClient(e.target.value)} placeholder="Nom de la cliente" />
-        </div>
+        <div className="field"><label className="label">Cliente *</label>
+          <input value={client} onChange={e=>setClient(e.target.value)} placeholder="Nom de la cliente" /></div>
         <div className="grid-2">
-          <div className="field">
-            <label className="label">E-mail cliente</label>
-            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="client@email.com" />
-          </div>
-          <div className="field">
-            <label className="label">Téléphone</label>
-            <input type="tel" value={tel} onChange={e=>setTel(e.target.value)} placeholder="+33 6..." />
-          </div>
+          <div className="field"><label className="label">E-mail</label>
+            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="client@email.com" /></div>
+          <div className="field"><label className="label">Téléphone</label>
+            <input type="tel" value={tel} onChange={e=>setTel(e.target.value)} placeholder="+33 6..." /></div>
         </div>
 
-        {/* Produit */}
-        <div className="field">
-          <label className="label">Produit Chogan</label>
-          <input
-            value={prod}
-            onChange={e=>setProd(e.target.value)}
-            placeholder="Les produits s'ajoutent automatiquement"
-          />
-          {cart.length > 0 && (
-            <div style={{ marginTop:6 }}>
-              {cart.map(c => (
-                <div key={c.key} style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-muted)', padding:'2px 4px' }}>
-                  <span>N°{c.ref} {c.name} {c.size} ×{c.qty}</span>
-                  <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{(c.price*c.qty).toFixed(2)}€</span>
+        {/* Détail produits du panier */}
+        {cart.length > 0 && (
+          <div style={S.cartBlock}>
+            <p style={S.cartTitle}>🛒 {cart.reduce((s,c)=>s+c.qty,0)} article(s)</p>
+            {cart.map(c => (
+              <div key={c.key} style={S.cartRow}>
+                <div style={{ flex:1 }}>
+                  <span style={{ fontSize:12, fontWeight:600 }}>N°{c.ref} {c.name} {c.size}</span>
+                  <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:6 }}>×{c.qty}</span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="grid-2">
-          <div className="field">
-            <label className="label">Quantité</label>
-            <input type="number" min="1" value={qty} onChange={e=>setQty(e.target.value)} />
+                <span style={{ fontSize:12, fontWeight:700, color:'var(--or-deep)' }}>{(c.price*c.qty).toFixed(2)}€</span>
+                <button style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:13, padding:'0 4px' }}
+                  onClick={() => updateCart(cart.map(x=>x.key===c.key?{...x,qty:Math.max(0,x.qty-1)}:x).filter(x=>x.qty>0))}>−</button>
+                <button style={{ background:'none', border:'none', color:'var(--green)', cursor:'pointer', fontSize:13, padding:'0 4px' }}
+                  onClick={() => updateCart(cart.map(x=>x.key===c.key?{...x,qty:x.qty+1}:x))}>+</button>
+                <button style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:13 }}
+                  onClick={() => updateCart(cart.filter(x=>x.key!==c.key))}>✕</button>
+              </div>
+            ))}
           </div>
-          <div className="field">
-            <label className="label">Catégorie</label>
+        )}
+
+        <div className="field"><label className="label">Produit(s) Chogan</label>
+          <input value={prod} onChange={e=>setProd(e.target.value)} placeholder="Auto-rempli depuis le catalogue" /></div>
+
+        <div className="grid-2">
+          <div className="field"><label className="label">Quantité</label>
+            <input type="number" min="1" value={qty} onChange={e=>setQty(e.target.value)} /></div>
+          <div className="field"><label className="label">Catégorie</label>
             <select value={cat} onChange={e=>setCat(e.target.value)}>
               {CATS.map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
         </div>
 
-        {/* Montant + devise */}
-        <div className="field">
-          <label className="label">Montant</label>
-          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+        <div className="field"><label className="label">Montant</label>
+          <div style={{ display:'flex', gap:8 }}>
             <input type="number" placeholder="0.00" value={amt} onChange={e=>setAmt(e.target.value)} style={{ flex:1 }} />
-            <div style={{ display:'flex', background:'var(--bg-dark)', border:'1px solid var(--or-border)', borderRadius:10, overflow:'hidden', flexShrink:0 }}>
+            <div style={S.curSel}>
               {['DA','€'].map(c => (
-                <button key={c} style={{ padding:'9px 14px', cursor:'pointer', fontSize:12, fontWeight:700, background:cur===c?'linear-gradient(135deg, var(--or), var(--or-deep))':'transparent', color:cur===c?'#fff':'var(--text-muted)', border:'none', fontFamily:'var(--font-body)' }}
-                  onClick={() => setCur(c)}>{c}</button>
+                <button key={c} style={{ ...S.curBtn, ...(cur===c?S.curActive:{}) }} onClick={() => setCur(c)}>{c}</button>
               ))}
             </div>
           </div>
+          {totalEur > 0 && <p style={{ fontSize:11, color:'var(--green)', marginTop:4 }}>Total calculé : {totalEur.toFixed(2)}€</p>}
         </div>
 
-        {/* Date */}
-        <div className="field">
-          <label className="label">Date</label>
-          <input type="date" value={date} onChange={e=>setDate(e.target.value)} />
-        </div>
+        <div className="field"><label className="label">Date</label>
+          <input type="date" value={date} onChange={e=>setDate(e.target.value)} /></div>
 
-        {/* Notes */}
-        <div className="field">
-          <label className="label">Notes & commentaires</label>
-          <textarea rows={2} placeholder="Préférences, allergies..." value={note} onChange={e=>setNote(e.target.value)} style={{ resize:'none' }} />
-        </div>
+        <div className="field"><label className="label">Notes & commentaires</label>
+          <textarea rows={2} placeholder="Préférences, allergies..." value={note} onChange={e=>setNote(e.target.value)} style={{ resize:'none' }} /></div>
 
-        {/* Consultante (optionnel) */}
-        <div className="field">
-          <label className="label">Consultante (optionnel)</label>
-          <input value={consultant} onChange={e=>setConsultant(e.target.value)} placeholder="Nom de la consultante" />
-        </div>
-
-        {/* Panier récap */}
-        {cart.length > 0 && (
-          <div style={{ marginTop:4 }}>
-            <p style={{ ...S.secLabel, marginBottom:8 }}>🛒 Panier ({totalQty} article(s))</p>
-            {cart.map(c => (
-              <div key={c.key} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, padding:'8px 10px', background:'rgba(210,183,149,0.06)', borderRadius:8, border:'1px solid var(--or-border)' }}>
-                <div style={{ flex:1 }}>
-                  <span style={{ fontSize:12, fontWeight:600 }}>N°{c.ref} {c.name} — {c.size}</span>
-                  <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:8 }}>{(c.price*c.qty).toFixed(2)}€</span>
-                </div>
-                <button style={S.qtyBtn} onClick={() => updateCartFields(cart.map(x=>x.key===c.key?{...x,qty:Math.max(1,x.qty-1)}:x))}>−</button>
-                <span style={{ fontSize:12, fontWeight:700, minWidth:16, textAlign:'center' }}>{c.qty}</span>
-                <button style={S.qtyBtn} onClick={() => updateCartFields(cart.map(x=>x.key===c.key?{...x,qty:x.qty+1}:x))}>+</button>
-                <button style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:13 }} onClick={() => updateCartFields(cart.filter(x=>x.key!==c.key))}>✕</button>
-              </div>
-            ))}
-            <div style={{ display:'flex', justifyContent:'space-between', fontWeight:700, fontSize:16, color:'var(--or-deep)', padding:'8px 0', borderTop:'1px solid var(--or-border)', marginTop:4 }}>
-              <span>Total</span><span>{amt} {cur}</span>
-            </div>
-          </div>
-        )}
+        <div className="field"><label className="label">Consultante</label>
+          <input value={consultant} onChange={e=>setConsultant(e.target.value)} placeholder="Nom de la consultante" /></div>
       </div>
 
-      {/* Boutons */}
-      <button className="btn-gold" style={{ marginTop:12 }} onClick={saveToAgenda}>
-        ✦ Valider la transaction → Agenda
-      </button>
+      <button className="btn-gold" onClick={saveToAgenda}>✦ Valider la transaction → Agenda</button>
       <button className="btn-outline" style={{ width:'100%', marginTop:8 }} onClick={exportBC}>
         {copied ? '✓ Copié !' : '📋 Copier le bon de commande'}
       </button>
@@ -405,20 +211,20 @@ function BonCommandeTab() {
   return (
     <div style={S.pad}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <p style={S.secLabel}>Sélectionnez les produits</p>
-        <button className="btn-gold" style={{ padding:'8px 14px', width:'auto' }} onClick={() => setShowCart(true)}>
+        <p style={S.secLabel}>Catalogue ({PERFUMES_LIGHT.length} réf.)</p>
+        <button className="btn-gold" style={{ padding:'8px 14px', width:'auto' }} onClick={() => setShowForm(true)}>
           🛒 {cart.reduce((s,c)=>s+c.qty,0)} — Récap
         </button>
       </div>
-      <input placeholder="🔍 Rechercher..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
+      <input placeholder="🔍 Ref ou nom..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
         {filtered.map(p => (
-          <div key={p.id} style={{ ...S.card, borderLeft:`3px solid ${GENDER_COLOR[p.gender]}` }}>
-            <p style={{ fontSize:10, fontWeight:700, color:GENDER_COLOR[p.gender], marginBottom:3 }}>N°{p.ref} · {p.name}</p>
-            {p.sizes.map(s => (
-              <button key={s} style={S.sizeBtn} onClick={() => addToCart(p, s)}>
-                <span style={{ fontSize:10, color:'var(--text-muted)' }}>{s}</span>
-                <span style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)' }}>{p.prices?.[s]}€ +</span>
+          <div key={p.id} style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, padding:10 }}>
+            <p style={{ fontSize:10, fontWeight:700, color: p.gender==='h'?'#3d6b9e':p.gender==='f'?'#9e5a7a':'#4a7c59', marginBottom:4 }}>N°{p.ref} · {p.name}</p>
+            {p.sizes.map(sz => (
+              <button key={sz} style={S.sizeBtn} onClick={() => addToCart(p, sz)}>
+                <span style={{ fontSize:10, color:'var(--text-muted)' }}>{sz}</span>
+                <span style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)' }}>{p.prices?.[sz]}€ +</span>
               </button>
             ))}
           </div>
@@ -428,155 +234,224 @@ function BonCommandeTab() {
   );
 }
 
-// ── PROMO ─────────────────────────────────────────────────────────
-function PromoTab() {
-  const [devise, setDevise] = useState('eur');
-  const [taux, setTaux]     = useState('290');
-  const [promos, setPromos] = useState({});
-  const [qtes, setQtes]     = useState({});
-  const [sel, setSel]       = useState(null);
-  const tx = parseFloat(taux)||290;
+// ── VENTES (lit le_sales de l'agenda) ───────────────────────────
+function VentesTab() {
+  const [sales, setSales] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; }
+  });
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
 
-  const calc = (p) => {
-    const pa   = devise==='eur' ? p.prixEur + p.emballage : p.prixEur + (p.transportDzd||0) + p.emballage;
-    const paDA = Math.round((p.prixEur + (p.transportDzd||0) + p.emballage) * tx);
-    const min  = devise==='eur' ? parseFloat((pa*1.04).toFixed(2)) : Math.round(paDA*1.04);
-    const val  = parseFloat(promos[p.id])||0;
-    const qty  = parseInt(qtes[p.id])||0;
-    const marge = val>0&&val>=min ? (devise==='eur'?parseFloat(((val-pa)*qty).toFixed(2)):Math.round((val-paDA)*qty)) : 0;
-    return { pa:devise==='eur'?pa:paDA, min, val, qty, marge, ok:val>=min };
+  const refresh = () => {
+    try { setSales(JSON.parse(localStorage.getItem('le_sales')||'[]')); } catch {}
   };
 
-  const totalMarge = PRODUITS_PROMO.reduce((s,p) => s+calc(p).marge, 0);
-  const fmt = v => devise==='eur' ? v.toFixed(2)+' €' : v.toLocaleString('fr-FR')+' DA';
+  const fmt = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'2-digit' }) : '—';
 
-  const selProd = PRODUITS_PROMO.find(p=>p.id===sel);
-  const selCalc = selProd ? calc(selProd) : null;
+  const totalRevenu = sales.reduce((s,v) => {
+    const a = parseFloat(v.amount || v.amt) || 0;
+    return s + (v.currency === '€' || v.cur === '€' ? a : 0);
+  }, 0);
 
-  if (selProd) return (
-    <div style={S.pad}>
-      <button style={S.backLink} onClick={() => setSel(null)}>← Retour</button>
-      <p style={{ fontFamily:'var(--font-display)', fontSize:17, color:'var(--taupe)', marginBottom:14 }}>{selProd.nom}</p>
-      <div style={S.card}>
-        <p style={S.secLabel}>Prix de revient</p>
-        <div style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', borderBottom:'1px solid var(--or-border)' }}>
-          <span style={{ fontSize:12, color:'var(--text-muted)' }}>Total PA</span>
-          <span style={{ fontSize:14, fontWeight:700, color:'var(--or-deep)' }}>{fmt(selCalc.pa)}</span>
-        </div>
-        <div style={{ textAlign:'center', marginTop:10, padding:'10px', background:'rgba(74,124,89,0.08)', borderRadius:10 }}>
-          <p style={{ fontSize:10, color:'var(--green)', marginBottom:4 }}>Prix minimum (ne pas vendre en dessous)</p>
-          <p style={{ fontSize:26, fontWeight:700, color:'var(--green)' }}>{fmt(selCalc.min)}</p>
-        </div>
-      </div>
-      <div style={S.card}>
-        <p style={S.secLabel}>Simuler une promo</p>
-        <div className="field">
-          <label className="label">Mon prix promo ({devise==='eur'?'€':'DA'})</label>
-          <input type="number" value={promos[selProd.id]||''} onChange={e=>setPromos(p=>({...p,[selProd.id]:e.target.value}))} placeholder={`Min: ${fmt(selCalc.min)}`} />
-          {selCalc.val>0 && <p style={{ fontSize:11, marginTop:4, color:selCalc.ok?'var(--green)':'var(--red)' }}>{selCalc.ok?'✅ Prix valide':'⚠️ Prix trop bas !'}</p>}
-        </div>
-        <div className="field">
-          <label className="label">Quantité</label>
-          <input type="number" value={qtes[selProd.id]||''} onChange={e=>setQtes(p=>({...p,[selProd.id]:e.target.value}))} placeholder="0" />
-        </div>
-        {selCalc.marge > 0 && (
-          <div style={{ textAlign:'center', background:'var(--or-pale)', borderRadius:10, padding:14 }}>
-            <p style={{ fontSize:11, color:'var(--text-muted)', marginBottom:4 }}>Marge générée</p>
-            <p style={{ fontSize:26, fontWeight:700, color:'var(--or-deep)' }}>{fmt(selCalc.marge)}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const filtered = sales.filter(s => {
+    if (search) {
+      const q = search.toLowerCase();
+      return (s.client||'').toLowerCase().includes(q) || (s.product||s.prod||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   return (
     <div style={S.pad}>
-      <div style={{ display:'flex', gap:8, marginBottom:14 }}>
-        {[['eur','🇫🇷 €'],['dzd','🇩🇿 DA']].map(([v,l]) => (
-          <button key={v} style={{ flex:1, padding:10, borderRadius:10, border:`1px solid ${devise===v?'var(--or-deep)':'var(--or-border)'}`, background:devise===v?'var(--or-pale)':'transparent', color:devise===v?'var(--or-deep)':'var(--text-muted)', cursor:'pointer', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600 }}
-            onClick={() => { setDevise(v); setPromos({}); setQtes({}); }}>{l}</button>
-        ))}
-      </div>
-      {devise==='dzd' && (
-        <div className="field"><label className="label">Taux du jour (1€ = ? DA)</label><input type="number" value={taux} onChange={e=>setTaux(e.target.value)} /></div>
-      )}
-      {totalMarge > 0 && (
-        <div style={{ background:'var(--or-pale)', border:'1px solid var(--or-border)', borderRadius:12, padding:'12px 16px', marginBottom:14, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontSize:12, color:'var(--text-muted)' }}>Total marge promo</span>
-          <span style={{ fontSize:18, fontWeight:700, color:'var(--or-deep)' }}>{fmt(totalMarge)}</span>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+        <div>
+          <p style={{ fontSize:11, color:'var(--text-muted)' }}>{sales.length} vente(s)</p>
+          <p style={{ fontSize:14, fontWeight:700, color:'var(--or-deep)' }}>{totalRevenu.toFixed(2)}€</p>
         </div>
-      )}
-      {PRODUITS_PROMO.map(p => {
-        const c = calc(p);
-        return (
-          <div key={p.id} style={{ ...S.card, display:'flex', alignItems:'center', gap:10, cursor:'pointer', borderLeft:`3px solid ${c.marge>0?'var(--or-deep)':'var(--or-border)'}` }}
-            onClick={() => setSel(p.id)}>
-            <div style={{ flex:1 }}>
-              <p style={{ fontSize:13, fontWeight:600 }}>{p.nom}</p>
-              <div style={{ display:'flex', gap:10, marginTop:3 }}>
-                <span style={{ fontSize:11, color:'var(--text-muted)' }}>PA: {fmt(c.pa)}</span>
-                <span style={{ fontSize:11, color:'var(--green)' }}>Min: {fmt(c.min)}</span>
+        <button className="btn-outline" style={{ padding:'6px 12px' }} onClick={refresh}>↺ Actualiser</button>
+      </div>
+      <input placeholder="🔍 Cliente ou produit..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
+      {filtered.length === 0
+        ? <div style={S.empty}>Aucune vente. Créez un bon de commande et validez-le.</div>
+        : filtered.map(v => {
+          const amount = parseFloat(v.amount || v.amt) || 0;
+          const currency = v.currency || v.cur || '€';
+          const product = v.product || v.prod || '';
+          const items = v.items || [];
+          return (
+            <div key={v.id} style={S.venteCard}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 }}>
+                <div>
+                  <p style={{ fontSize:14, fontWeight:700, color:'var(--taupe)' }}>{v.client}</p>
+                  {v.email && <p style={{ fontSize:11, color:'var(--text-muted)' }}>{v.email}</p>}
+                  {v.tel   && <p style={{ fontSize:11, color:'var(--text-muted)' }}>{v.tel}</p>}
+                </div>
+                <div style={{ textAlign:'right' }}>
+                  <p style={{ fontSize:15, fontWeight:700, color:'var(--or-deep)' }}>{amount} {currency}</p>
+                  <p style={{ fontSize:10, color:'var(--text-muted)' }}>{fmt(v.date || v.createdAt)}</p>
+                </div>
               </div>
-              {c.marge>0 && <p style={{ fontSize:11, color:'var(--or-deep)', fontWeight:600, marginTop:2 }}>Marge: {fmt(c.marge)} (×{c.qty})</p>}
+              {/* Détail produits */}
+              {items.length > 0 ? (
+                <div style={{ marginTop:6 }}>
+                  {items.map((it, i) => (
+                    <div key={i} style={S.itemRow}>
+                      <span style={{ flex:1, fontSize:11 }}>{it.prod} ×{it.qty}</span>
+                      <span className="badge badge-gold" style={{ fontSize:9 }}>{it.cat}</span>
+                      <span style={{ fontSize:11, fontWeight:600, color:'var(--or-deep)', marginLeft:6 }}>{it.amt}{currency}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : product ? (
+                <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:4 }}>{product}</p>
+              ) : null}
+              {v.note && <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:4, fontStyle:'italic' }}>📝 {v.note}</p>}
+              {v.consultant && <p style={{ fontSize:10, color:'var(--text-dim)', marginTop:4 }}>Consultante: {v.consultant}</p>}
             </div>
-            <span style={{ color:'var(--or-deep)', fontSize:18 }}>›</span>
-          </div>
-        );
-      })}
+          );
+        })
+      }
     </div>
   );
 }
 
-// ── CONVERTISSEUR ─────────────────────────────────────────────────
-function ConvertisseurTab() {
-  const [eur, setEur]   = useState('');
-  const [rate, setRate] = useState('245');
-  const dzd = eur && !isNaN(+eur) ? Math.round(+eur * (+rate||245)) : null;
+// ── CLIENTS ──────────────────────────────────────────────────────
+function ClientsTab() {
+  const { getClients, addClient, deleteClient, getLoyaltyCards } = useData();
+  const [view, setView]     = useState('list');
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
+  const [form, setForm]     = useState({ firstName:'', lastName:'', email:'', phone:'', address:'', birthday:'' });
+  const [saved, setSaved]   = useState('');
+
+  const clients = getClients();
+  const cards   = getLoyaltyCards();
+  const LEVEL_COLOR = { Bronze:'#cd7f32', Argent:'#a8a9ad', Or:'var(--or-deep)' };
+
+  const filtered = clients.filter(c => {
+    const q = search.toLowerCase();
+    return `${c.firstName} ${c.lastName} ${c.email} ${c.phone}`.toLowerCase().includes(q);
+  });
+
+  const handleAdd = () => {
+    if (!form.firstName || !form.lastName) { alert('Prénom et nom requis.'); return; }
+    addClient(form);
+    setSaved(`✓ ${form.firstName} ${form.lastName} ajouté(e).`);
+    setForm({ firstName:'', lastName:'', email:'', phone:'', address:'', birthday:'' });
+    setTimeout(() => { setSaved(''); setView('list'); }, 2000);
+  };
+
+  if (selected) {
+    const card  = cards.find(c => c.clientId === selected.id);
+    const level = card?.level || 'Bronze';
+    return (
+      <div style={S.pad}>
+        <button style={S.back} onClick={() => setSelected(null)}>← Retour</button>
+        <div style={S.fiche}>
+          <div style={{ textAlign:'center', marginBottom:16 }}>
+            <div style={{ ...S.avatar, width:48, height:48, fontSize:16, margin:'0 auto 10px' }}>
+              {selected.firstName.charAt(0)}{selected.lastName.charAt(0)}
+            </div>
+            <p style={{ fontSize:16, fontWeight:700 }}>{selected.firstName} {selected.lastName}</p>
+            <span className="badge" style={{ background:`${LEVEL_COLOR[level]}22`, color:LEVEL_COLOR[level], border:`1px solid ${LEVEL_COLOR[level]}44`, marginTop:6 }}>
+              ✦ {level}
+            </span>
+          </div>
+          {[['Email',selected.email],['Téléphone',selected.phone],['Adresse',selected.address],['Anniversaire',selected.birthday],
+            ['Commandes',selected.totalOrders||0],['Dépenses',`${selected.totalSpent||0}€`],['Points fidélité',card?.points||0]
+          ].filter(([,v])=>v).map(([l,v]) => (
+            <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid var(--or-border)', fontSize:13 }}>
+              <span style={{ color:'var(--text-muted)' }}>{l}</span>
+              <span style={{ fontWeight:600 }}>{v}</span>
+            </div>
+          ))}
+          <button style={{ ...S.back, color:'var(--red)', marginTop:14 }} onClick={() => { deleteClient(selected.id); setSelected(null); }}>
+            🗑 Supprimer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={S.pad}>
-      <div style={S.card}>
-        <p style={S.secLabel}>💱 EUR → DZD</p>
-        <div className="field"><label className="label">Taux du jour (1€ = ? DA)</label><input type="number" value={rate} onChange={e=>setRate(e.target.value)} style={{ fontSize:18, textAlign:'center', fontWeight:700 }} /></div>
-        <div className="field"><label className="label">Montant en Euros (€)</label><input type="number" value={eur} onChange={e=>setEur(e.target.value)} placeholder="0.00" style={{ fontSize:22, textAlign:'center', fontWeight:700 }} /></div>
-        {dzd !== null && (
-          <div style={{ textAlign:'center', padding:'16px 0' }}>
-            <p style={{ fontSize:13, color:'var(--text-muted)', marginBottom:4 }}>{eur} € =</p>
-            <p style={{ fontSize:46, fontWeight:700, color:'var(--or-deep)', fontFamily:'var(--font-display)', lineHeight:1 }}>{dzd.toLocaleString('fr-FR')}</p>
-            <p style={{ fontSize:14, color:'var(--or-deep)', marginTop:4 }}>Dinars algériens</p>
-          </div>
-        )}
+      <div style={S.miniTabs}>
+        {[['list',`Liste (${clients.length})`],['add','➕ Ajouter']].map(([v,l]) => (
+          <button key={v} style={{ ...S.miniTab, ...(view===v?S.miniActive:{}) }} onClick={() => setView(v)}>{l}</button>
+        ))}
       </div>
-      <p style={S.secLabel}>Conversions rapides</p>
-      {[11.90,18,25.50,35,45,48,52,57,65].map(p => (
-        <div key={p} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 14px', background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:10, marginBottom:6 }}>
-          <span style={{ fontSize:13, fontWeight:500 }}>{p.toFixed(2)} €</span>
-          <span style={{ fontSize:14, fontWeight:700, color:'var(--or-deep)' }}>{Math.round(p*(+rate||245)).toLocaleString('fr-FR')} DA</span>
-        </div>
-      ))}
+
+      {view === 'list' && (
+        <>
+          <input placeholder="🔍 Rechercher..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
+          {filtered.length === 0
+            ? <div style={S.empty}>Aucun client</div>
+            : filtered.map(c => {
+              const card  = cards.find(x => x.clientId === c.id);
+              const level = card?.level || 'Bronze';
+              return (
+                <div key={c.id} style={S.clientRow} onClick={() => setSelected(c)}>
+                  <div style={S.avatar}>{c.firstName.charAt(0)}{c.lastName.charAt(0)}</div>
+                  <div style={{ flex:1 }}>
+                    <p style={{ fontSize:13, fontWeight:600 }}>{c.firstName} {c.lastName}</p>
+                    {c.phone && <p style={{ fontSize:11, color:'var(--text-muted)' }}>{c.phone}</p>}
+                    <div style={{ display:'flex', gap:6, marginTop:4 }}>
+                      <span className="badge badge-gold">{c.totalOrders||0} cdes</span>
+                      <span className="badge" style={{ background:`${LEVEL_COLOR[level]}22`, color:LEVEL_COLOR[level], border:`1px solid ${LEVEL_COLOR[level]}44`, fontSize:10 }}>{level}</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:'right' }}>
+                    <p style={{ fontSize:13, fontWeight:700, color:'var(--or-deep)' }}>{c.totalSpent||0}€</p>
+                    <p style={{ fontSize:10, color:'var(--text-dim)', marginTop:2 }}>{card?.points||0} pts</p>
+                  </div>
+                </div>
+              );
+            })
+          }
+        </>
+      )}
+
+      {view === 'add' && (
+        <>
+          {saved && <div style={S.ok}>{saved}</div>}
+          {[['firstName','Prénom *','text'],['lastName','Nom *','text'],['email','Email','email'],
+            ['phone','Téléphone','tel'],['address','Adresse','text'],['birthday','Anniversaire','date']
+          ].map(([k,l,t]) => (
+            <div className="field" key={k}>
+              <label className="label">{l}</label>
+              <input type={t} value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} placeholder={l.replace(' *','')} />
+            </div>
+          ))}
+          <button className="btn-gold" onClick={handleAdd}>AJOUTER LE CLIENT</button>
+        </>
+      )}
     </div>
   );
 }
 
 const S = {
-  tabsWrap: { display:'flex', overflowX:'auto', borderBottom:'1px solid var(--or-border)', scrollbarWidth:'none' },
-  tab: { padding:'11px 10px', background:'none', color:'var(--text-muted)', fontSize:11, borderBottom:'2px solid transparent', whiteSpace:'nowrap', flexShrink:0 },
+  tabsWrap: { display:'flex', borderBottom:'1px solid var(--or-border)', overflowX:'auto', scrollbarWidth:'none' },
+  tab: { flex:1, padding:'12px 8px', background:'none', color:'var(--text-muted)', fontSize:12, borderBottom:'2px solid transparent', whiteSpace:'nowrap' },
   tabActive: { color:'var(--or-deep)', borderBottom:'2px solid var(--or-deep)' },
   pad: { padding:16 },
+  back: { background:'none', border:'none', color:'var(--text-muted)', fontSize:13, cursor:'pointer', padding:'0 0 14px', display:'block' },
+  ok: { background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.3)', borderRadius:10, padding:'10px 14px', color:'var(--green)', fontSize:13, fontWeight:600, marginBottom:12 },
+  secLabel: { fontSize:11, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--or-deep)' },
+  fiche: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:16, marginBottom:12 },
+  ficheTitle: { fontFamily:'var(--font-display)', fontSize:13, color:'var(--or-deep)', letterSpacing:'0.08em', marginBottom:14, paddingBottom:10, borderBottom:'1px solid var(--or-border)' },
+  cartBlock: { background:'rgba(210,183,149,0.08)', border:'1px solid var(--or-border)', borderRadius:10, padding:'10px 12px', marginBottom:12 },
+  cartTitle: { fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:8 },
+  cartRow: { display:'flex', alignItems:'center', gap:6, padding:'5px 0', borderBottom:'1px solid var(--or-border)' },
+  curSel: { display:'flex', background:'var(--bg-dark)', border:'1px solid var(--or-border)', borderRadius:10, overflow:'hidden', flexShrink:0 },
+  curBtn: { padding:'9px 13px', cursor:'pointer', fontSize:12, fontWeight:700, background:'transparent', color:'var(--text-muted)', border:'none', fontFamily:'var(--font-body)' },
+  curActive: { background:'linear-gradient(135deg, var(--or), var(--or-deep))', color:'#fff' },
+  sizeBtn: { display:'flex', justifyContent:'space-between', width:'100%', padding:'4px 6px', marginBottom:3, background:'rgba(210,183,149,0.06)', border:'1px solid var(--or-border)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' },
+  venteCard: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:'12px 14px', marginBottom:10 },
+  itemRow: { display:'flex', alignItems:'center', gap:6, padding:'4px 0', borderBottom:'1px solid rgba(210,183,149,0.15)' },
+  clientRow: { display:'flex', alignItems:'center', gap:12, background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, padding:'12px', marginBottom:8, cursor:'pointer' },
+  avatar: { width:38, height:38, borderRadius:'50%', background:'linear-gradient(135deg, var(--or), var(--or-deep))', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:700, color:'#fff', flexShrink:0 },
   miniTabs: { display:'flex', gap:8, marginBottom:14 },
   miniTab: { flex:1, padding:'9px', background:'transparent', border:'1px solid var(--or-border)', color:'var(--text-muted)', borderRadius:10, fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)' },
   miniActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
-  card: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, padding:14, marginBottom:10 },
-  section: { background:'rgba(255,255,255,0.6)', border:'1px solid var(--or-border)', borderRadius:12, padding:14, marginBottom:12 },
-  secLabel: { fontSize:11, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--or-deep)', marginBottom:10 },
-  empty: { textAlign:'center', color:'var(--text-muted)', padding:'40px 0', fontSize:14 },
-  successMsg: { background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.25)', borderRadius:10, padding:12, color:'var(--green)', fontSize:13, marginBottom:14 },
-  prodGrid: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 },
-  prodCard: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:10, padding:10, cursor:'pointer', display:'flex', flexDirection:'column', gap:3 },
-  filterRow: { display:'flex', gap:8, marginBottom:10, flexWrap:'wrap' },
-  filterBtn: { background:'var(--bg-card)', border:'1px solid var(--or-border)', color:'var(--text-muted)', borderRadius:20, padding:'5px 12px', fontSize:12, cursor:'pointer' },
-  filterActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
-  venteFiche: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:16, marginBottom:12 },
-  venteTitle: { fontFamily:'var(--font-display)', fontSize:13, color:'var(--or-deep)', letterSpacing:'0.08em', marginBottom:14, paddingBottom:10, borderBottom:'1px solid var(--or-border)' },
-  backLink: { background:'none', border:'none', color:'var(--text-muted)', fontSize:13, cursor:'pointer', padding:'0 0 14px', display:'block' },
-  qtyBtn: { width:26, height:26, borderRadius:6, background:'var(--or-pale)', border:'1px solid var(--or-border)', color:'var(--or-deep)', cursor:'pointer', fontSize:16, display:'flex', alignItems:'center', justifyContent:'center' },
+  empty: { textAlign:'center', color:'var(--text-muted)', padding:'40px 0', fontSize:13 },
 };
