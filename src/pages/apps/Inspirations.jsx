@@ -25,6 +25,7 @@ export default function Orders() {
       {tab === 'inspirations' && <InspirationsTab />}
       {tab === 'promo'        && <PromoTab />}
       {tab === 'convert'      && <ConvertisseurTab />}
+      {tab === 'maj'          && <MajPrixTab />}
     </AppLayout>
   );
 }
