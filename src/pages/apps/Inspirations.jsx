@@ -39,7 +39,6 @@ function InspirationsTab() {
   const [selected, setSelected] = useState(null);
 
   const customPrix = (() => { try { return JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}'); } catch { return {}; } })();
-
   const norm = r => (r||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
 
   const allProducts = (() => {
@@ -51,10 +50,9 @@ function InspirationsTab() {
       custom:true,
     })).filter(p=>p.ref&&p.name&&p.sizes.length>0);
     const customRefs = new Set(customList.map(p=>p.ref));
-    const staticList = PERFUMES.filter(p=>!customRefs.has(norm(p.ref))).map(p=>({
-      ...p,
+    const staticList = PERFUMES.filter(p=>!customRefs.has(norm(String(p.ref)))).map(p=>({
+      ...p, ref:String(p.ref),
       gender:p.gender==='homme'?'h':p.gender==='femme'?'f':'m',
-      ref: String(p.ref),
     }));
     return [...customList,...staticList].sort((a,b)=>(parseInt(a.ref)||0)-(parseInt(b.ref)||0));
   })();
@@ -69,33 +67,41 @@ function InspirationsTab() {
 
   const getBottleImg = (ref) => {
     const r = norm(ref);
-    const variants = [r, ref, ref+'m', ref+'M', ref+'w', ref+'W'];
-    for (const v of variants) if (BOTTLE_REFS.has(v)) return `/bottles/${v}.jpg`;
+    for (const v of [r, ref, ref+'m', ref+'M', ref+'w', ref+'W'])
+      if (BOTTLE_REFS.has(v)) return `/bottles/${v}.jpg`;
     return null;
   };
 
+  const GC = {h:'#3d6b9e',f:'#9e5a7a',m:'#4a7c59'};
+  const GL = {h:'♂',f:'♀',m:'⚧'};
+
   if (selected) {
     const img = getBottleImg(selected.ref);
-    const col = GENDER_COLOR[selected.gender]||'var(--or)';
+    const col = GC[selected.gender]||'var(--or)';
+    const minPrice = selected.sizes.length>0 ? Math.min(...selected.sizes.map(s=>selected.prices?.[s]||99)) : 0;
     return (
       <div style={S.pad}>
-        <button style={S.back} onClick={()=>setSelected(null)}>← Retour</button>
-        <div style={{...S.detailCard, borderTop:`4px solid ${col}`}}>
-          <div style={{...S.photoBox, background:`linear-gradient(135deg, ${col}18, ${col}05)`}}>
+        <button style={S.back} onClick={()=>setSelected(null)}>← Retour catalogue</button>
+        <div style={{background:'var(--bg-card)',border:'1px solid var(--or-border)',borderRadius:20,overflow:'hidden',boxShadow:'0 4px 24px rgba(210,183,149,0.12)'}}>
+          {/* Zone photo */}
+          <div style={{height:220,background:`linear-gradient(160deg,${col}10 0%,rgba(247,235,225,0.6) 60%,${col}08 100%)`,display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
             {img
-              ? <img src={img} alt={selected.name} style={{maxHeight:180,maxWidth:'90%',objectFit:'contain',borderRadius:8}} onError={e=>{e.target.style.display='none';}}/>
-              : <BottleSVG gender={selected.gender} size={80} refNum={selected.ref}/>
+              ? <img src={img} alt={selected.name} style={{maxHeight:200,maxWidth:'85%',objectFit:'contain',filter:'drop-shadow(0 8px 24px rgba(0,0,0,0.12))'}} onError={e=>{e.target.style.display='none';}}/>
+              : <BottleSVG gender={selected.gender} size={90} refNum={selected.ref}/>
             }
-            {selected.custom && <span style={S.majBadge}>✅ MàJ</span>}
+            <div style={{position:'absolute',top:12,left:12,background:'rgba(255,255,255,0.85)',backdropFilter:'blur(8px)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:700,color:col,border:`1px solid ${col}30`}}>
+              N°{selected.ref} {GL[selected.gender]}
+            </div>
+            {selected.custom && <span style={{position:'absolute',top:12,right:12,background:'rgba(74,124,89,0.9)',color:'white',fontSize:10,fontWeight:700,borderRadius:12,padding:'3px 10px'}}>✅ MàJ</span>}
           </div>
-          <div style={{padding:'14px'}}>
-            <p style={{fontSize:11,fontWeight:700,color:col}}>N°{selected.ref}</p>
-            <p style={{fontSize:18,fontWeight:700,fontFamily:'var(--font-display)',color:'var(--taupe)',marginTop:2}}>{selected.name}</p>
-            <p style={{fontSize:12,color:'var(--text-muted)',marginTop:3}}>{selected.brand}</p>
-            <div style={{borderTop:'1px solid var(--or-border)',paddingTop:12,marginTop:12}}>
-              {selected.sizes.map(s=>(
-                <div key={s} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid rgba(210,183,149,0.15)'}}>
-                  <span style={{fontSize:13,color:'var(--taupe)'}}>{s}</span>
+          {/* Infos */}
+          <div style={{padding:'18px 16px'}}>
+            <p style={{fontFamily:'var(--font-display)',fontSize:20,fontWeight:700,color:'var(--taupe)',letterSpacing:'0.04em'}}>{selected.name}</p>
+            <p style={{fontSize:12,color:'var(--text-muted)',marginTop:4,marginBottom:14}}>Inspiré de {selected.brand}</p>
+            <div style={{background:'rgba(210,183,149,0.08)',borderRadius:12,overflow:'hidden',border:'1px solid var(--or-border)'}}>
+              {selected.sizes.map((s,i)=>(
+                <div key={s} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 14px',borderBottom:i<selected.sizes.length-1?'1px solid rgba(210,183,149,0.15)':'none'}}>
+                  <span style={{fontSize:13,color:'var(--taupe)',fontWeight:500}}>{s}</span>
                   <span style={{fontSize:16,fontWeight:700,color:'var(--or-deep)'}}>{selected.prices?.[s]}€</span>
                 </div>
               ))}
@@ -108,35 +114,56 @@ function InspirationsTab() {
 
   return (
     <div style={S.pad}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-        <p style={{fontSize:11,color:'var(--text-muted)'}}>{filtered.length} réf. {Object.keys(customPrix).length>0&&`· ${Object.keys(customPrix).length} MàJ`}</p>
+      {/* Header */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+        <p style={{fontSize:11,color:'var(--text-muted)',letterSpacing:'0.04em'}}>{filtered.length} parfum{filtered.length>1?'s':''}</p>
+        {Object.keys(customPrix).length>0&&<span style={{fontSize:10,color:'var(--green)',fontWeight:700,background:'rgba(74,124,89,0.1)',padding:'3px 10px',borderRadius:20,border:'1px solid rgba(74,124,89,0.2)'}}>✅ {Object.keys(customPrix).length} mis à jour</span>}
       </div>
-      <input placeholder="🔍 Nom, marque ou référence..." value={search} onChange={e=>setSearch(e.target.value)} style={{marginBottom:10}}/>
-      <div style={S.filterRow}>
+
+      {/* Recherche */}
+      <div style={{position:'relative',marginBottom:12}}>
+        <span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',fontSize:14,color:'var(--text-muted)'}}>🔍</span>
+        <input
+          placeholder="Nom, marque ou référence..."
+          value={search} onChange={e=>setSearch(e.target.value)}
+          style={{paddingLeft:36,paddingRight:12}}
+        />
+      </div>
+
+      {/* Filtres genre */}
+      <div style={{display:'flex',gap:6,marginBottom:14,overflowX:'auto',scrollbarWidth:'none',paddingBottom:2}}>
         {[['tous','Tous'],['homme','♂ Homme'],['femme','♀ Femme'],['mixte','⚧ Mixte']].map(([v,l])=>(
-          <button key={v} style={{...S.filterBtn,...(gender===v?S.filterActive:{})}} onClick={()=>setGender(v)}>{l}</button>
+          <button key={v} onClick={()=>setGender(v)}
+            style={{padding:'6px 14px',borderRadius:20,border:`1px solid ${gender===v?'var(--or-deep)':'var(--or-border)'}`,background:gender===v?'var(--or-deep)':'transparent',color:gender===v?'#fff':'var(--text-muted)',cursor:'pointer',fontSize:12,fontFamily:'var(--font-body)',whiteSpace:'nowrap',flexShrink:0,fontWeight:gender===v?600:400,transition:'all 0.15s'}}>
+            {l}
+          </button>
         ))}
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+
+      {/* Grille produits */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
         {filtered.map(p=>{
           const img = getBottleImg(p.ref);
-          const col = GENDER_COLOR[p.gender]||'#B89A6A';
+          const col = GC[p.gender]||'#B89A6A';
+          const minP = p.sizes.length>0 ? Math.min(...p.sizes.map(s=>p.prices?.[s]||99)) : 0;
           return (
-            <div key={p.id||p.ref} style={S.card} onClick={()=>setSelected(p)}>
-              <div style={{...S.cardPhoto,background:`linear-gradient(135deg,${col}12,${col}04)`}}>
+            <div key={p.id||p.ref} onClick={()=>setSelected(p)}
+              style={{background:'var(--bg-card)',border:'1px solid var(--or-border)',borderRadius:16,overflow:'hidden',cursor:'pointer',transition:'transform 0.15s',boxShadow:'0 2px 12px rgba(210,183,149,0.08)'}}>
+              {/* Photo */}
+              <div style={{height:120,background:`linear-gradient(135deg,${col}10,rgba(247,235,225,0.4))`,display:'flex',alignItems:'center',justifyContent:'center',position:'relative'}}>
                 {img
-                  ? <img src={img} alt={p.name} style={{width:'100%',height:'100%',objectFit:'contain',padding:6}} onError={e=>{e.target.style.display='none';}}/>
-                  : <BottleSVG gender={p.gender} size={40} refNum={p.ref}/>
+                  ? <img src={img} alt={p.name} style={{maxHeight:108,maxWidth:'90%',objectFit:'contain',filter:'drop-shadow(0 4px 12px rgba(0,0,0,0.10))'}} onError={e=>{e.target.style.display='none';}}/>
+                  : <BottleSVG gender={p.gender} size={44} refNum={p.ref}/>
                 }
-                {p.custom&&<span style={S.majBadgeSm}>MàJ</span>}
+                <span style={{position:'absolute',top:6,left:6,fontSize:9,fontWeight:700,color:col,background:'rgba(255,255,255,0.85)',borderRadius:10,padding:'2px 7px'}}>{GL[p.gender]}</span>
+                {p.custom&&<span style={{position:'absolute',top:6,right:6,fontSize:8,fontWeight:700,color:'var(--green)',background:'rgba(74,124,89,0.12)',borderRadius:8,padding:'2px 6px',border:'1px solid rgba(74,124,89,0.2)'}}>MàJ</span>}
               </div>
-              <div style={{padding:'8px 10px'}}>
-                <p style={{fontSize:9,fontWeight:700,color:col,marginBottom:2}}>N°{p.ref}</p>
-                <p style={{fontSize:12,fontWeight:600,lineHeight:1.3,color:'var(--taupe)'}}>{p.name}</p>
-                <p style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>{p.brand}</p>
-                <p style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',marginTop:6}}>
-                  dès {p.sizes.length>0?Math.min(...p.sizes.map(s=>p.prices?.[s]||99)):0}€
-                </p>
+              {/* Texte */}
+              <div style={{padding:'10px'}}>
+                <p style={{fontSize:9,color:'var(--text-dim)',marginBottom:3,letterSpacing:'0.06em'}}>N°{p.ref}</p>
+                <p style={{fontSize:13,fontWeight:600,color:'var(--taupe)',lineHeight:1.25,marginBottom:2}}>{p.name}</p>
+                <p style={{fontSize:10,color:'var(--text-muted)',marginBottom:6}}>{p.brand}</p>
+                <p style={{fontSize:12,fontWeight:700,color:'var(--or-deep)'}}>dès {minP}€</p>
               </div>
             </div>
           );
