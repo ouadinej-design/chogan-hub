@@ -6,13 +6,12 @@ import { PERFUMES, PRODUITS_PROMO, GENDER_COLOR } from '../../utils/choganData';
 const TABS = [
   { id:'orders',      label:'🛒 Commandes' },
   { id:'inspirations',label:'🌹 Inspirations' },
-  { id:'bon',         label:'📋 Bon de commande' },
   { id:'promo',       label:'🏷 Promo' },
   { id:'convert',     label:'💱 Convertisseur' },
 ];
 
 export default function Orders() {
-  const [tab, setTab] = useState('orders');
+  const [tab, setTab] = useState('inspirations');
   return (
     <AppLayout title="Inspirations" icon="🌹">
       <div style={S.tabsWrap}>
@@ -24,7 +23,6 @@ export default function Orders() {
       </div>
       {tab === 'orders'       && <CommandesTab />}
       {tab === 'inspirations' && <InspirationsTab />}
-      {tab === 'bon'          && <BonCommandeTab />}
       {tab === 'promo'        && <PromoTab />}
       {tab === 'convert'      && <ConvertisseurTab />}
     </AppLayout>
