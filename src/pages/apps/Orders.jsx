@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import AppLayout from '../../components/AppLayout';
 import { PERFUMES, PRODUITS_PROMO, GENDER_COLOR } from '../../utils/choganData';
@@ -210,6 +210,19 @@ function BonCommandeTab() {
     return p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.ref.includes(search);
   });
 
+  // Recalcule prod / qty / amt à chaque changement du panier
+  useEffect(() => {
+    if (cart.length === 0) { setProd(''); setQty('0'); setAmt(''); return; }
+    const prodDetail = cart
+      .map(c => `N°${c.ref} ${c.name} ${c.size} x${c.qty} = ${(c.price*c.qty).toFixed(2)}€`)
+      .join('\n');
+    const totalQ = cart.reduce((s,c) => s+c.qty, 0);
+    const totalA = cart.reduce((s,c) => s+c.price*c.qty, 0);
+    setProd(prodDetail);
+    setQty(String(totalQ));
+    setAmt(totalA.toFixed(2));
+  }, [cart]);
+
   const addToCart = (p, size) => {
     const key = `${p.id}-${size}`;
     setCart(prev => {
@@ -217,30 +230,11 @@ function BonCommandeTab() {
       if (ex) return prev.map(c => c.key===key ? {...c, qty:c.qty+1} : c);
       return [...prev, { key, name:p.name, ref:p.ref, size, price:p.prices?.[size]||35, qty:1 }];
     });
-    // Auto-remplir les champs prod, qty, amt comme dans l'agenda
-    const newProd = cart.concat([{name:p.name,ref:p.ref,size,qty:1}])
-      .map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', ');
-    const newProdSimple = `N°${p.ref} ${p.name} ${size}`;
-    setProd(prev => prev ? `${prev}, ${newProdSimple}` : newProdSimple);
-    const newQty = cart.reduce((s,c)=>s+c.qty,0) + 1;
-    setQty(String(newQty));
-    const totalEur = cart.reduce((s,c)=>s+c.price*c.qty,0) + (p.prices?.[size]||35);
-    setAmt(totalEur.toFixed(2));
   };
 
   const totalEur = cart.reduce((s,c) => s+c.price*c.qty, 0);
   const totalQty = cart.reduce((s,c) => s+c.qty, 0);
-
-  // Synchronise les champs quand le panier change
-  const updateCartFields = (newCart) => {
-    setCart(newCart);
-    const p = newCart.map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', ');
-    const q = newCart.reduce((s,c)=>s+c.qty, 0);
-    const a = newCart.reduce((s,c)=>s+c.price*c.qty, 0);
-    setProd(p);
-    setQty(String(q));
-    setAmt(a.toFixed(2));
-  };
+  const updateCartFields = (newCart) => setCart(newCart);
 
   // ✦ Enregistrer dans le_sales (rubrique Vente de l'agenda original)
   const saveToAgenda = () => {
@@ -315,7 +309,13 @@ function BonCommandeTab() {
         {/* Produit */}
         <div className="field">
           <label className="label">Produit Chogan</label>
-          <input value={prod} onChange={e=>setProd(e.target.value)} placeholder="Ex: Parfum N°001..." />
+          <textarea
+            rows={Math.max(2, cart.length)}
+            value={prod}
+            onChange={e=>setProd(e.target.value)}
+            placeholder="Les produits s'ajoutent automatiquement depuis le catalogue"
+            style={{ resize:'none', fontFamily:'var(--font-body)', fontSize:12, lineHeight:1.7 }}
+          />
         </div>
         <div className="grid-2">
           <div className="field">
