@@ -7,6 +7,7 @@ const TABS = [
   { id:'bon',     label:'📋 Bon de commande' },
   { id:'ventes',  label:'💰 Ventes' },
   { id:'clients', label:'👥 Clients' },
+  { id:'maj',     label:'🔄 Mise à jour' },
 ];
 
 export default function Orders() {
@@ -23,6 +24,7 @@ export default function Orders() {
       {tab === 'bon'     && <BonCommandeTab />}
       {tab === 'ventes'  && <VentesTab />}
       {tab === 'clients' && <AgendaClientsTab />}
+      {tab === 'maj'     && <MajPrixTab />}
     </AppLayout>
   );
 }
@@ -707,4 +709,278 @@ const S = {
   actionRow: { display:'flex', gap:8, marginTop:10, paddingTop:8, borderTop:'1px solid var(--or-border)' },
   editBtn: { flex:1, padding:'7px', background:'var(--or-pale)', border:'1px solid var(--or-border)', color:'var(--or-deep)', borderRadius:8, fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 },
   resetBtn: { flex:1, padding:'7px', background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', color:'var(--red)', borderRadius:8, fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 },
+  majInfo: { background:'rgba(210,183,149,0.08)', border:'1px solid var(--or-border)', borderRadius:14, padding:'14px', marginBottom:14 },
+  majTitle: { fontFamily:'var(--font-display)', fontSize:14, color:'var(--taupe)', letterSpacing:'0.06em', marginBottom:6 },
+  majDesc: { fontSize:12, color:'var(--text-muted)', lineHeight:1.6 },
+  majStatus: { display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:10, paddingTop:10, borderTop:'1px solid var(--or-border)' },
+  modeRow: { display:'flex', gap:8, marginBottom:14 },
+  modeBtn: { flex:1, padding:'10px', borderRadius:10, border:'1px solid var(--or-border)', background:'transparent', color:'var(--text-muted)', cursor:'pointer', fontSize:12, fontFamily:'var(--font-body)' },
+  modeBtnActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)', fontWeight:700 },
+  dropZone: { display:'block', border:'2px dashed var(--or-border)', borderRadius:14, padding:'24px 16px', cursor:'pointer', background:'rgba(210,183,149,0.04)', transition:'border-color 0.2s', marginBottom:4 },
+  loadingBox: { textAlign:'center', padding:'24px 0' },
+  spinner: { width:32, height:32, border:'3px solid var(--or-pale)', borderTop:'3px solid var(--or-deep)', borderRadius:'50%', margin:'0 auto', animation:'spin 0.8s linear infinite' },
+  errorBox: { background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:10, padding:'12px', color:'var(--red)', fontSize:13, marginTop:12 },
+  resultHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 },
+  resultList: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, overflow:'hidden', marginBottom:14 },
+  resultItem: { padding:'10px 14px', borderBottom:'1px solid var(--or-border)' },
+  priceTag: { fontSize:10, padding:'2px 8px', background:'var(--or-pale)', color:'var(--or-deep)', borderRadius:20, border:'1px solid var(--or-border)', fontWeight:600 },
+  savedBox: { background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.3)', borderRadius:10, padding:'12px', color:'var(--green)', fontSize:13, fontWeight:600, textAlign:'center' },
 };
+
+// ── MISE À JOUR PRODUITS & PRIX ──────────────────────────────────
+function MajPrixTab() {
+  const [file, setFile]         = useState(null);
+  const [preview, setPreview]   = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [result, setResult]     = useState(null);   // produits extraits par Claude
+  const [error, setError]       = useState('');
+  const [saved, setSaved]       = useState(false);
+  const [manualText, setManual] = useState('');
+  const [mode, setMode]         = useState('upload'); // 'upload' | 'paste'
+
+  const toBase64 = (f) => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(f);
+  });
+
+  const analyzeWithClaude = async (content, mediaType, isText = false) => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    const userContent = isText
+      ? [{ type: 'text', text: `Voici une liste de parfums Chogan. Extrais TOUS les produits avec leurs informations.\n\n${content}` }]
+      : mediaType === 'application/pdf'
+        ? [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: content } },
+           { type: 'text', text: "Extrais tous les parfums/produits Chogan de ce document." }]
+        : [{ type: 'image', source: { type: 'base64', media_type: mediaType, data: content } },
+           { type: 'text', text: "Extrais tous les parfums/produits Chogan visibles dans cette image." }];
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          system: `Tu es un assistant spécialisé dans les produits Chogan.
+Analyse le document fourni et extrais TOUS les produits avec leurs prix.
+Réponds UNIQUEMENT en JSON valide, sans texte avant ou après, sans balises markdown.
+Format attendu :
+{
+  "produits": [
+    {
+      "ref": "001",
+      "nom": "One Million",
+      "genre": "homme",
+      "prix": {
+        "15ml": 11.90,
+        "30ml": 18.00,
+        "50ml": null,
+        "70ml": 35.00,
+        "100ml": null
+      },
+      "categorie": "Parfum"
+    }
+  ],
+  "date_maj": "2025",
+  "source": "document"
+}
+Si un format n'existe pas, mets null. Ne crée que les entrées trouvées dans le document.`,
+          messages: [{ role: 'user', content: userContent }],
+        }),
+      });
+
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const data = await res.json();
+      const text = data.content?.find(b => b.type === 'text')?.text || '';
+      const clean = text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+      setResult(parsed);
+    } catch(e) {
+      setError(`Erreur analyse : ${e.message}. Vérifiez votre connexion ou essayez avec un autre fichier.`);
+    }
+    setLoading(false);
+  };
+
+  const handleFile = async (f) => {
+    if (!f) return;
+    setFile(f);
+    setResult(null);
+    setSaved(false);
+
+    if (f.type.startsWith('image/')) {
+      const url = URL.createObjectURL(f);
+      setPreview(url);
+    } else {
+      setPreview(null);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (mode === 'paste') {
+      if (!manualText.trim()) return;
+      await analyzeWithClaude(manualText, null, true);
+      return;
+    }
+    if (!file) return;
+    const b64 = await toBase64(file);
+    await analyzeWithClaude(b64, file.type);
+  };
+
+  const handleSave = () => {
+    if (!result?.produits?.length) return;
+    const existing = JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}');
+    const updated  = { ...existing };
+    result.produits.forEach(p => {
+      const key = p.ref || p.nom;
+      updated[key] = {
+        ref: p.ref, nom: p.nom, genre: p.genre||'mixte',
+        categorie: p.categorie||'Parfum', prix: p.prix,
+        maj: new Date().toISOString(),
+      };
+    });
+    localStorage.setItem('chogan_prix_custom', JSON.stringify(updated));
+    setSaved(true);
+  };
+
+  const handleReset = () => {
+    if (!window.confirm('Réinitialiser tous les prix personnalisés ?')) return;
+    localStorage.removeItem('chogan_prix_custom');
+    setSaved(false);
+    setResult(null);
+    setFile(null);
+    setPreview(null);
+  };
+
+  const customCount = Object.keys(JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}')).length;
+
+  return (
+    <div style={S.pad}>
+      {/* Header info */}
+      <div style={S.majInfo}>
+        <p style={S.majTitle}>🔄 Mise à jour produits & prix</p>
+        <p style={S.majDesc}>
+          Importez un fichier PDF ou une photo du catalogue Chogan pour mettre à jour automatiquement les prix et les références.
+        </p>
+        {customCount > 0 && (
+          <div style={S.majStatus}>
+            <span style={{ color:'var(--green)', fontWeight:700 }}>✅ {customCount} produit(s) mis à jour</span>
+            <button style={{ ...S.resetBtn, padding:'4px 10px', fontSize:11 }} onClick={handleReset}>
+              Réinitialiser tout
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Mode selector */}
+      <div style={S.modeRow}>
+        {[['upload','📎 Fichier / Photo'],['paste','✏️ Coller du texte']].map(([m,l]) => (
+          <button key={m} style={{ ...S.modeBtn, ...(mode===m?S.modeBtnActive:{}) }} onClick={() => setMode(m)}>{l}</button>
+        ))}
+      </div>
+
+      {/* Upload mode */}
+      {mode === 'upload' && (
+        <div>
+          <label style={S.dropZone}>
+            <input type="file" accept=".pdf,image/*" style={{ display:'none' }}
+              onChange={e => handleFile(e.target.files[0])} />
+            {file ? (
+              <div style={{ textAlign:'center' }}>
+                {preview && <img src={preview} alt="aperçu" style={{ maxWidth:'100%', maxHeight:180, borderRadius:10, marginBottom:10 }} />}
+                <p style={{ fontSize:13, fontWeight:600, color:'var(--taupe)' }}>{file.name}</p>
+                <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:4 }}>
+                  {(file.size/1024).toFixed(0)} KB · {file.type.includes('pdf')?'PDF':'Image'}
+                </p>
+                <p style={{ fontSize:11, color:'var(--or-deep)', marginTop:6 }}>Cliquez pour changer</p>
+              </div>
+            ) : (
+              <div style={{ textAlign:'center', padding:'10px 0' }}>
+                <p style={{ fontSize:32, marginBottom:8 }}>📎</p>
+                <p style={{ fontSize:14, fontWeight:600, color:'var(--taupe)' }}>Glissez ou cliquez pour importer</p>
+                <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:6 }}>PDF ou image (JPG, PNG, WEBP)</p>
+              </div>
+            )}
+          </label>
+        </div>
+      )}
+
+      {/* Paste mode */}
+      {mode === 'paste' && (
+        <div className="field">
+          <label className="label">Collez votre liste de prix</label>
+          <textarea
+            rows={8}
+            value={manualText}
+            onChange={e => setManual(e.target.value)}
+            placeholder={"Exemple :\nN°001 One Million 70ml = 35€\nN°002 Acqua Di Gio 30ml = 18€\n..."}
+            style={{ resize:'vertical', fontFamily:'var(--font-body)', fontSize:13 }}
+          />
+        </div>
+      )}
+
+      {/* Analyze button */}
+      <button className="btn-gold" style={{ marginTop:12 }}
+        onClick={handleAnalyze}
+        disabled={loading || (mode==='upload' && !file) || (mode==='paste' && !manualText.trim())}>
+        {loading
+          ? <span>🔍 Analyse en cours...</span>
+          : <span>✨ Analyser avec Claude AI</span>
+        }
+      </button>
+
+      {loading && (
+        <div style={S.loadingBox}>
+          <div style={S.spinner} />
+          <p style={{ fontSize:13, color:'var(--text-muted)', marginTop:10 }}>
+            Claude analyse votre document et extrait les prix...
+          </p>
+        </div>
+      )}
+
+      {error && <div style={S.errorBox}>{error}</div>}
+
+      {/* Results */}
+      {result && !loading && (
+        <div style={{ marginTop:16 }} className="fade-in">
+          <div style={S.resultHeader}>
+            <p style={{ fontSize:14, fontWeight:700, color:'var(--taupe)' }}>
+              ✅ {result.produits?.length || 0} produit(s) extraits
+            </p>
+            {result.date_maj && <span className="badge badge-gold">{result.date_maj}</span>}
+          </div>
+
+          <div style={S.resultList}>
+            {result.produits?.map((p, i) => (
+              <div key={i} style={S.resultItem}>
+                <div style={{ flex:1 }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)' }}>N°{p.ref}</span>
+                  <span style={{ fontSize:13, fontWeight:600, marginLeft:8 }}>{p.nom}</span>
+                  <span className="badge" style={{ marginLeft:6, fontSize:9, background:`${p.genre==='homme'?'rgba(61,107,158,0.15)':p.genre==='femme'?'rgba(158,90,122,0.15)':'rgba(74,124,89,0.15)'}`, color: p.genre==='homme'?'var(--blue)':p.genre==='femme'?'#9e5a7a':'var(--green)', border:'1px solid transparent' }}>
+                    {p.genre}
+                  </span>
+                </div>
+                <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginTop:4 }}>
+                  {p.prix && Object.entries(p.prix).filter(([,v])=>v!=null).map(([sz,px]) => (
+                    <span key={sz} style={S.priceTag}>{sz}: {px}€</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {saved ? (
+            <div style={S.savedBox}>✅ Prix enregistrés avec succès ! Le catalogue est mis à jour.</div>
+          ) : (
+            <button className="btn-gold" onClick={handleSave}>
+              💾 ENREGISTRER LES PRIX
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
