@@ -5,7 +5,8 @@ import { store } from '../utils/storage';
 import Logo from '../components/Logo';
 
 const ALL_APPS = [
-  { id:'orders',    label:'Commandes',    icon:'🛒', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/orders' },
+  { id:'commandes', label:'Commandes',    icon:'🛒', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/orders' },
+  { id:'inspirations',label:'Inspirations', icon:'🌹', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)', path:'/app/inspirations' },
   { id:'clients',   label:'Clients',      icon:'👥', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/clients' },
   { id:'fidelite',  label:'Fidélité',     icon:'🎁', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/fidelite' },
   { id:'agenda',    label:'Agenda',       icon:'📅', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/agenda' },
