@@ -41,6 +41,7 @@ Réponds UNIQUEMENT en JSON valide, sans texte avant ou après, sans balises mar
 Format STRICT :
 {"produits":[{"ref":"001","nom":"One Million","genre":"homme","prix":{"15ml":11.90,"30ml":18.00,"50ml":null,"70ml":35.00,"100ml":null},"categorie":"Parfum"}],"date_maj":"2025","source":"document"}
 Genres: "homme", "femme" ou "mixte". Mets null si le format n'existe pas.
+REFS: Utilise UNIQUEMENT les chiffres de la référence. Exemples: "076" pas "T076", "147" pas "147M", "164" pas "164M".
 IMPORTANT: Termine TOUJOURS par }]} pour fermer le JSON correctement.`,
         messages: [{ role: 'user', content: userContent }],
       }),
