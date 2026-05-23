@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
+import { PERFUMES } from '../../utils/choganData';
 import { useData } from '../../context/DataContext';
 import AppLayout from '../../components/AppLayout';
 
 const TABS = [
   { id:'bon',     label:'📋 Bon de commande' },
-  { id:'ventes',  label:'💰 Ventes' },
   { id:'clients', label:'👥 Clients' },
 ];
 
@@ -20,7 +20,6 @@ export default function Orders() {
         ))}
       </div>
       {tab === 'bon'     && <BonCommandeTab />}
-      {tab === 'ventes'  && <VentesTab />}
       {tab === 'clients' && <ClientsTab />}
     </AppLayout>
   );
@@ -28,22 +27,6 @@ export default function Orders() {
 
 // ── BON DE COMMANDE ──────────────────────────────────────────────
 const CATS  = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
-const PERFUMES_LIGHT = [
-  { id:1,  ref:'001', name:'One Million',          gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:2,  ref:'002', name:'Acqua Di Gio',         gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:3,  ref:'007', name:"J'Adore",              gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:4,  ref:'019', name:'Lady Million',         gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:5,  ref:'038', name:'Bleu de Chanel',       gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:6,  ref:'042', name:'La Vie est Belle',     gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:7,  ref:'055', name:'Black Opium',          gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:8,  ref:'061', name:'Invictus',             gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:9,  ref:'064', name:'Sauvage',              gender:'h', sizes:['70ml','30ml','15ml'], prices:{'70ml':48,'30ml':25.50,'15ml':14.90} },
-  { id:10, ref:'085', name:'Chance',               gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:11, ref:'094', name:'Coco Mademoiselle',    gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':35,'30ml':18,'15ml':11.90} },
-  { id:12, ref:'118', name:'Baccarat Rouge 540',   gender:'m', sizes:['50ml','15ml'],        prices:{'50ml':52,'15ml':19.90} },
-  { id:13, ref:'122', name:'Libre',                gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':48,'30ml':25.50,'15ml':14.90} },
-  { id:14, ref:'131', name:'Good Girl',            gender:'f', sizes:['70ml','30ml','15ml'], prices:{'70ml':48,'30ml':25.50,'15ml':14.90} },
-];
 
 function BonCommandeTab() {
   const [cart, setCart]       = useState([]);
@@ -64,7 +47,7 @@ function BonCommandeTab() {
   const [note, setNote]             = useState('');
   const [consultant, setConsultant] = useState('');
 
-  const filtered = PERFUMES_LIGHT.filter(p => {
+  const filtered = PERFUMES.filter(p => {
     if (!search) return true;
     const q = search.toLowerCase();
     return p.name.toLowerCase().includes(q) || p.ref.includes(search);
@@ -211,7 +194,7 @@ function BonCommandeTab() {
   return (
     <div style={S.pad}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <p style={S.secLabel}>Catalogue ({PERFUMES_LIGHT.length} réf.)</p>
+        <p style={S.secLabel}>Catalogue ({PERFUMES.length} réf.)</p>
         <button className="btn-gold" style={{ padding:'8px 14px', width:'auto' }} onClick={() => setShowForm(true)}>
           🛒 {cart.reduce((s,c)=>s+c.qty,0)} — Récap
         </button>
