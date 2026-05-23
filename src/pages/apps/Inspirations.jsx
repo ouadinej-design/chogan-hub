@@ -4,7 +4,6 @@ import AppLayout from '../../components/AppLayout';
 import { PERFUMES, PRODUITS_PROMO, GENDER_COLOR } from '../../utils/choganData';
 
 const TABS = [
-  { id:'orders',      label:'🛒 Commandes' },
   { id:'inspirations',label:'🌹 Inspirations' },
   { id:'promo',       label:'🏷 Promo' },
   { id:'convert',     label:'💱 Convertisseur' },
@@ -21,7 +20,6 @@ export default function Orders() {
           </button>
         ))}
       </div>
-      {tab === 'orders'       && <CommandesTab />}
       {tab === 'inspirations' && <InspirationsTab />}
       {tab === 'promo'        && <PromoTab />}
       {tab === 'convert'      && <ConvertisseurTab />}
