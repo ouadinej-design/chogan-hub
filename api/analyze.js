@@ -1,8 +1,6 @@
-// Vercel Serverless Function — proxy vers l'API Anthropic
-// La clé API est stockée en variable d'environnement Vercel (ANTHROPIC_API_KEY)
+// Vercel Serverless Function — proxy Anthropic avec gestion PDF large
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -16,15 +14,15 @@ export default async function handler(req, res) {
     const { content, mediaType, isText } = req.body;
 
     const userContent = isText
-      ? [{ type: 'text', text: `Voici une liste de parfums Chogan. Extrais TOUS les produits avec leurs informations.\n\n${content}` }]
+      ? [{ type: 'text', text: `Liste de parfums Chogan à extraire :\n\n${content}` }]
       : mediaType === 'application/pdf'
         ? [
             { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: content } },
-            { type: 'text', text: 'Extrais tous les parfums/produits Chogan de ce document.' }
+            { type: 'text', text: 'Extrais TOUS les parfums de ce catalogue Chogan.' }
           ]
         : [
             { type: 'image', source: { type: 'base64', media_type: mediaType, data: content } },
-            { type: 'text', text: 'Extrais tous les parfums/produits Chogan visibles dans cette image.' }
+            { type: 'text', text: 'Extrais TOUS les parfums Chogan visibles dans cette image.' }
           ];
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -36,25 +34,14 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        system: `Tu es un assistant spécialisé dans les produits Chogan.
-Analyse le document fourni et extrais TOUS les produits avec leurs prix.
+        max_tokens: 8000,
+        system: `Tu es un expert des produits Chogan.
+Extrais TOUS les produits du document avec leurs prix.
 Réponds UNIQUEMENT en JSON valide, sans texte avant ou après, sans balises markdown.
-Format attendu :
-{
-  "produits": [
-    {
-      "ref": "001",
-      "nom": "One Million",
-      "genre": "homme",
-      "prix": { "15ml": 11.90, "30ml": 18.00, "50ml": null, "70ml": 35.00, "100ml": null },
-      "categorie": "Parfum"
-    }
-  ],
-  "date_maj": "2025",
-  "source": "document"
-}
-Si un format n'existe pas, mets null. Genre: "homme", "femme" ou "mixte".`,
+Format STRICT :
+{"produits":[{"ref":"001","nom":"One Million","genre":"homme","prix":{"15ml":11.90,"30ml":18.00,"50ml":null,"70ml":35.00,"100ml":null},"categorie":"Parfum"}],"date_maj":"2025","source":"document"}
+Genres: "homme", "femme" ou "mixte". Mets null si le format n'existe pas.
+IMPORTANT: Termine TOUJOURS par }]} pour fermer le JSON correctement.`,
         messages: [{ role: 'user', content: userContent }],
       }),
     });
@@ -65,7 +52,55 @@ Si un format n'existe pas, mets null. Genre: "homme", "femme" ou "mixte".`,
     }
 
     const data = await response.json();
-    return res.status(200).json(data);
+    const rawText = data.content?.find(b => b.type === 'text')?.text || '';
+
+    // Nettoyage et réparation JSON robuste
+    let text = rawText.replace(/```json|```/g, '').trim();
+
+    // Si le JSON est tronqué, on répare en coupant au dernier produit complet
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // Tentative de réparation : couper au dernier "}" complet dans le tableau
+      const lastBrace = text.lastIndexOf('},');
+      const lastBraceEnd = text.lastIndexOf('}');
+      
+      // Essai 1 : fermer le tableau + objet
+      const repaired = text.substring(0, lastBrace + 1) + ']}';
+      try {
+        parsed = JSON.parse(repaired);
+      } catch {
+        // Essai 2 : chercher le dernier objet complet
+        const match = text.match(/^(.*\})\s*[,\s]*$/s);
+        if (match) {
+          try {
+            const rep2 = text.substring(0, lastBraceEnd + 1) + ']}';
+            parsed = JSON.parse(rep2);
+          } catch {
+            // Essai 3 : extraction par regex
+            const produits = [];
+            const regex = /\{[^{}]*"ref"\s*:\s*"([^"]+)"[^{}]*"nom"\s*:\s*"([^"]+)"[^{}]*\}/g;
+            let m;
+            while ((m = regex.exec(text)) !== null) {
+              try {
+                produits.push(JSON.parse(m[0]));
+              } catch {}
+            }
+            if (produits.length > 0) {
+              parsed = { produits, date_maj: '2025', source: 'document', note: 'JSON partiellement récupéré' };
+            } else {
+              return res.status(200).json({ 
+                error: `JSON invalide — essayez avec des images à la place du PDF, ou utilisez "Coller du texte".`,
+                rawPreview: text.substring(0, 200)
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return res.status(200).json({ content: [{ type: 'text', text: JSON.stringify(parsed) }] });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
