@@ -220,52 +220,116 @@ function BonCommandeTab() {
 }
 
 // ── VENTES (copie de l'onglet Agenda – lit le_sales) ────────────
+const CATS_V = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 function VentesTab() {
-  const [sales, setSales] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; }
-  });
+  const [sales, setSales]   = useState(() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } });
   const [search, setSearch] = useState('');
+  const [editing, setEditing] = useState(null); // sale being edited
+  const [form, setForm]     = useState({});
 
-  const refresh = () => {
-    try { setSales(JSON.parse(localStorage.getItem('le_sales')||'[]')); } catch {}
+  const save = (updated) => { localStorage.setItem('le_sales', JSON.stringify(updated)); setSales(updated); };
+  const refresh = () => { try { setSales(JSON.parse(localStorage.getItem('le_sales')||'[]')); } catch {} };
+
+  const deleteSale = (id) => { if (!window.confirm('Supprimer cette vente ?')) return; save(sales.filter(s=>s.id!==id)); };
+
+  const openEdit = (v) => {
+    setEditing(v.id);
+    setEditClient(null);
+    setForm({
+      client:     v.client||'',
+      email:      v.email||'',
+      tel:        v.tel||'',
+      product:    v.product||v.prod||'',
+      qty:        String(v.qty||1),
+      category:   v.category||v.cat||'Parfum',
+      amount:     String(v.amount||v.amt||''),
+      currency:   v.currency||v.cur||'€',
+      date:       v.date||new Date().toISOString().split('T')[0],
+      note:       v.note||'',
+      consultant: v.consultant||'',
+    });
+  };
+
+  const saveEdit = () => {
+    const updated = sales.map(s => s.id === editing ? {
+      ...s,
+      client:     form.client,
+      email:      form.email,
+      tel:        form.tel,
+      product:    form.product,
+      prod:       form.product,
+      qty:        parseInt(form.qty)||1,
+      category:   form.category,
+      cat:        form.category,
+      amount:     parseFloat(form.amount)||0,
+      amt:        form.amount,
+      currency:   form.currency,
+      cur:        form.currency,
+      date:       form.date,
+      note:       form.note,
+      consultant: form.consultant,
+    } : s);
+    save(updated);
+    setEditing(null);
   };
 
   const fmt = d => d ? new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
   const totalEur = sales.filter(v=>(v.currency||v.cur)==='€').reduce((s,v)=>s+(parseFloat(v.amount||v.amt)||0),0);
   const totalDa  = sales.filter(v=>(v.currency||v.cur)==='DA').reduce((s,v)=>s+(parseFloat(v.amount||v.amt)||0),0);
-
   const filtered = sales.filter(s => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return (s.client||'').toLowerCase().includes(q) || (s.product||s.prod||'').toLowerCase().includes(q);
+    return (s.client||'').toLowerCase().includes(q)||(s.product||s.prod||'').toLowerCase().includes(q);
   });
+
+  // Modal edit
+  if (editing) return (
+    <div style={S.pad}>
+      <button style={S.back} onClick={() => setEditing(null)}>← Annuler</button>
+      <div style={S.fiche}>
+        <p style={S.ficheTitle}>✏️ Modifier la vente</p>
+        {[['client','Cliente *','text'],['email','E-mail','email'],['tel','Téléphone','tel'],['product','Produit','text'],['note','Notes','text']].map(([k,l,t])=>(
+          <div className="field" key={k}><label className="label">{l}</label>
+            <input type={t} value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} /></div>
+        ))}
+        <div className="grid-2">
+          <div className="field"><label className="label">Quantité</label>
+            <input type="number" value={form.qty} onChange={e=>setForm(p=>({...p,qty:e.target.value}))} /></div>
+          <div className="field"><label className="label">Catégorie</label>
+            <select value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))}>
+              {CATS_V.map(c=><option key={c}>{c}</option>)}
+            </select></div>
+        </div>
+        <div className="field"><label className="label">Montant</label>
+          <div style={{display:'flex',gap:8}}>
+            <input type="number" value={form.amount} onChange={e=>setForm(p=>({...p,amount:e.target.value}))} style={{flex:1}} />
+            <div style={S.curSel}>{['DA','€'].map(c=>(
+              <button key={c} style={{...S.curBtn,...(form.currency===c?S.curActive:{})}} onClick={()=>setForm(p=>({...p,currency:c}))}>{c}</button>
+            ))}</div>
+          </div></div>
+        <div className="field"><label className="label">Date</label>
+          <input type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))} /></div>
+        <div className="field"><label className="label">Consultante</label>
+          <input value={form.consultant} onChange={e=>setForm(p=>({...p,consultant:e.target.value}))} /></div>
+      </div>
+      <button className="btn-gold" onClick={saveEdit}>ENREGISTRER LES MODIFICATIONS</button>
+    </div>
+  );
 
   return (
     <div style={S.pad}>
       <div style={S.statsRow}>
-        <div style={S.statBox}>
-          <span style={S.statN}>{sales.length}</span>
-          <span style={S.statL}>Ventes</span>
-        </div>
+        <div style={S.statBox}><span style={S.statN}>{sales.length}</span><span style={S.statL}>Ventes</span></div>
         <div style={S.statDiv}/>
-        <div style={S.statBox}>
-          <span style={{...S.statN,fontSize:16}}>{totalEur.toFixed(2)}€</span>
-          <span style={S.statL}>CA en €</span>
-        </div>
-        {totalDa > 0 && <>
-          <div style={S.statDiv}/>
-          <div style={S.statBox}>
-            <span style={{...S.statN,fontSize:14}}>{totalDa.toLocaleString('fr-FR')}</span>
-            <span style={S.statL}>CA en DA</span>
-          </div>
-        </>}
+        <div style={S.statBox}><span style={{...S.statN,fontSize:16}}>{totalEur.toFixed(2)}€</span><span style={S.statL}>CA €</span></div>
+        {totalDa > 0 && <><div style={S.statDiv}/><div style={S.statBox}><span style={{...S.statN,fontSize:13}}>{totalDa.toLocaleString('fr-FR')}</span><span style={S.statL}>CA DA</span></div></>}
         <button style={S.refreshBtn} onClick={refresh}>↺</button>
       </div>
       <input placeholder="🔍 Cliente ou produit..." value={search} onChange={e=>setSearch(e.target.value)} style={{marginBottom:12}} />
       {filtered.length === 0
-        ? <div style={S.empty}>Aucune vente. Créez un bon de commande et validez-le vers l'Agenda.</div>
+        ? <div style={S.empty}>Aucune vente enregistrée.</div>
         : filtered.map(v => {
-          const amount   = parseFloat(v.amount||v.amt)||0;
+          const amount = parseFloat(v.amount||v.amt)||0;
           const currency = v.currency||v.cur||'€';
           const product  = v.product||v.prod||'';
           const items    = v.items||[];
@@ -285,19 +349,21 @@ function VentesTab() {
                 </div>
               </div>
               {items.length > 0
-                ? <div style={S.itemsBlock}>
-                    {items.map((it,i) => (
-                      <div key={i} style={S.itemRow}>
-                        <span style={{flex:1,fontSize:11,color:'var(--taupe)'}}>{it.prod} <span style={{color:'var(--text-muted)'}}>×{it.qty}</span></span>
-                        <span className="badge badge-gold" style={{fontSize:9}}>{it.cat}</span>
-                        <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',marginLeft:6}}>{it.amt} {currency}</span>
-                      </div>
-                    ))}
-                  </div>
+                ? <div style={S.itemsBlock}>{items.map((it,i)=>(
+                    <div key={i} style={S.itemRow}>
+                      <span style={{flex:1,fontSize:11,color:'var(--taupe)'}}>{it.prod} <span style={{color:'var(--text-muted)'}}>×{it.qty}</span></span>
+                      <span className="badge badge-gold" style={{fontSize:9}}>{it.cat}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',marginLeft:6}}>{it.amt} {currency}</span>
+                    </div>))}</div>
                 : product ? <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,lineHeight:1.5}}>{product}</p> : null
               }
               {v.note && <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,fontStyle:'italic'}}>📝 {v.note}</p>}
               {v.consultant && <p style={{fontSize:10,color:'var(--text-dim)',marginTop:4}}>Consultante : {v.consultant}</p>}
+              {/* Boutons Modifier / Réinitialiser */}
+              <div style={S.actionRow}>
+                <button style={S.editBtn} onClick={() => openEdit(v)}>✏️ Modifier</button>
+                <button style={S.resetBtn} onClick={() => deleteSale(v.id)}>🗑 Réinitialiser</button>
+              </div>
             </div>
           );
         })
@@ -311,9 +377,11 @@ function AgendaClientsTab() {
   const [rawSales, setRawSales] = useState(() => {
     try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; }
   });
-  const [search,    setSearch]  = useState('');
-  const [filter,    setFilter]  = useState('all');
-  const [selected,  setSelected] = useState(null);
+  const [search,     setSearch]   = useState('');
+  const [filter,     setFilter]   = useState('all');
+  const [selected,   setSelected]  = useState(null);
+  const [editClient, setEditClient] = useState(null);
+  const [editForm,   setEditForm]   = useState({email:'',tel:''});
 
   const refresh = () => {
     try { setRawSales(JSON.parse(localStorage.getItem('le_sales')||'[]')); } catch {}
@@ -353,6 +421,34 @@ function AgendaClientsTab() {
   }).sort((a,b) => new Date(b.lastDate) - new Date(a.lastDate));
 
   const COLORS = ['#B89A6A','#9e5a7a','#3d6b9e','#4a7c59','#6b4d8a','#8a4d4d','#3d7a8a'];
+
+  // Modal édition client (modifie email/tel dans toutes les ventes)
+  if (editClient) {
+    const updateClient = () => {
+      const updated = rawSales.map(s => s.client === editClient.name
+        ? { ...s, email: editForm.email||s.email, tel: editForm.tel||s.tel }
+        : s
+      );
+      localStorage.setItem('le_sales', JSON.stringify(updated));
+      setRawSales(updated);
+      setEditClient(null);
+    };
+    return (
+      <div style={S.pad}>
+        <button style={S.back} onClick={() => setEditClient(null)}>← Annuler</button>
+        <div style={S.fiche}>
+          <p style={S.ficheTitle}>✏️ Modifier {editClient.name}</p>
+          <div className="field"><label className="label">E-mail</label>
+            <input type="email" value={editForm.email} onChange={e=>setEditForm(p=>({...p,email:e.target.value}))}
+              placeholder={editClient.email||'Ajouter un email'} /></div>
+          <div className="field"><label className="label">Téléphone</label>
+            <input type="tel" value={editForm.tel} onChange={e=>setEditForm(p=>({...p,tel:e.target.value}))}
+              placeholder={editClient.tel||'Ajouter un téléphone'} /></div>
+        </div>
+        <button className="btn-gold" onClick={updateClient}>ENREGISTRER</button>
+      </div>
+    );
+  }
 
   if (selected) {
     const c = selected;
@@ -418,9 +514,9 @@ function AgendaClientsTab() {
           const init = c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
           const top  = Object.entries(c.topProd).sort((a,b)=>b[1]-a[1])[0];
           return (
-            <div key={c.name} style={S.clientCard} onClick={() => setSelected(c)} className="fade-in">
-              <div style={{...S.avatarC,background:COLORS[i%COLORS.length]}}>{init}</div>
-              <div style={{flex:1,minWidth:0}}>
+            <div key={c.name} style={S.clientCard} className="fade-in">
+              <div style={{...S.avatarC,background:COLORS[i%COLORS.length],cursor:'pointer',flexShrink:0}} onClick={() => setSelected(c)}>{init}</div>
+              <div style={{flex:1,minWidth:0,cursor:'pointer'}} onClick={() => setSelected(c)}>
                 <p style={{fontSize:13,fontWeight:600}}>{c.name}</p>
                 <p style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>
                   {top ? top[0].substring(0,30) : '—'} · {c.purchases.length} achat(s)
@@ -429,9 +525,18 @@ function AgendaClientsTab() {
                   <div style={{height:'100%',background:'linear-gradient(90deg,var(--or),var(--or-deep))',borderRadius:2,width:`${Math.min(100,Math.round((c.total/Math.max(...clients.map(x=>x.total),1))*100))}%`}} />
                 </div>
               </div>
-              <div style={{textAlign:'right',flexShrink:0}}>
+              <div style={{textAlign:'right',flexShrink:0,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
                 <p style={{fontSize:12,fontWeight:700,color:'var(--or-deep)'}}>{c.total.toFixed(0)} {c.currency}</p>
-                <p style={{fontSize:9,color:sColor,fontWeight:700,marginTop:2}}>{sLabel}</p>
+                <p style={{fontSize:9,color:sColor,fontWeight:700}}>{sLabel}</p>
+                <div style={{display:'flex',gap:4}}>
+                  <button style={S.editBtn} onClick={() => setEditClient(c)}>✏️</button>
+                  <button style={S.resetBtn} onClick={() => {
+                    if (!window.confirm(`Réinitialiser toutes les ventes de ${c.name} ?`)) return;
+                    const updated = rawSales.filter(s => s.client !== c.name);
+                    localStorage.setItem('le_sales', JSON.stringify(updated));
+                    setRawSales(updated);
+                  }}>🗑</button>
+                </div>
               </div>
             </div>
           );
@@ -599,4 +704,7 @@ const S = {
   filterRow: { display:'flex', gap:6, marginBottom:12, flexWrap:'wrap' },
   filterBtn: { background:'var(--bg-card)', border:'1px solid var(--or-border)', color:'var(--text-muted)', borderRadius:20, padding:'5px 12px', fontSize:11, cursor:'pointer', fontFamily:'var(--font-body)' },
   filterActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
+  actionRow: { display:'flex', gap:8, marginTop:10, paddingTop:8, borderTop:'1px solid var(--or-border)' },
+  editBtn: { flex:1, padding:'7px', background:'var(--or-pale)', border:'1px solid var(--or-border)', color:'var(--or-deep)', borderRadius:8, fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 },
+  resetBtn: { flex:1, padding:'7px', background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', color:'var(--red)', borderRadius:8, fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 },
 };
