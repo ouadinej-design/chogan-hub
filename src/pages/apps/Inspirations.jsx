@@ -202,12 +202,23 @@ function InspirationsTab() {
     setImages({});
   };
 
-  // Refs qui ont une vraie photo extraite du catalogue
-  const BOTTLE_REFS = ['137','138','139','140','141','142','143','144','145','146','147','148','161','162','163','164'];
+  // Mapping des refs vers les fichiers flacons disponibles
+  const BOTTLE_MAP = {
+    '137':'137','138':'138','139':'139','140':'140',
+    '141':'141','142':'142','143':'143','144':'144',
+    '145':'145','146':'146','147':'147','147m':'147','147M':'147',
+    '148':'148','148w':'148','148W':'148',
+    '161':'161','161w':'161','161W':'161',
+    '162':'162','162m':'162','162M':'162',
+    '163':'163','163w':'163','163W':'163',
+    '164':'164','164m':'164','164M':'164',
+  };
   const getImg = (p) => {
     if (p.img) return p.img;
-    if (BOTTLE_REFS.includes(p.ref)) return `/bottles/${p.ref}.jpg`;
-    return null;
+    // Essayer ref exact, puis ref normalisé (sans lettre), puis ref brut
+    const norm = (p.ref||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
+    const file = BOTTLE_MAP[p.ref] || BOTTLE_MAP[norm] || BOTTLE_MAP[p.ref?.toUpperCase()] || null;
+    return file ? `/bottles/${file}.jpg` : null;
   };
 
   const getCropStyle = (p, containerW=100) => {
