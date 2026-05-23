@@ -202,10 +202,12 @@ function InspirationsTab() {
     setImages({});
   };
 
+  // Refs qui ont une vraie photo extraite du catalogue
+  const BOTTLE_REFS = ['137','138','139','140','141','142','143','144','145','146','147','148','161','162','163','164'];
   const getImg = (p) => {
     if (p.img) return p.img;
-    // Images extraites du catalogue (dans public/bottles/)
-    return `/bottles/${p.ref}.jpg`;
+    if (BOTTLE_REFS.includes(p.ref)) return `/bottles/${p.ref}.jpg`;
+    return null;
   };
 
   const getCropStyle = (p, containerW=100) => {
@@ -242,8 +244,13 @@ function InspirationsTab() {
         <div style={{...S.detailCard, borderTop:`4px solid ${GC[selected.gender]||'var(--or)'}`}}>
           <div style={{...S.photoBox, background:`linear-gradient(135deg, ${GC[selected.gender]}18, ${GC[selected.gender]}05)`}}>
             {img
-              ? <img src={img} alt={selected.name} style={{maxHeight:180,maxWidth:'90%',objectFit:'contain',borderRadius:8}} onError={e=>{e.target.style.display='none';}} />
-              : <div style={{textAlign:'center'}}><BottleSVG gender={selected.gender} size={80} /><p style={{fontSize:11,color:'var(--text-muted)',marginTop:8}}>Photo non disponible<br/><button style={{fontSize:10,color:'var(--or-deep)',background:'none',border:'none',cursor:'pointer',marginTop:4}} onClick={()=>{const k=`${selected.ref}-${selected.name}`;const cache=JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');delete cache[k];localStorage.setItem('chogan_img_cache',JSON.stringify(cache));loadAllImages();}}>↺ Réessayer</button></p></div>
+              ? <img src={img} alt={selected.name}
+                    style={{maxHeight:180,maxWidth:'90%',objectFit:'contain',borderRadius:8}}
+                    onError={e=>{e.target.style.display='none';}}
+                  />
+              : getCropStyle(selected)
+                ? <div style={{width:160,height:160,borderRadius:10,overflow:'hidden',margin:'0 auto',...getCropStyle(selected)}} />
+                : <div style={{textAlign:'center'}}><BottleSVG gender={selected.gender} size={80} /></div>
             }
             {selected.custom && <span style={S.majBadge}>✅ MàJ</span>}
           </div>
@@ -285,17 +292,15 @@ function InspirationsTab() {
           return (
             <div key={p.id} style={S.perfumeCard} onClick={()=>setSelected(p)}>
               <div style={{...S.cardPhoto, background:`linear-gradient(135deg, ${GC[p.gender]||'var(--or)'}15, ${GC[p.gender]||'var(--or)'}05)`}}>
-                <img
-                  src={img}
-                  alt={p.name}
-                  style={{width:'100%',height:'100%',objectFit:'contain',padding:6}}
-                  onError={e=>{
-                    e.target.style.display='none';
-                    const cs = getCropStyle(p);
-                    if(cs) { Object.assign(e.target.parentNode.style, cs); }
-                  }}
-                />
-                {!img && <BottleSVG gender={p.gender} size={40} />}
+                {img
+                  ? <img src={img} alt={p.name}
+                      style={{width:'100%',height:'100%',objectFit:'contain',padding:4}}
+                      onError={e=>e.target.replaceWith(Object.assign(document.createElement('div'),{className:'bottle-fallback'}))}
+                    />
+                  : getCropStyle(p)
+                    ? <div style={{width:'100%',height:'100%',...getCropStyle(p)}} />
+                    : <BottleSVG gender={p.gender} size={40} />
+                }
                 {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
               </div>
               <div style={{padding:'8px 10px'}}>
