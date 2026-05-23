@@ -204,7 +204,8 @@ function InspirationsTab() {
 
   const getImg = (p) => {
     if (p.img) return p.img;
-    return null; // crop handled separately via getCropStyle
+    // Images extraites du catalogue (dans public/bottles/)
+    return `/bottles/${p.ref}.jpg`;
   };
 
   const getCropStyle = (p, containerW=100) => {
@@ -284,12 +285,17 @@ function InspirationsTab() {
           return (
             <div key={p.id} style={S.perfumeCard} onClick={()=>setSelected(p)}>
               <div style={{...S.cardPhoto, background:`linear-gradient(135deg, ${GC[p.gender]||'var(--or)'}15, ${GC[p.gender]||'var(--or)'}05)`}}>
-                {img
-                  ? <img src={img} alt={p.name} style={{width:'100%',height:'100%',objectFit:'contain',padding:6}} onError={e=>{e.target.style.display='none';}} />
-                  : getCropStyle(p)
-                    ? <div style={{width:'100%',height:'100%',...getCropStyle(p)}} />
-                    : <BottleSVG gender={p.gender} size={40} />
-                }
+                <img
+                  src={img}
+                  alt={p.name}
+                  style={{width:'100%',height:'100%',objectFit:'contain',padding:6}}
+                  onError={e=>{
+                    e.target.style.display='none';
+                    const cs = getCropStyle(p);
+                    if(cs) { Object.assign(e.target.parentNode.style, cs); }
+                  }}
+                />
+                {!img && <BottleSVG gender={p.gender} size={40} />}
                 {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
               </div>
               <div style={{padding:'8px 10px'}}>
