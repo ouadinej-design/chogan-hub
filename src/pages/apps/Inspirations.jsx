@@ -7,6 +7,7 @@ const TABS = [
   { id:'inspirations',label:'🌹 Inspirations' },
   { id:'promo',       label:'🏷 Promo' },
   { id:'convert',     label:'💱 Convertisseur' },
+  { id:'maj',         label:'🔄 Mise à jour' },
 ];
 
 export default function Orders() {
@@ -139,284 +140,113 @@ function CommandesTab() {
 function InspirationsTab() {
   const [search, setSearch] = useState('');
   const [gender, setGender] = useState('tous');
-  const filtered = PERFUMES.filter(p => {
-    if (gender !== 'tous' && p.gender !== gender) return false;
+  const [selected, setSelected] = useState(null);
+
+  // Charger les produits mis à jour depuis localStorage
+  const customPrix = (() => { try { return JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}'); } catch { return {}; } })();
+  const normalizeRef = r => (r||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
+
+  const allProducts = (() => {
+    const customList = Object.values(customPrix).map(p => ({
+      id: `c-${p.ref}`,
+      ref: normalizeRef(p.ref),
+      name: p.nom||'',
+      brand: p.marque||'Chogan',
+      gender: p.genre==='homme'?'h':p.genre==='femme'?'f':'m',
+      sizes: Object.entries(p.prix||{}).filter(([,v])=>v!=null).map(([s])=>s),
+      prices: Object.fromEntries(Object.entries(p.prix||{}).filter(([,v])=>v!=null)),
+      img: p.img||null,
+      custom: true,
+    })).filter(p=>p.ref&&p.name&&p.sizes.length>0);
+    const customRefs = new Set(customList.map(p=>p.ref));
+    const staticFiltered = PERFUMES.filter(p=>!customRefs.has(normalizeRef(p.ref)));
+    return [...customList,...staticFiltered].sort((a,b)=>(parseInt(a.ref)||0)-(parseInt(b.ref)||0));
+  })();
+
+  const filtered = allProducts.filter(p => {
+    const gMap = {h:'homme',f:'femme',m:'mixte'};
+    if (gender !== 'tous' && gMap[p.gender] !== gender) return false;
     if (search) {
       const q = search.toLowerCase();
-      return p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.ref.includes(search);
+      return p.name.toLowerCase().includes(q)||(p.brand||'').toLowerCase().includes(q)||p.ref.includes(search);
     }
     return true;
   });
-  return (
+
+  const GC = { h:'#3d6b9e', f:'#9e5a7a', m:'#4a7c59' };
+  const GE = { h:'♂', f:'♀', m:'⚧' };
+  const BOTTLE_ICON = { h:'🔵', f:'🌸', m:'💫' };
+
+  if (selected) return (
     <div style={S.pad}>
-      <input placeholder="🔍 Nom, marque ou référence..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
-      <div style={S.filterRow}>
-        {[['tous','Tous'],['homme','♂ Homme'],['femme','♀ Femme'],['mixte','⚧ Mixte']].map(([v,l]) => (
-          <button key={v} style={{ ...S.filterBtn, ...(gender===v?S.filterActive:{}) }} onClick={() => setGender(v)}>{l}</button>
-        ))}
-      </div>
-      <p style={{ fontSize:11, color:'var(--text-muted)', marginBottom:10 }}>{filtered.length} référence(s)</p>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-        {filtered.map(p => (
-          <div key={p.id} style={{ ...S.card, borderLeft:`3px solid ${GENDER_COLOR[p.gender]}` }}>
-            <p style={{ fontSize:11, fontWeight:700, color:GENDER_COLOR[p.gender] }}>N°{p.ref}</p>
-            <p style={{ fontSize:12, fontWeight:600, lineHeight:1.3, margin:'3px 0' }}>{p.name}</p>
-            <p style={{ fontSize:10, color:'var(--text-muted)' }}>{p.brand}</p>
-            <div style={{ marginTop:6 }}>
-              {p.sizes.map(s => (
-                <div key={s} style={{ display:'flex', justifyContent:'space-between', fontSize:10, padding:'2px 0' }}>
-                  <span style={{ color:'var(--text-muted)' }}>{s}</span>
-                  <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{p.prices?.[s]}€</span>
-                </div>
-              ))}
+      <button style={S.backBtn} onClick={() => setSelected(null)}>← Retour</button>
+      <div style={{ ...S.detailCard, borderTop:`4px solid ${GC[selected.gender]||'var(--or)'}` }}>
+        {/* Photo ou placeholder */}
+        <div style={{ ...S.photoBox, background:`linear-gradient(135deg, ${GC[selected.gender]||'var(--or)'}18, ${GC[selected.gender]||'var(--or)'}08)` }}>
+          {selected.img
+            ? <img src={selected.img} alt={selected.name} style={{ maxHeight:160, maxWidth:'100%', objectFit:'contain', borderRadius:8 }} onError={e=>{e.target.style.display='none';}} />
+            : <div style={{ textAlign:'center' }}>
+                <span style={{ fontSize:64 }}>{BOTTLE_ICON[selected.gender]||'💎'}</span>
+                <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:8 }}>Photo non disponible</p>
+              </div>
+          }
+          {selected.custom && <span style={S.majBadge}>✅ MàJ</span>}
+        </div>
+        {/* Infos */}
+        <div style={{ padding:'14px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
+            <div>
+              <p style={{ fontSize:11, fontWeight:700, color:GC[selected.gender] }}>N°{selected.ref} · {GE[selected.gender]}</p>
+              <p style={{ fontSize:18, fontWeight:700, fontFamily:'var(--font-display)', color:'var(--taupe)', letterSpacing:'0.04em', marginTop:2 }}>{selected.name}</p>
+              <p style={{ fontSize:12, color:'var(--text-muted)', marginTop:3 }}>{selected.brand}</p>
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── BON DE COMMANDE ──────────────────────────────────────────────
-const CATS = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
-
-function BonCommandeTab() {
-  const [cart, setCart]       = useState([]);
-  const [search, setSearch]   = useState('');
-  const [showCart, setShowCart] = useState(false);
-  const [saved, setSaved]     = useState(false);
-  const [copied, setCopied]   = useState(false);
-
-  // Champs identiques à la rubrique Vente de l'agenda
-  const [client, setClient]         = useState('');
-  const [email, setEmail]           = useState('');
-  const [tel, setTel]               = useState('');
-  const [prod, setProd]             = useState('');
-  const [qty, setQty]               = useState('1');
-  const [cat, setCat]               = useState('Parfum');
-  const [amt, setAmt]               = useState('');
-  const [cur, setCur]               = useState('€');
-  const [date, setDate]             = useState(new Date().toISOString().split('T')[0]);
-  const [note, setNote]             = useState('');
-  const [consultant, setConsultant] = useState('');
-
-  const filtered = PERFUMES.filter(p => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.ref.includes(search);
-  });
-
-  // Recalcule prod / qty / amt à chaque changement du panier
-  useEffect(() => {
-    if (cart.length === 0) { setProd(''); setQty('0'); setAmt(''); return; }
-    // Format compatible agenda : "N°ref Nom Taille ×qty" séparés par virgule — sans prix ni retour ligne
-    const prodStr = cart.map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', ');
-    const totalQ  = cart.reduce((s,c) => s + c.qty, 0);
-    const totalA  = cart.reduce((s,c) => s + c.price * c.qty, 0);
-    setProd(prodStr);
-    setQty(String(totalQ));
-    setAmt(totalA.toFixed(2));   // nombre pur sans symbole : "123.50"
-  }, [cart]);
-
-  const addToCart = (p, size) => {
-    const key = `${p.id}-${size}`;
-    setCart(prev => {
-      const ex = prev.find(c => c.key === key);
-      if (ex) return prev.map(c => c.key===key ? {...c, qty:c.qty+1} : c);
-      return [...prev, { key, name:p.name, ref:p.ref, size, price:p.prices?.[size]||35, qty:1 }];
-    });
-  };
-
-  const totalEur = cart.reduce((s,c) => s+c.price*c.qty, 0);
-  const totalQty = cart.reduce((s,c) => s+c.qty, 0);
-  const updateCartFields = (newCart) => setCart(newCart);
-
-  // ✦ Enregistrer dans le_sales (rubrique Vente de l'agenda original)
-  const saveToAgenda = () => {
-    if (!client.trim()) { alert('Entrez le nom de la cliente.'); return; }
-    try {
-      const existing = JSON.parse(localStorage.getItem('le_sales') || '[]');
-      const sale = {
-        id:         `BC-${Date.now()}`,
-        client,
-        prod,                                        // format: "N°001 Nom Taille ×2, ..."
-        qty,
-        cat,
-        amt:        String(parseFloat(amt) || 0),   // nombre pur sans symbole
-        cur,
-        date,
-        note,
-        email,
-        tel,
-        consultant,
-        createdAt: new Date().toISOString(),
-      };
-      localStorage.setItem('le_sales', JSON.stringify([sale, ...existing]));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3500);
-    } catch(e) { console.warn(e); }
-  };
-
-  const exportBC = () => {
-    const lines = [
-      '📋 BON DE COMMANDE — CHOGAN',
-      `👤 Cliente : ${client||'—'}`,
-      `📅 ${new Date(date).toLocaleDateString('fr-FR')}`,
-      '─────────────────',
-      ...cart.map(c => `• N°${c.ref} ${c.name} ${c.size} ×${c.qty} = ${(c.price*c.qty).toFixed(2)}€`),
-      '─────────────────',
-      `💶 Total : ${amt} ${cur}`,
-      ...(note ? [`📝 ${note}`] : []),
-    ];
-    navigator.clipboard?.writeText(lines.join('\n'))
-      .then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2500); });
-  };
-
-  if (showCart) return (
-    <div style={S.pad}>
-      <button style={S.backLink} onClick={() => setShowCart(false)}>← Retour catalogue</button>
-
-      {saved && (
-        <div style={{ background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.3)', borderRadius:10, padding:'10px 14px', marginBottom:12, color:'var(--green)', fontSize:13, fontWeight:600 }}>
-          ✅ Vente enregistrée dans la rubrique Agenda !
-        </div>
-      )}
-
-      <div style={S.venteFiche}>
-        <p style={S.venteTitle}>✦ Nouvelle transaction</p>
-
-        {/* Cliente */}
-        <div className="field">
-          <label className="label">Cliente *</label>
-          <input value={client} onChange={e=>setClient(e.target.value)} placeholder="Nom de la cliente" />
-        </div>
-        <div className="grid-2">
-          <div className="field">
-            <label className="label">E-mail cliente</label>
-            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="client@email.com" />
-          </div>
-          <div className="field">
-            <label className="label">Téléphone</label>
-            <input type="tel" value={tel} onChange={e=>setTel(e.target.value)} placeholder="+33 6..." />
-          </div>
-        </div>
-
-        {/* Produit */}
-        <div className="field">
-          <label className="label">Produit Chogan</label>
-          <input
-            value={prod}
-            onChange={e=>setProd(e.target.value)}
-            placeholder="Les produits s'ajoutent automatiquement"
-          />
-          {cart.length > 0 && (
-            <div style={{ marginTop:6 }}>
-              {cart.map(c => (
-                <div key={c.key} style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-muted)', padding:'2px 4px' }}>
-                  <span>N°{c.ref} {c.name} {c.size} ×{c.qty}</span>
-                  <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{(c.price*c.qty).toFixed(2)}€</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="grid-2">
-          <div className="field">
-            <label className="label">Quantité</label>
-            <input type="number" min="1" value={qty} onChange={e=>setQty(e.target.value)} />
-          </div>
-          <div className="field">
-            <label className="label">Catégorie</label>
-            <select value={cat} onChange={e=>setCat(e.target.value)}>
-              {CATS.map(c => <option key={c}>{c}</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Montant + devise */}
-        <div className="field">
-          <label className="label">Montant</label>
-          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-            <input type="number" placeholder="0.00" value={amt} onChange={e=>setAmt(e.target.value)} style={{ flex:1 }} />
-            <div style={{ display:'flex', background:'var(--bg-dark)', border:'1px solid var(--or-border)', borderRadius:10, overflow:'hidden', flexShrink:0 }}>
-              {['DA','€'].map(c => (
-                <button key={c} style={{ padding:'9px 14px', cursor:'pointer', fontSize:12, fontWeight:700, background:cur===c?'linear-gradient(135deg, var(--or), var(--or-deep))':'transparent', color:cur===c?'#fff':'var(--text-muted)', border:'none', fontFamily:'var(--font-body)' }}
-                  onClick={() => setCur(c)}>{c}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Date */}
-        <div className="field">
-          <label className="label">Date</label>
-          <input type="date" value={date} onChange={e=>setDate(e.target.value)} />
-        </div>
-
-        {/* Notes */}
-        <div className="field">
-          <label className="label">Notes & commentaires</label>
-          <textarea rows={2} placeholder="Préférences, allergies..." value={note} onChange={e=>setNote(e.target.value)} style={{ resize:'none' }} />
-        </div>
-
-        {/* Consultante (optionnel) */}
-        <div className="field">
-          <label className="label">Consultante (optionnel)</label>
-          <input value={consultant} onChange={e=>setConsultant(e.target.value)} placeholder="Nom de la consultante" />
-        </div>
-
-        {/* Panier récap */}
-        {cart.length > 0 && (
-          <div style={{ marginTop:4 }}>
-            <p style={{ ...S.secLabel, marginBottom:8 }}>🛒 Panier ({totalQty} article(s))</p>
-            {cart.map(c => (
-              <div key={c.key} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, padding:'8px 10px', background:'rgba(210,183,149,0.06)', borderRadius:8, border:'1px solid var(--or-border)' }}>
-                <div style={{ flex:1 }}>
-                  <span style={{ fontSize:12, fontWeight:600 }}>N°{c.ref} {c.name} — {c.size}</span>
-                  <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:8 }}>{(c.price*c.qty).toFixed(2)}€</span>
-                </div>
-                <button style={S.qtyBtn} onClick={() => updateCartFields(cart.map(x=>x.key===c.key?{...x,qty:Math.max(1,x.qty-1)}:x))}>−</button>
-                <span style={{ fontSize:12, fontWeight:700, minWidth:16, textAlign:'center' }}>{c.qty}</span>
-                <button style={S.qtyBtn} onClick={() => updateCartFields(cart.map(x=>x.key===c.key?{...x,qty:x.qty+1}:x))}>+</button>
-                <button style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:13 }} onClick={() => updateCartFields(cart.filter(x=>x.key!==c.key))}>✕</button>
+          <div style={{ borderTop:'1px solid var(--or-border)', paddingTop:12 }}>
+            <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>Tarifs</p>
+            {selected.sizes.map(s => (
+              <div key={s} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid rgba(210,183,149,0.15)' }}>
+                <span style={{ fontSize:13, color:'var(--taupe)' }}>{s}</span>
+                <span style={{ fontSize:16, fontWeight:700, color:'var(--or-deep)' }}>{selected.prices?.[s]}€</span>
               </div>
             ))}
-            <div style={{ display:'flex', justifyContent:'space-between', fontWeight:700, fontSize:16, color:'var(--or-deep)', padding:'8px 0', borderTop:'1px solid var(--or-border)', marginTop:4 }}>
-              <span>Total</span><span>{amt} {cur}</span>
-            </div>
           </div>
-        )}
+        </div>
       </div>
-
-      {/* Boutons */}
-      <button className="btn-gold" style={{ marginTop:12 }} onClick={saveToAgenda}>
-        ✦ Valider la transaction → Agenda
-      </button>
-      <button className="btn-outline" style={{ width:'100%', marginTop:8 }} onClick={exportBC}>
-        {copied ? '✓ Copié !' : '📋 Copier le bon de commande'}
-      </button>
     </div>
   );
 
   return (
     <div style={S.pad}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <p style={S.secLabel}>Sélectionnez les produits</p>
-        <button className="btn-gold" style={{ padding:'8px 14px', width:'auto' }} onClick={() => setShowCart(true)}>
-          🛒 {cart.reduce((s,c)=>s+c.qty,0)} — Récap
-        </button>
+        <p style={{ fontSize:11, color:'var(--text-muted)' }}>{filtered.length} référence(s)</p>
+        {Object.keys(customPrix).length > 0 && <span style={{ fontSize:11, color:'var(--green)', fontWeight:700 }}>✅ {Object.keys(customPrix).length} mises à jour</span>}
       </div>
-      <input placeholder="🔍 Rechercher..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+      <input placeholder="🔍 Nom, marque ou référence..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
+      <div style={S.filterRow}>
+        {[['tous','Tous'],['homme','♂ Homme'],['femme','♀ Femme'],['mixte','⚧ Mixte']].map(([v,l]) => (
+          <button key={v} style={{ ...S.filterBtn, ...(gender===v?S.filterActive:{}) }} onClick={() => setGender(v)}>{l}</button>
+        ))}
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
         {filtered.map(p => (
-          <div key={p.id} style={{ ...S.card, borderLeft:`3px solid ${GENDER_COLOR[p.gender]}` }}>
-            <p style={{ fontSize:10, fontWeight:700, color:GENDER_COLOR[p.gender], marginBottom:3 }}>N°{p.ref} · {p.name}</p>
-            {p.sizes.map(s => (
-              <button key={s} style={S.sizeBtn} onClick={() => addToCart(p, s)}>
-                <span style={{ fontSize:10, color:'var(--text-muted)' }}>{s}</span>
-                <span style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)' }}>{p.prices?.[s]}€ +</span>
-              </button>
-            ))}
+          <div key={p.id} style={S.perfumeCard} onClick={() => setSelected(p)}>
+            {/* Zone photo */}
+            <div style={{ ...S.cardPhoto, background:`linear-gradient(135deg, ${GC[p.gender]||'var(--or)'}15, ${GC[p.gender]||'var(--or)'}05)` }}>
+              {p.img
+                ? <img src={p.img} alt={p.name} style={{ width:'100%', height:'100%', objectFit:'contain', padding:4 }} onError={e=>{e.target.parentNode.innerHTML=`<span style="font-size:36px">${BOTTLE_ICON[p.gender]||'💎'}</span>`;}} />
+                : <span style={{ fontSize:36 }}>{BOTTLE_ICON[p.gender]||'💎'}</span>
+              }
+              {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
+            </div>
+            {/* Infos */}
+            <div style={{ padding:'8px 10px' }}>
+              <p style={{ fontSize:9, fontWeight:700, color:GC[p.gender], marginBottom:2 }}>N°{p.ref} {GE[p.gender]}</p>
+              <p style={{ fontSize:12, fontWeight:600, lineHeight:1.3, color:'var(--taupe)' }}>{p.name}</p>
+              <p style={{ fontSize:10, color:'var(--text-muted)', marginTop:2 }}>{p.brand}</p>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginTop:6 }}>
+                dès {Math.min(...p.sizes.map(s=>p.prices?.[s]||99))}€
+              </p>
+            </div>
           </div>
         ))}
       </div>
@@ -424,7 +254,7 @@ function BonCommandeTab() {
   );
 }
 
-// ── PROMO ─────────────────────────────────────────────────────────
+
 function PromoTab() {
   const [devise, setDevise] = useState('eur');
   const [taux, setTaux]     = useState('290');
@@ -553,6 +383,147 @@ function ConvertisseurTab() {
   );
 }
 
+// ── MISE À JOUR (copie depuis Commandes) ─────────────────────────
+function MajPrixTab() {
+  const [file, setFile]         = useState(null);
+  const [preview, setPreview]   = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [result, setResult]     = useState(null);
+  const [error, setError]       = useState('');
+  const [saved, setSaved]       = useState(false);
+  const [manualText, setManual] = useState('');
+  const [mode, setMode]         = useState('upload');
+
+  const toBase64 = f => new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(f); });
+
+  const analyzeWithClaude = async (content, mediaType, isText=false) => {
+    setLoading(true); setError(''); setResult(null);
+    try {
+      const res = await fetch('/api/analyze', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ content, mediaType, isText }),
+      });
+      if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error||`Erreur ${res.status}`); }
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      const text = data.content?.find(b=>b.type==='text')?.text||'';
+      const parsed = JSON.parse(text);
+      if (!parsed.produits?.length) throw new Error('Aucun produit extrait.');
+      setResult(parsed);
+    } catch(e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  const handleFile = async f => {
+    if (!f) return; setFile(f); setResult(null); setSaved(false);
+    if (f.type.startsWith('image/')) setPreview(URL.createObjectURL(f)); else setPreview(null);
+  };
+
+  const handleAnalyze = async () => {
+    if (mode==='paste') { if (!manualText.trim()) return; await analyzeWithClaude(manualText,null,true); return; }
+    if (!file) return;
+    const b64 = await toBase64(file);
+    await analyzeWithClaude(b64, file.type);
+  };
+
+  const handleSave = () => {
+    if (!result?.produits?.length) return;
+    const existing = JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}');
+    const updated  = {...existing};
+    const norm = r => (r||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
+    result.produits.forEach(p => { updated[norm(p.ref)] = { ref:norm(p.ref), nom:p.nom, genre:p.genre||'mixte', marque:p.marque||'', categorie:p.categorie||'Parfum', prix:p.prix, img:p.img||null, maj:new Date().toISOString() }; });
+    localStorage.setItem('chogan_prix_custom', JSON.stringify(updated));
+    setSaved(true);
+  };
+
+  const handleReset = () => {
+    if (!window.confirm('Réinitialiser tous les prix ?')) return;
+    localStorage.removeItem('chogan_prix_custom'); setSaved(false); setResult(null); setFile(null); setPreview(null);
+  };
+
+  const customCount = Object.keys(JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}')).length;
+
+  return (
+    <div style={S.pad}>
+      <div style={S.majInfo}>
+        <p style={S.majTitle}>🔄 Mise à jour produits & prix</p>
+        <p style={S.majDesc}>Importez un PDF ou une photo du catalogue Chogan pour mettre à jour automatiquement les prix, références et photos.</p>
+        {customCount > 0 && (
+          <div style={S.majStatus}>
+            <span style={{color:'var(--green)',fontWeight:700}}>✅ {customCount} produit(s) mis à jour</span>
+            <button style={{...S.resetBtnSm}} onClick={handleReset}>Réinitialiser tout</button>
+          </div>
+        )}
+      </div>
+      <div style={S.modeRow}>
+        {[['upload','📎 Fichier / Photo'],['paste','✏️ Coller du texte']].map(([m,l])=>(
+          <button key={m} style={{...S.modeBtn,...(mode===m?S.modeBtnActive:{})}} onClick={()=>setMode(m)}>{l}</button>
+        ))}
+      </div>
+      {mode==='upload' && (
+        <label style={S.dropZone}>
+          <input type="file" accept=".pdf,image/*" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])} />
+          {file ? (
+            <div style={{textAlign:'center'}}>
+              {preview && <img src={preview} alt="aperçu" style={{maxWidth:'100%',maxHeight:160,borderRadius:10,marginBottom:10}} />}
+              <p style={{fontSize:13,fontWeight:600,color:'var(--taupe)'}}>{file.name}</p>
+              <p style={{fontSize:11,color:'var(--text-muted)',marginTop:4}}>{(file.size/1024).toFixed(0)} KB · {file.type.includes('pdf')?'PDF':'Image'}</p>
+              <p style={{fontSize:11,color:'var(--or-deep)',marginTop:6}}>Cliquez pour changer</p>
+            </div>
+          ) : (
+            <div style={{textAlign:'center',padding:'10px 0'}}>
+              <p style={{fontSize:32,marginBottom:8}}>📎</p>
+              <p style={{fontSize:14,fontWeight:600,color:'var(--taupe)'}}>Glissez ou cliquez pour importer</p>
+              <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6}}>PDF ou image (JPG, PNG, WEBP)</p>
+            </div>
+          )}
+        </label>
+      )}
+      {mode==='paste' && (
+        <div className="field">
+          <label className="label">Collez votre liste de prix</label>
+          <textarea rows={8} value={manualText} onChange={e=>setManual(e.target.value)}
+            placeholder={"N°001 One Million 70ml = 35€\nN°002 Acqua Di Gio 30ml = 18€\n..."}
+            style={{resize:'vertical',fontFamily:'var(--font-body)',fontSize:13}} />
+        </div>
+      )}
+      <button className="btn-gold" style={{marginTop:12}} onClick={handleAnalyze}
+        disabled={loading||(mode==='upload'&&!file)||(mode==='paste'&&!manualText.trim())}>
+        {loading ? '🔍 Analyse en cours...' : '✨ Analyser avec Claude AI'}
+      </button>
+      {loading && <div style={{textAlign:'center',padding:'24px 0'}}><div style={S.spinner}/><p style={{fontSize:13,color:'var(--text-muted)',marginTop:10}}>Analyse en cours...</p></div>}
+      {error && <div style={S.errorBox}>{error}</div>}
+      {result && !loading && (
+        <div style={{marginTop:16}} className="fade-in">
+          <p style={{fontSize:14,fontWeight:700,color:'var(--taupe)',marginBottom:10}}>✅ {result.produits?.length||0} produit(s) extraits</p>
+          <div style={S.resultList}>
+            {result.produits?.map((p,i)=>(
+              <div key={i} style={S.resultItem}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  {p.img && <img src={p.img} alt={p.nom} style={{width:32,height:32,objectFit:'contain',borderRadius:4}} onError={e=>{e.target.style.display='none';}} />}
+                  <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)'}}>N°{p.ref}</span>
+                  <span style={{fontSize:13,fontWeight:600}}>{p.nom}</span>
+                  {p.marque && <span style={{fontSize:10,color:'var(--text-muted)'}}>{p.marque}</span>}
+                </div>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}>
+                  {p.prix && Object.entries(p.prix).filter(([,v])=>v!=null).map(([sz,px])=>(
+                    <span key={sz} style={S.priceTag}>{sz}: {px}€</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          {saved
+            ? <div style={S.savedBox}>✅ Prix et photos enregistrés ! Le catalogue est mis à jour.</div>
+            : <button className="btn-gold" onClick={handleSave}>💾 ENREGISTRER</button>
+          }
+        </div>
+      )}
+    </div>
+  );
+}
+
 const S = {
   tabsWrap: { display:'flex', overflowX:'auto', borderBottom:'1px solid var(--or-border)', scrollbarWidth:'none' },
   tab: { padding:'11px 10px', background:'none', color:'var(--text-muted)', fontSize:11, borderBottom:'2px solid transparent', whiteSpace:'nowrap', flexShrink:0 },
@@ -571,6 +542,28 @@ const S = {
   filterRow: { display:'flex', gap:8, marginBottom:10, flexWrap:'wrap' },
   filterBtn: { background:'var(--bg-card)', border:'1px solid var(--or-border)', color:'var(--text-muted)', borderRadius:20, padding:'5px 12px', fontSize:12, cursor:'pointer' },
   filterActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
+  perfumeCard: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, overflow:'hidden', cursor:'pointer', boxShadow:'var(--shadow)' },
+  cardPhoto: { height:100, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' },
+  detailCard: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:16, overflow:'hidden', marginBottom:12 },
+  photoBox: { height:180, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' },
+  majBadge: { position:'absolute', top:8, right:8, background:'rgba(74,124,89,0.9)', color:'white', fontSize:10, fontWeight:700, borderRadius:8, padding:'2px 8px' },
+  majBadgeSm: { position:'absolute', top:4, right:4, background:'rgba(74,124,89,0.85)', color:'white', fontSize:8, fontWeight:700, borderRadius:6, padding:'1px 5px' },
+  backBtn: { background:'none', border:'none', color:'var(--text-muted)', fontSize:13, cursor:'pointer', padding:'0 0 14px', display:'block', fontFamily:'var(--font-body)' },
+  majInfo: { background:'rgba(210,183,149,0.08)', border:'1px solid var(--or-border)', borderRadius:14, padding:'14px', marginBottom:14 },
+  majTitle: { fontFamily:'var(--font-display)', fontSize:14, color:'var(--taupe)', letterSpacing:'0.06em', marginBottom:6 },
+  majDesc: { fontSize:12, color:'var(--text-muted)', lineHeight:1.6 },
+  majStatus: { display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:10, paddingTop:10, borderTop:'1px solid var(--or-border)' },
+  modeRow: { display:'flex', gap:8, marginBottom:14 },
+  modeBtn: { flex:1, padding:'10px', borderRadius:10, border:'1px solid var(--or-border)', background:'transparent', color:'var(--text-muted)', cursor:'pointer', fontSize:12, fontFamily:'var(--font-body)' },
+  modeBtnActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)', fontWeight:700 },
+  dropZone: { display:'block', border:'2px dashed var(--or-border)', borderRadius:14, padding:'24px 16px', cursor:'pointer', background:'rgba(210,183,149,0.04)', marginBottom:4 },
+  spinner: { width:32, height:32, border:'3px solid var(--or-pale)', borderTop:'3px solid var(--or-deep)', borderRadius:'50%', margin:'0 auto', animation:'spin 0.8s linear infinite' },
+  errorBox: { background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:10, padding:'12px', color:'var(--red)', fontSize:13, marginTop:12 },
+  resultList: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, overflow:'hidden', marginBottom:14 },
+  resultItem: { padding:'10px 14px', borderBottom:'1px solid var(--or-border)' },
+  priceTag: { fontSize:10, padding:'2px 8px', background:'var(--or-pale)', color:'var(--or-deep)', borderRadius:20, border:'1px solid var(--or-border)', fontWeight:600 },
+  savedBox: { background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.3)', borderRadius:10, padding:'12px', color:'var(--green)', fontSize:13, fontWeight:600, textAlign:'center' },
+  resetBtnSm: { background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', color:'var(--red)', borderRadius:8, padding:'5px 12px', fontSize:11, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 },
   venteFiche: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:16, marginBottom:12 },
   venteTitle: { fontFamily:'var(--font-display)', fontSize:13, color:'var(--or-deep)', letterSpacing:'0.08em', marginBottom:14, paddingBottom:10, borderBottom:'1px solid var(--or-border)' },
   backLink: { background:'none', border:'none', color:'var(--text-muted)', fontSize:13, cursor:'pointer', padding:'0 0 14px', display:'block' },
