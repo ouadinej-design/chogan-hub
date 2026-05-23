@@ -797,9 +797,15 @@ function MajPrixTab() {
         throw new Error(errData.error || `Erreur serveur ${res.status}`);
       }
       const data = await res.json();
+
+      // Gestion de l'erreur retournée par le serveur
+      if (data.error) throw new Error(data.error);
+
+      // Le serveur retourne déjà du JSON parsé dans content[0].text
       const text = data.content?.find(b => b.type === 'text')?.text || '';
-      const clean = text.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(clean);
+      const parsed = JSON.parse(text);
+
+      if (!parsed.produits?.length) throw new Error('Aucun produit extrait. Essayez avec une image ou "Coller du texte".');
       setResult(parsed);
     } catch(e) {
       setError(`Erreur analyse : ${e.message}. Vérifiez votre connexion ou essayez avec un autre fichier.`);
