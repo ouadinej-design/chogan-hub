@@ -171,17 +171,7 @@ function InspirationsTab() {
   const [search, setSearch]     = useState('');
   const [gender, setGender]     = useState('tous');
   const [selected, setSelected] = useState(null);
-  const [images, setImages]     = useState(() => {
-    try { 
-      const cache = JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');
-      const imgs = {};
-      Object.entries(cache).forEach(([k, v]) => { imgs[k] = v?.url || null; });
-      return imgs;
-    } catch { return {}; }
-  });
-  const [loadingImgs, setLoadingImgs] = useState(false);
-  const [imgProgress, setImgProgress] = useState(0);
-  const loadingRef = useRef(false);
+  const [images] = useState({});
 
   const customPrix = (() => { try { return JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}'); } catch { return {}; } })();
   const normalizeRef = r => (r||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
