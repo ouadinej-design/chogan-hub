@@ -213,14 +213,13 @@ function BonCommandeTab() {
   // Recalcule prod / qty / amt à chaque changement du panier
   useEffect(() => {
     if (cart.length === 0) { setProd(''); setQty('0'); setAmt(''); return; }
-    const prodDetail = cart
-      .map(c => `N°${c.ref} ${c.name} ${c.size} x${c.qty} = ${(c.price*c.qty).toFixed(2)}€`)
-      .join('\n');
-    const totalQ = cart.reduce((s,c) => s+c.qty, 0);
-    const totalA = cart.reduce((s,c) => s+c.price*c.qty, 0);
-    setProd(prodDetail);
+    // Format compatible agenda : "N°ref Nom Taille ×qty" séparés par virgule — sans prix ni retour ligne
+    const prodStr = cart.map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', ');
+    const totalQ  = cart.reduce((s,c) => s + c.qty, 0);
+    const totalA  = cart.reduce((s,c) => s + c.price * c.qty, 0);
+    setProd(prodStr);
     setQty(String(totalQ));
-    setAmt(totalA.toFixed(2));
+    setAmt(totalA.toFixed(2));   // nombre pur sans symbole : "123.50"
   }, [cart]);
 
   const addToCart = (p, size) => {
@@ -244,10 +243,10 @@ function BonCommandeTab() {
       const sale = {
         id:         `BC-${Date.now()}`,
         client,
-        prod,
+        prod,                                        // format: "N°001 Nom Taille ×2, ..."
         qty,
         cat,
-        amt,
+        amt:        String(parseFloat(amt) || 0),   // nombre pur sans symbole
         cur,
         date,
         note,
@@ -309,13 +308,21 @@ function BonCommandeTab() {
         {/* Produit */}
         <div className="field">
           <label className="label">Produit Chogan</label>
-          <textarea
-            rows={Math.max(2, cart.length)}
+          <input
             value={prod}
             onChange={e=>setProd(e.target.value)}
-            placeholder="Les produits s'ajoutent automatiquement depuis le catalogue"
-            style={{ resize:'none', fontFamily:'var(--font-body)', fontSize:12, lineHeight:1.7 }}
+            placeholder="Les produits s'ajoutent automatiquement"
           />
+          {cart.length > 0 && (
+            <div style={{ marginTop:6 }}>
+              {cart.map(c => (
+                <div key={c.key} style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-muted)', padding:'2px 4px' }}>
+                  <span>N°{c.ref} {c.name} {c.size} ×{c.qty}</span>
+                  <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{(c.price*c.qty).toFixed(2)}€</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="grid-2">
           <div className="field">
