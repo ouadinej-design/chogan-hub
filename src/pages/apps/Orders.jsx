@@ -759,41 +759,17 @@ function MajPrixTab() {
            { type: 'text', text: "Extrais tous les parfums/produits Chogan visibles dans cette image." }];
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      // Appel via la fonction serverless Vercel (pas de clé API exposée côté client)
+      const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4000,
-          system: `Tu es un assistant spécialisé dans les produits Chogan.
-Analyse le document fourni et extrais TOUS les produits avec leurs prix.
-Réponds UNIQUEMENT en JSON valide, sans texte avant ou après, sans balises markdown.
-Format attendu :
-{
-  "produits": [
-    {
-      "ref": "001",
-      "nom": "One Million",
-      "genre": "homme",
-      "prix": {
-        "15ml": 11.90,
-        "30ml": 18.00,
-        "50ml": null,
-        "70ml": 35.00,
-        "100ml": null
-      },
-      "categorie": "Parfum"
-    }
-  ],
-  "date_maj": "2025",
-  "source": "document"
-}
-Si un format n'existe pas, mets null. Ne crée que les entrées trouvées dans le document.`,
-          messages: [{ role: 'user', content: userContent }],
-        }),
+        body: JSON.stringify({ content, mediaType, isText }),
       });
 
-      if (!res.ok) throw new Error(`API error ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Erreur serveur ${res.status}`);
+      }
       const data = await res.json();
       const text = data.content?.find(b => b.type === 'text')?.text || '';
       const clean = text.replace(/```json|```/g, '').trim();
