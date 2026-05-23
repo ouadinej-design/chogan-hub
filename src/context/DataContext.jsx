@@ -8,20 +8,26 @@ const DataContext = createContext(null);
 function pushToAgendaOriginal(order, client) {
   try {
     const existing = JSON.parse(localStorage.getItem('le_sales') || '[]');
-    const alreadyIn = existing.find(s => s.id === order.id);
-    if (alreadyIn) return;
-    const prodList = order.items?.map(i => `${i.name}${i.size ? ' ' + i.size : ''} ×${i.qty}`).join(', ') || '';
+    if (existing.find(s => s.id === order.id)) return;
+    // Format strict attendu par l'agenda : prod = "N°ref Nom Taille, ..." sans prix
+    const prodList = (order.items || [])
+      .map(i => `N°${i.ref || ''} ${i.name || ''} ${i.size || ''}`.trim())
+      .join(', ');
+    const totalQty = (order.items || []).reduce((s,i) => s + (parseInt(i.qty)||1), 0);
     const sale = {
       id:         order.id,
       client:     `${client.firstName} ${client.lastName}`,
-      prod:       prodList,
-      qty:        String(order.items?.reduce((s,i) => s + (i.qty||1), 0) || 1),
-      amt:        String(order.total),
+      prod:       prodList || 'Chogan',
+      qty:        String(totalQty || 1),
+      cat:        'Parfum',
+      amt:        String(parseFloat(order.total) || 0),   // nombre pur, sans symbole
+      cur:        '€',
+      date:       order.createdAt ? order.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
       note:       order.notes || '',
       email:      client.email || '',
       tel:        client.phone || '',
       consultant: '',
-      createdAt:  order.createdAt,
+      createdAt:  order.createdAt || new Date().toISOString(),
     };
     localStorage.setItem('le_sales', JSON.stringify([sale, ...existing]));
   } catch(e) {
