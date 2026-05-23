@@ -5,6 +5,7 @@ import AppLayout from '../../components/AppLayout';
 
 const TABS = [
   { id:'bon',     label:'📋 Bon de commande' },
+  { id:'ventes',  label:'💰 Ventes' },
   { id:'clients', label:'👥 Clients' },
 ];
 
@@ -20,7 +21,8 @@ export default function Orders() {
         ))}
       </div>
       {tab === 'bon'     && <BonCommandeTab />}
-      {tab === 'clients' && <ClientsTab />}
+      {tab === 'ventes'  && <VentesTab />}
+      {tab === 'clients' && <AgendaClientsTab />}
     </AppLayout>
   );
 }
@@ -217,79 +219,85 @@ function BonCommandeTab() {
   );
 }
 
-// ── VENTES (lit le_sales de l'agenda) ───────────────────────────
+// ── VENTES (copie de l'onglet Agenda – lit le_sales) ────────────
 function VentesTab() {
   const [sales, setSales] = useState(() => {
     try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; }
   });
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
 
   const refresh = () => {
     try { setSales(JSON.parse(localStorage.getItem('le_sales')||'[]')); } catch {}
   };
 
-  const fmt = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'2-digit' }) : '—';
-
-  const totalRevenu = sales.reduce((s,v) => {
-    const a = parseFloat(v.amount || v.amt) || 0;
-    return s + (v.currency === '€' || v.cur === '€' ? a : 0);
-  }, 0);
+  const fmt = d => d ? new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+  const totalEur = sales.filter(v=>(v.currency||v.cur)==='€').reduce((s,v)=>s+(parseFloat(v.amount||v.amt)||0),0);
+  const totalDa  = sales.filter(v=>(v.currency||v.cur)==='DA').reduce((s,v)=>s+(parseFloat(v.amount||v.amt)||0),0);
 
   const filtered = sales.filter(s => {
-    if (search) {
-      const q = search.toLowerCase();
-      return (s.client||'').toLowerCase().includes(q) || (s.product||s.prod||'').toLowerCase().includes(q);
-    }
-    return true;
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (s.client||'').toLowerCase().includes(q) || (s.product||s.prod||'').toLowerCase().includes(q);
   });
 
   return (
     <div style={S.pad}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-        <div>
-          <p style={{ fontSize:11, color:'var(--text-muted)' }}>{sales.length} vente(s)</p>
-          <p style={{ fontSize:14, fontWeight:700, color:'var(--or-deep)' }}>{totalRevenu.toFixed(2)}€</p>
+      <div style={S.statsRow}>
+        <div style={S.statBox}>
+          <span style={S.statN}>{sales.length}</span>
+          <span style={S.statL}>Ventes</span>
         </div>
-        <button className="btn-outline" style={{ padding:'6px 12px' }} onClick={refresh}>↺ Actualiser</button>
+        <div style={S.statDiv}/>
+        <div style={S.statBox}>
+          <span style={{...S.statN,fontSize:16}}>{totalEur.toFixed(2)}€</span>
+          <span style={S.statL}>CA en €</span>
+        </div>
+        {totalDa > 0 && <>
+          <div style={S.statDiv}/>
+          <div style={S.statBox}>
+            <span style={{...S.statN,fontSize:14}}>{totalDa.toLocaleString('fr-FR')}</span>
+            <span style={S.statL}>CA en DA</span>
+          </div>
+        </>}
+        <button style={S.refreshBtn} onClick={refresh}>↺</button>
       </div>
-      <input placeholder="🔍 Cliente ou produit..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
+      <input placeholder="🔍 Cliente ou produit..." value={search} onChange={e=>setSearch(e.target.value)} style={{marginBottom:12}} />
       {filtered.length === 0
-        ? <div style={S.empty}>Aucune vente. Créez un bon de commande et validez-le.</div>
+        ? <div style={S.empty}>Aucune vente. Créez un bon de commande et validez-le vers l'Agenda.</div>
         : filtered.map(v => {
-          const amount = parseFloat(v.amount || v.amt) || 0;
-          const currency = v.currency || v.cur || '€';
-          const product = v.product || v.prod || '';
-          const items = v.items || [];
+          const amount   = parseFloat(v.amount||v.amt)||0;
+          const currency = v.currency||v.cur||'€';
+          const product  = v.product||v.prod||'';
+          const items    = v.items||[];
           return (
-            <div key={v.id} style={S.venteCard}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 }}>
-                <div>
-                  <p style={{ fontSize:14, fontWeight:700, color:'var(--taupe)' }}>{v.client}</p>
-                  {v.email && <p style={{ fontSize:11, color:'var(--text-muted)' }}>{v.email}</p>}
-                  {v.tel   && <p style={{ fontSize:11, color:'var(--text-muted)' }}>{v.tel}</p>}
+            <div key={v.id} style={S.venteCard} className="fade-in">
+              <div style={S.venteHeader}>
+                <div style={{flex:1}}>
+                  <p style={S.clientName}>{v.client||'—'}</p>
+                  <div style={{display:'flex',gap:8,marginTop:3,flexWrap:'wrap'}}>
+                    {v.email && <span style={S.metaTxt}>✉ {v.email}</span>}
+                    {v.tel   && <span style={S.metaTxt}>📞 {v.tel}</span>}
+                  </div>
                 </div>
-                <div style={{ textAlign:'right' }}>
-                  <p style={{ fontSize:15, fontWeight:700, color:'var(--or-deep)' }}>{amount} {currency}</p>
-                  <p style={{ fontSize:10, color:'var(--text-muted)' }}>{fmt(v.date || v.createdAt)}</p>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  <p style={S.venteAmt}>{amount} {currency}</p>
+                  <p style={S.venteDate}>{fmt(v.date||v.createdAt)}</p>
                 </div>
               </div>
-              {/* Détail produits */}
-              {items.length > 0 ? (
-                <div style={{ marginTop:6 }}>
-                  {items.map((it, i) => (
-                    <div key={i} style={S.itemRow}>
-                      <span style={{ flex:1, fontSize:11 }}>{it.prod} ×{it.qty}</span>
-                      <span className="badge badge-gold" style={{ fontSize:9 }}>{it.cat}</span>
-                      <span style={{ fontSize:11, fontWeight:600, color:'var(--or-deep)', marginLeft:6 }}>{it.amt}{currency}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : product ? (
-                <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:4 }}>{product}</p>
-              ) : null}
-              {v.note && <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:4, fontStyle:'italic' }}>📝 {v.note}</p>}
-              {v.consultant && <p style={{ fontSize:10, color:'var(--text-dim)', marginTop:4 }}>Consultante: {v.consultant}</p>}
+              {items.length > 0
+                ? <div style={S.itemsBlock}>
+                    {items.map((it,i) => (
+                      <div key={i} style={S.itemRow}>
+                        <span style={{flex:1,fontSize:11,color:'var(--taupe)'}}>{it.prod} <span style={{color:'var(--text-muted)'}}>×{it.qty}</span></span>
+                        <span className="badge badge-gold" style={{fontSize:9}}>{it.cat}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',marginLeft:6}}>{it.amt} {currency}</span>
+                      </div>
+                    ))}
+                  </div>
+                : product ? <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,lineHeight:1.5}}>{product}</p> : null
+              }
+              {v.note && <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,fontStyle:'italic'}}>📝 {v.note}</p>}
+              {v.consultant && <p style={{fontSize:10,color:'var(--text-dim)',marginTop:4}}>Consultante : {v.consultant}</p>}
             </div>
           );
         })
@@ -298,7 +306,142 @@ function VentesTab() {
   );
 }
 
-// ── CLIENTS ──────────────────────────────────────────────────────
+// ── CLIENTS AGENDA (construit depuis le_sales comme l'agenda) ────
+function AgendaClientsTab() {
+  const [rawSales, setRawSales] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; }
+  });
+  const [search,    setSearch]  = useState('');
+  const [filter,    setFilter]  = useState('all');
+  const [selected,  setSelected] = useState(null);
+
+  const refresh = () => {
+    try { setRawSales(JSON.parse(localStorage.getItem('le_sales')||'[]')); } catch {}
+  };
+
+  const now = new Date(); now.setHours(0,0,0,0);
+
+  // Construire la map clients depuis les ventes (même logique que l'agenda)
+  const clientMap = {};
+  rawSales.forEach(s => {
+    const name = s.client;
+    if (!name) return;
+    if (!clientMap[name]) clientMap[name] = {
+      name, purchases:[], total:0, lastDate:'',
+      topProd:{}, email:s.email||'', tel:s.tel||'',
+      currency: s.currency||s.cur||'DA',
+    };
+    clientMap[name].purchases.push(s);
+    clientMap[name].total += parseFloat(s.amount||s.amt)||0;
+    if (!clientMap[name].lastDate || s.date > clientMap[name].lastDate) clientMap[name].lastDate = s.date||s.createdAt||'';
+    if (s.email && !clientMap[name].email) clientMap[name].email = s.email;
+    if (s.tel && !clientMap[name].tel) clientMap[name].tel = s.tel;
+    const prod = s.product||s.prod||'';
+    if (prod) clientMap[name].topProd[prod] = (clientMap[name].topProd[prod]||0)+1;
+  });
+
+  const daysSince = c => Math.floor((now - new Date(c.lastDate)) / 86400000);
+
+  let clients = Object.values(clientMap);
+  if (search) clients = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+  clients = clients.filter(c => {
+    const d = daysSince(c);
+    if (filter === 'recent') return d < 30;
+    if (filter === 'warn')   return d >= 30 && d < 60;
+    if (filter === 'urgent') return d >= 60;
+    return true;
+  }).sort((a,b) => new Date(b.lastDate) - new Date(a.lastDate));
+
+  const COLORS = ['#B89A6A','#9e5a7a','#3d6b9e','#4a7c59','#6b4d8a','#8a4d4d','#3d7a8a'];
+
+  if (selected) {
+    const c = selected;
+    const d = daysSince(c);
+    const statusColor = d < 30 ? 'var(--green)' : d < 60 ? '#d97706' : 'var(--red)';
+    const statusLabel = d < 30 ? '✅ Récent' : d < 60 ? '⚠️ À relancer' : '🚨 Urgent !';
+    const top = Object.entries(c.topProd).sort((a,b)=>b[1]-a[1])[0];
+    return (
+      <div style={S.pad}>
+        <button style={S.back} onClick={() => setSelected(null)}>← Retour clients</button>
+        <div style={S.fiche}>
+          <div style={{textAlign:'center',marginBottom:16}}>
+            <div style={{...S.avatarC,background:COLORS[0],margin:'0 auto 10px'}}>
+              {c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()}
+            </div>
+            <p style={{fontSize:16,fontWeight:700}}>{c.name}</p>
+            <span style={{fontSize:11,color:statusColor,fontWeight:700,marginTop:4,display:'block'}}>{statusLabel}</span>
+          </div>
+          {[
+            ['Email', c.email], ['Téléphone', c.tel],
+            ['Dernière commande', c.lastDate ? new Date(c.lastDate).toLocaleDateString('fr-FR') : '—'],
+            ["Nombre d'achats", c.purchases.length],
+            ['CA Total', `${c.total.toFixed(2)} ${c.currency}`],
+            ['Produit préféré', top ? top[0] : '—'],
+          ].map(([l,v]) => v && (
+            <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--or-border)',fontSize:13}}>
+              <span style={{color:'var(--text-muted)'}}>{l}</span>
+              <span style={{fontWeight:600,maxWidth:'60%',textAlign:'right',wordBreak:'break-word'}}>{v}</span>
+            </div>
+          ))}
+          <p style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',margin:'12px 0 8px',textTransform:'uppercase',letterSpacing:'0.08em'}}>
+            Historique achats
+          </p>
+          {c.purchases.slice(0,6).map((p,i) => (
+            <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid rgba(210,183,149,0.15)',fontSize:12}}>
+              <span style={{color:'var(--text-muted)',flex:1,paddingRight:8}}>{p.product||p.prod||'—'}</span>
+              <span style={{fontWeight:700,color:'var(--or-deep)',flexShrink:0}}>{parseFloat(p.amount||p.amt)||0} {p.currency||p.cur}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={S.pad}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+        <p style={{fontSize:11,color:'var(--text-muted)'}}>{clients.length} client(s)</p>
+        <button style={S.refreshBtn} onClick={refresh}>↺ Actualiser</button>
+      </div>
+      <input placeholder="🔍 Rechercher un client..." value={search} onChange={e=>setSearch(e.target.value)} style={{marginBottom:10}} />
+      <div style={S.filterRow}>
+        {[['all','Tous'],['recent','Récents'],['warn','À relancer'],['urgent','Urgents']].map(([k,l]) => (
+          <button key={k} style={{...S.filterBtn,...(filter===k?S.filterActive:{})}} onClick={() => setFilter(k)}>{l}</button>
+        ))}
+      </div>
+      {clients.length === 0
+        ? <div style={S.empty}>Aucun client. Les clients apparaissent automatiquement après une vente.</div>
+        : clients.map((c,i) => {
+          const d = daysSince(c);
+          const sColor = d < 30 ? 'var(--green)' : d < 60 ? '#d97706' : 'var(--red)';
+          const sLabel = d < 30 ? 'Récent' : d < 60 ? 'À relancer' : 'Urgent !';
+          const init = c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+          const top  = Object.entries(c.topProd).sort((a,b)=>b[1]-a[1])[0];
+          return (
+            <div key={c.name} style={S.clientCard} onClick={() => setSelected(c)} className="fade-in">
+              <div style={{...S.avatarC,background:COLORS[i%COLORS.length]}}>{init}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{fontSize:13,fontWeight:600}}>{c.name}</p>
+                <p style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>
+                  {top ? top[0].substring(0,30) : '—'} · {c.purchases.length} achat(s)
+                </p>
+                <div style={{height:4,background:'rgba(210,183,149,0.2)',borderRadius:2,marginTop:5,overflow:'hidden'}}>
+                  <div style={{height:'100%',background:'linear-gradient(90deg,var(--or),var(--or-deep))',borderRadius:2,width:`${Math.min(100,Math.round((c.total/Math.max(...clients.map(x=>x.total),1))*100))}%`}} />
+                </div>
+              </div>
+              <div style={{textAlign:'right',flexShrink:0}}>
+                <p style={{fontSize:12,fontWeight:700,color:'var(--or-deep)'}}>{c.total.toFixed(0)} {c.currency}</p>
+                <p style={{fontSize:9,color:sColor,fontWeight:700,marginTop:2}}>{sLabel}</p>
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+  );
+}
+
+// ── CLIENTS HUB ─────────────────────────────────────────────────
 function ClientsTab() {
   const { getClients, addClient, deleteClient, getLoyaltyCards } = useData();
   const [view, setView]     = useState('list');
@@ -437,4 +580,23 @@ const S = {
   miniTab: { flex:1, padding:'9px', background:'transparent', border:'1px solid var(--or-border)', color:'var(--text-muted)', borderRadius:10, fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)' },
   miniActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
   empty: { textAlign:'center', color:'var(--text-muted)', padding:'40px 0', fontSize:13 },
+  statsRow: { display:'flex', alignItems:'center', background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:'12px 16px', marginBottom:14, gap:8 },
+  statBox: { display:'flex', flexDirection:'column', alignItems:'center', gap:3, flex:1 },
+  statN: { fontFamily:'var(--font-display)', fontSize:20, color:'var(--or-deep)', lineHeight:1 },
+  statL: { fontSize:9, color:'var(--text-muted)', textAlign:'center', textTransform:'uppercase', letterSpacing:'0.06em' },
+  statDiv: { width:1, height:30, background:'var(--or-border)' },
+  refreshBtn: { background:'var(--or-pale)', border:'1px solid var(--or-border)', color:'var(--or-deep)', borderRadius:8, padding:'6px 10px', cursor:'pointer', fontSize:14, fontFamily:'var(--font-body)' },
+  venteCard: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:'12px 14px', marginBottom:10 },
+  venteHeader: { display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 },
+  clientName: { fontSize:14, fontWeight:700, color:'var(--taupe)' },
+  metaTxt: { fontSize:10, color:'var(--text-muted)' },
+  venteAmt: { fontSize:15, fontWeight:700, color:'var(--or-deep)' },
+  venteDate: { fontSize:10, color:'var(--text-muted)', marginTop:2 },
+  itemsBlock: { background:'rgba(210,183,149,0.06)', borderRadius:8, padding:'8px 10px', marginTop:6 },
+  itemRow: { display:'flex', alignItems:'center', gap:6, padding:'4px 0', borderBottom:'1px solid rgba(210,183,149,0.12)' },
+  clientCard: { display:'flex', alignItems:'center', gap:12, background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, padding:'10px 12px', marginBottom:8, cursor:'pointer' },
+  avatarC: { width:36, height:36, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:'#fff', flexShrink:0 },
+  filterRow: { display:'flex', gap:6, marginBottom:12, flexWrap:'wrap' },
+  filterBtn: { background:'var(--bg-card)', border:'1px solid var(--or-border)', color:'var(--text-muted)', borderRadius:20, padding:'5px 12px', fontSize:11, cursor:'pointer', fontFamily:'var(--font-body)' },
+  filterActive: { background:'var(--or-pale)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
 };
