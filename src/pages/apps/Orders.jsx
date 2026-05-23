@@ -51,7 +51,30 @@ function BonCommandeTab() {
   const [note, setNote]             = useState('');
   const [consultant, setConsultant] = useState('');
 
-  const filtered = PERFUMES.filter(p => {
+  // Fusionner PERFUMES statiques avec les prix mis à jour via Claude AI
+  const customPrix = (() => {
+    try { return JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}'); } catch { return {}; }
+  })();
+
+  const allProducts = (() => {
+    // Convertir les produits custom en format PERFUMES
+    const customList = Object.values(customPrix).map(p => ({
+      id: `c-${p.ref}`,
+      ref: p.ref || '',
+      name: p.nom || '',
+      gender: p.genre === 'homme' ? 'h' : p.genre === 'femme' ? 'f' : 'm',
+      sizes: Object.entries(p.prix||{}).filter(([,v])=>v!=null).map(([s])=>s),
+      prices: Object.fromEntries(Object.entries(p.prix||{}).filter(([,v])=>v!=null)),
+      custom: true,
+    })).filter(p => p.ref && p.name && p.sizes.length > 0);
+
+    // Merge : les produits custom remplacent les statiques si même ref
+    const customRefs = new Set(customList.map(p => p.ref));
+    const staticFiltered = PERFUMES.filter(p => !customRefs.has(p.ref));
+    return [...customList, ...staticFiltered].sort((a,b) => a.ref.localeCompare(b.ref, undefined, {numeric:true}));
+  })();
+
+  const filtered = allProducts.filter(p => {
     if (!search) return true;
     const q = search.toLowerCase();
     return p.name.toLowerCase().includes(q) || p.ref.includes(search);
@@ -207,7 +230,10 @@ function BonCommandeTab() {
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
         {filtered.map(p => (
           <div key={p.id} style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, padding:10 }}>
-            <p style={{ fontSize:10, fontWeight:700, color: p.gender==='h'?'#3d6b9e':p.gender==='f'?'#9e5a7a':'#4a7c59', marginBottom:4 }}>N°{p.ref} · {p.name}</p>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+              <p style={{ fontSize:10, fontWeight:700, color: p.gender==='h'?'#3d6b9e':p.gender==='f'?'#9e5a7a':'#4a7c59' }}>N°{p.ref} · {p.name}</p>
+              {p.custom && <span style={{fontSize:8,background:'rgba(74,124,89,0.15)',color:'var(--green)',borderRadius:6,padding:'1px 5px',fontWeight:700,border:'1px solid rgba(74,124,89,0.3)'}}>MàJ</span>}
+            </div>
             {p.sizes.map(sz => (
               <button key={sz} style={S.sizeBtn} onClick={() => addToCart(p, sz)}>
                 <span style={{ fontSize:10, color:'var(--text-muted)' }}>{sz}</span>
