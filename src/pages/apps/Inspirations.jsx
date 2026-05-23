@@ -138,117 +138,148 @@ function CommandesTab() {
 
 // ── INSPIRATIONS ─────────────────────────────────────────────────
 function InspirationsTab() {
-  const [search, setSearch] = useState('');
-  const [gender, setGender] = useState('tous');
+  const [search, setSearch]     = useState('');
+  const [gender, setGender]     = useState('tous');
   const [selected, setSelected] = useState(null);
+  const [images, setImages]     = useState(() => {
+    try { 
+      const cache = JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');
+      const imgs = {};
+      Object.entries(cache).forEach(([k, v]) => { imgs[k] = v?.url || null; });
+      return imgs;
+    } catch { return {}; }
+  });
+  const [loadingImgs, setLoadingImgs] = useState(false);
+  const [imgProgress, setImgProgress] = useState(0);
+  const loadingRef = useRef(false);
 
-  // Charger les produits mis à jour depuis localStorage
   const customPrix = (() => { try { return JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}'); } catch { return {}; } })();
   const normalizeRef = r => (r||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
 
   const allProducts = (() => {
     const customList = Object.values(customPrix).map(p => ({
-      id: `c-${p.ref}`,
-      ref: normalizeRef(p.ref),
-      name: p.nom||'',
-      brand: p.marque||'Chogan',
-      gender: p.genre==='homme'?'h':p.genre==='femme'?'f':'m',
-      sizes: Object.entries(p.prix||{}).filter(([,v])=>v!=null).map(([s])=>s),
-      prices: Object.fromEntries(Object.entries(p.prix||{}).filter(([,v])=>v!=null)),
-      img: p.img||null,
-      custom: true,
+      id:`c-${p.ref}`, ref:normalizeRef(p.ref), name:p.nom||'', brand:p.marque||'Chogan',
+      gender:p.genre==='homme'?'h':p.genre==='femme'?'f':'m',
+      sizes:Object.entries(p.prix||{}).filter(([,v])=>v!=null).map(([s])=>s),
+      prices:Object.fromEntries(Object.entries(p.prix||{}).filter(([,v])=>v!=null)),
+      img:p.img||null, custom:true,
     })).filter(p=>p.ref&&p.name&&p.sizes.length>0);
     const customRefs = new Set(customList.map(p=>p.ref));
     const staticFiltered = PERFUMES.filter(p=>!customRefs.has(normalizeRef(p.ref)));
     return [...customList,...staticFiltered].sort((a,b)=>(parseInt(a.ref)||0)-(parseInt(b.ref)||0));
   })();
 
+  const loadAllImages = async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoadingImgs(true);
+    setImgProgress(0);
+    const toLoad = allProducts.filter(p => {
+      const key = `${p.ref}-${p.name}`;
+      const cache = JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');
+      return !cache[key]; // seulement ceux non encore en cache
+    });
+    if (toLoad.length === 0) { setLoadingImgs(false); loadingRef.current = false; return; }
+    await preloadImages(toLoad, (done, total, url) => {
+      setImgProgress(Math.round((done/total)*100));
+      setImages(prev => ({...prev, [`${toLoad[done-1]?.ref}-${toLoad[done-1]?.name}`]: url}));
+    });
+    setLoadingImgs(false);
+    loadingRef.current = false;
+  };
+
+  const getImg = (p) => p.img || images[`${p.ref}-${p.name}`] || null;
+
   const filtered = allProducts.filter(p => {
     const gMap = {h:'homme',f:'femme',m:'mixte'};
-    if (gender !== 'tous' && gMap[p.gender] !== gender) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return p.name.toLowerCase().includes(q)||(p.brand||'').toLowerCase().includes(q)||p.ref.includes(search);
-    }
+    if (gender!=='tous' && gMap[p.gender]!==gender) return false;
+    if (search) { const q=search.toLowerCase(); return p.name.toLowerCase().includes(q)||(p.brand||'').toLowerCase().includes(q)||p.ref.includes(search); }
     return true;
   });
 
-  const GC = { h:'#3d6b9e', f:'#9e5a7a', m:'#4a7c59' };
-  const GE = { h:'♂', f:'♀', m:'⚧' };
-  const BOTTLE_ICON = { h:'🔵', f:'🌸', m:'💫' };
+  const GC = {h:'#3d6b9e',f:'#9e5a7a',m:'#4a7c59'};
+  const GE = {h:'♂',f:'♀',m:'⚧'};
+  const BOTTLE = {h:'🔵',f:'🌸',m:'💫'};
 
-  if (selected) return (
-    <div style={S.pad}>
-      <button style={S.backBtn} onClick={() => setSelected(null)}>← Retour</button>
-      <div style={{ ...S.detailCard, borderTop:`4px solid ${GC[selected.gender]||'var(--or)'}` }}>
-        {/* Photo ou placeholder */}
-        <div style={{ ...S.photoBox, background:`linear-gradient(135deg, ${GC[selected.gender]||'var(--or)'}18, ${GC[selected.gender]||'var(--or)'}08)` }}>
-          {selected.img
-            ? <img src={selected.img} alt={selected.name} style={{ maxHeight:160, maxWidth:'100%', objectFit:'contain', borderRadius:8 }} onError={e=>{e.target.style.display='none';}} />
-            : <div style={{ textAlign:'center' }}>
-                <span style={{ fontSize:64 }}>{BOTTLE_ICON[selected.gender]||'💎'}</span>
-                <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:8 }}>Photo non disponible</p>
-              </div>
-          }
-          {selected.custom && <span style={S.majBadge}>✅ MàJ</span>}
-        </div>
-        {/* Infos */}
-        <div style={{ padding:'14px' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
-            <div>
-              <p style={{ fontSize:11, fontWeight:700, color:GC[selected.gender] }}>N°{selected.ref} · {GE[selected.gender]}</p>
-              <p style={{ fontSize:18, fontWeight:700, fontFamily:'var(--font-display)', color:'var(--taupe)', letterSpacing:'0.04em', marginTop:2 }}>{selected.name}</p>
-              <p style={{ fontSize:12, color:'var(--text-muted)', marginTop:3 }}>{selected.brand}</p>
-            </div>
+  if (selected) {
+    const img = getImg(selected);
+    return (
+      <div style={S.pad}>
+        <button style={S.backBtn} onClick={()=>setSelected(null)}>← Retour</button>
+        <div style={{...S.detailCard, borderTop:`4px solid ${GC[selected.gender]||'var(--or)'}`}}>
+          <div style={{...S.photoBox, background:`linear-gradient(135deg, ${GC[selected.gender]}18, ${GC[selected.gender]}05)`}}>
+            {img
+              ? <img src={img} alt={selected.name} style={{maxHeight:180,maxWidth:'90%',objectFit:'contain',borderRadius:8}} onError={e=>{e.target.style.display='none';}} />
+              : <div style={{textAlign:'center'}}><span style={{fontSize:72}}>{BOTTLE[selected.gender]||'💎'}</span><p style={{fontSize:11,color:'var(--text-muted)',marginTop:8}}>Photo non disponible<br/><button style={{fontSize:10,color:'var(--or-deep)',background:'none',border:'none',cursor:'pointer',marginTop:4}} onClick={()=>{const k=`${selected.ref}-${selected.name}`;const cache=JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');delete cache[k];localStorage.setItem('chogan_img_cache',JSON.stringify(cache));loadAllImages();}}>↺ Réessayer</button></p></div>
+            }
+            {selected.custom && <span style={S.majBadge}>✅ MàJ</span>}
           </div>
-          <div style={{ borderTop:'1px solid var(--or-border)', paddingTop:12 }}>
-            <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>Tarifs</p>
-            {selected.sizes.map(s => (
-              <div key={s} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid rgba(210,183,149,0.15)' }}>
-                <span style={{ fontSize:13, color:'var(--taupe)' }}>{s}</span>
-                <span style={{ fontSize:16, fontWeight:700, color:'var(--or-deep)' }}>{selected.prices?.[s]}€</span>
-              </div>
-            ))}
+          <div style={{padding:'14px'}}>
+            <p style={{fontSize:11,fontWeight:700,color:GC[selected.gender]}}>N°{selected.ref} · {GE[selected.gender]}</p>
+            <p style={{fontSize:18,fontWeight:700,fontFamily:'var(--font-display)',color:'var(--taupe)',letterSpacing:'0.04em',marginTop:2}}>{selected.name}</p>
+            <p style={{fontSize:12,color:'var(--text-muted)',marginTop:3}}>{selected.brand}</p>
+            <div style={{borderTop:'1px solid var(--or-border)',paddingTop:12,marginTop:12}}>
+              {selected.sizes.map(s=>(
+                <div key={s} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid rgba(210,183,149,0.15)'}}>
+                  <span style={{fontSize:13,color:'var(--taupe)'}}>{s}</span>
+                  <span style={{fontSize:16,fontWeight:700,color:'var(--or-deep)'}}>{selected.prices?.[s]}€</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div style={S.pad}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <p style={{ fontSize:11, color:'var(--text-muted)' }}>{filtered.length} référence(s)</p>
-        {Object.keys(customPrix).length > 0 && <span style={{ fontSize:11, color:'var(--green)', fontWeight:700 }}>✅ {Object.keys(customPrix).length} mises à jour</span>}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+        <p style={{fontSize:11,color:'var(--text-muted)'}}>{filtered.length} réf.</p>
+        <button
+          style={{...S.loadImgBtn, ...(loadingImgs?{opacity:0.7}:{})}}
+          onClick={loadAllImages}
+          disabled={loadingImgs}>
+          {loadingImgs ? `📸 ${imgProgress}%...` : '📸 Charger les photos'}
+        </button>
       </div>
-      <input placeholder="🔍 Nom, marque ou référence..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
+
+      {loadingImgs && (
+        <div style={S.progressBar}>
+          <div style={{...S.progressFill, width:`${imgProgress}%`}} />
+        </div>
+      )}
+
+      <input placeholder="🔍 Nom, marque ou référence..." value={search} onChange={e=>setSearch(e.target.value)} style={{marginBottom:10}} />
       <div style={S.filterRow}>
-        {[['tous','Tous'],['homme','♂ Homme'],['femme','♀ Femme'],['mixte','⚧ Mixte']].map(([v,l]) => (
-          <button key={v} style={{ ...S.filterBtn, ...(gender===v?S.filterActive:{}) }} onClick={() => setGender(v)}>{l}</button>
+        {[['tous','Tous'],['homme','♂ Homme'],['femme','♀ Femme'],['mixte','⚧ Mixte']].map(([v,l])=>(
+          <button key={v} style={{...S.filterBtn,...(gender===v?S.filterActive:{})}} onClick={()=>setGender(v)}>{l}</button>
         ))}
       </div>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-        {filtered.map(p => (
-          <div key={p.id} style={S.perfumeCard} onClick={() => setSelected(p)}>
-            {/* Zone photo */}
-            <div style={{ ...S.cardPhoto, background:`linear-gradient(135deg, ${GC[p.gender]||'var(--or)'}15, ${GC[p.gender]||'var(--or)'}05)` }}>
-              {p.img
-                ? <img src={p.img} alt={p.name} style={{ width:'100%', height:'100%', objectFit:'contain', padding:4 }} onError={e=>{e.target.parentNode.innerHTML=`<span style="font-size:36px">${BOTTLE_ICON[p.gender]||'💎'}</span>`;}} />
-                : <span style={{ fontSize:36 }}>{BOTTLE_ICON[p.gender]||'💎'}</span>
-              }
-              {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+        {filtered.map(p => {
+          const img = getImg(p);
+          return (
+            <div key={p.id} style={S.perfumeCard} onClick={()=>setSelected(p)}>
+              <div style={{...S.cardPhoto, background:`linear-gradient(135deg, ${GC[p.gender]||'var(--or)'}15, ${GC[p.gender]||'var(--or)'}05)`}}>
+                {img
+                  ? <img src={img} alt={p.name} style={{width:'100%',height:'100%',objectFit:'contain',padding:6}} onError={e=>{e.target.style.display='none';}} />
+                  : <span style={{fontSize:36}}>{BOTTLE[p.gender]||'💎'}</span>
+                }
+                {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
+              </div>
+              <div style={{padding:'8px 10px'}}>
+                <p style={{fontSize:9,fontWeight:700,color:GC[p.gender],marginBottom:2}}>N°{p.ref} {GE[p.gender]}</p>
+                <p style={{fontSize:12,fontWeight:600,lineHeight:1.3,color:'var(--taupe)'}}>{p.name}</p>
+                <p style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>{p.brand}</p>
+                <p style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',marginTop:6}}>
+                  dès {Math.min(...p.sizes.map(s=>p.prices?.[s]||99))}€
+                </p>
+              </div>
             </div>
-            {/* Infos */}
-            <div style={{ padding:'8px 10px' }}>
-              <p style={{ fontSize:9, fontWeight:700, color:GC[p.gender], marginBottom:2 }}>N°{p.ref} {GE[p.gender]}</p>
-              <p style={{ fontSize:12, fontWeight:600, lineHeight:1.3, color:'var(--taupe)' }}>{p.name}</p>
-              <p style={{ fontSize:10, color:'var(--text-muted)', marginTop:2 }}>{p.brand}</p>
-              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginTop:6 }}>
-                dès {Math.min(...p.sizes.map(s=>p.prices?.[s]||99))}€
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -564,6 +595,9 @@ const S = {
   priceTag: { fontSize:10, padding:'2px 8px', background:'var(--or-pale)', color:'var(--or-deep)', borderRadius:20, border:'1px solid var(--or-border)', fontWeight:600 },
   savedBox: { background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.3)', borderRadius:10, padding:'12px', color:'var(--green)', fontSize:13, fontWeight:600, textAlign:'center' },
   resetBtnSm: { background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', color:'var(--red)', borderRadius:8, padding:'5px 12px', fontSize:11, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 },
+  loadImgBtn: { background:'var(--or-pale)', border:'1px solid var(--or-border)', color:'var(--or-deep)', borderRadius:20, padding:'5px 14px', fontSize:11, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 },
+  progressBar: { height:4, background:'rgba(210,183,149,0.2)', borderRadius:2, overflow:'hidden', marginBottom:12 },
+  progressFill: { height:'100%', background:'linear-gradient(90deg, var(--or), var(--or-deep))', borderRadius:2, transition:'width 0.3s ease' },
   venteFiche: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:16, marginBottom:12 },
   venteTitle: { fontFamily:'var(--font-display)', fontSize:13, color:'var(--or-deep)', letterSpacing:'0.08em', marginBottom:14, paddingBottom:10, borderBottom:'1px solid var(--or-border)' },
   backLink: { background:'none', border:'none', color:'var(--text-muted)', fontSize:13, cursor:'pointer', padding:'0 0 14px', display:'block' },
