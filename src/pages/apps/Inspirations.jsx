@@ -139,6 +139,28 @@ function CommandesTab() {
 }
 
 // ── INSPIRATIONS ─────────────────────────────────────────────────
+// Flacon SVG élégant selon le genre
+function BottleSVG({ gender, size=48 }) {
+  const colors = { h:'#3d6b9e', f:'#9e5a7a', m:'#4a7c59' };
+  const col = colors[gender] || '#B89A6A';
+  return (
+    <svg width={size} height={size*1.4} viewBox="0 0 60 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="22" y="2" width="16" height="8" rx="3" fill={col} opacity="0.6"/>
+      <rect x="26" y="8" width="8" height="6" rx="1" fill={col} opacity="0.4"/>
+      <rect x="8" y="14" width="44" height="64" rx="8" fill={col} opacity="0.12"/>
+      <rect x="8" y="14" width="44" height="64" rx="8" stroke={col} strokeWidth="1.5" fill="none"/>
+      <rect x="14" y="20" width="32" height="52" rx="5" fill={col} opacity="0.08"/>
+      <rect x="20" y="30" width="20" height="1.5" rx="1" fill={col} opacity="0.5"/>
+      <rect x="16" y="36" width="28" height="14" rx="3" fill={col} opacity="0.15"/>
+      <rect x="20" y="38" width="20" height="2" rx="1" fill={col} opacity="0.6"/>
+      <rect x="18" y="42" width="24" height="1.5" rx="1" fill={col} opacity="0.4"/>
+      <rect x="20" y="46" width="20" height="1.5" rx="1" fill={col} opacity="0.3"/>
+      <rect x="28" y="56" width="4" height="12" rx="2" fill={col} opacity="0.25"/>
+    </svg>
+  );
+}
+
+
 function InspirationsTab() {
   const [search, setSearch]     = useState('');
   const [gender, setGender]     = useState('tous');
@@ -171,23 +193,10 @@ function InspirationsTab() {
     return [...customList,...staticFiltered].sort((a,b)=>(parseInt(a.ref)||0)-(parseInt(b.ref)||0));
   })();
 
-  const loadAllImages = async () => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-    setLoadingImgs(true);
-    setImgProgress(0);
-    const toLoad = allProducts.filter(p => {
-      const key = `${p.ref}-${p.name}`;
-      const cache = JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');
-      return !cache[key]; // seulement ceux non encore en cache
-    });
-    if (toLoad.length === 0) { setLoadingImgs(false); loadingRef.current = false; return; }
-    await preloadImages(toLoad, (done, total, url) => {
-      setImgProgress(Math.round((done/total)*100));
-      setImages(prev => ({...prev, [`${toLoad[done-1]?.ref}-${toLoad[done-1]?.name}`]: url}));
-    });
-    setLoadingImgs(false);
-    loadingRef.current = false;
+  const clearImgCache = () => {
+    localStorage.removeItem('chogan_img_cache');
+    localStorage.removeItem('chogan_img_cache_v2');
+    setImages({});
   };
 
   const getImg = (p) => {
@@ -217,7 +226,7 @@ function InspirationsTab() {
 
   const GC = {h:'#3d6b9e',f:'#9e5a7a',m:'#4a7c59'};
   const GE = {h:'♂',f:'♀',m:'⚧'};
-  const BOTTLE = {h:'🔵',f:'🌸',m:'💫'};
+  // BottleSVG used instead of emoji
 
   if (selected) {
     const img = getImg(selected);
@@ -228,7 +237,7 @@ function InspirationsTab() {
           <div style={{...S.photoBox, background:`linear-gradient(135deg, ${GC[selected.gender]}18, ${GC[selected.gender]}05)`}}>
             {img
               ? <img src={img} alt={selected.name} style={{maxHeight:180,maxWidth:'90%',objectFit:'contain',borderRadius:8}} onError={e=>{e.target.style.display='none';}} />
-              : <div style={{textAlign:'center'}}><span style={{fontSize:72}}>{BOTTLE[selected.gender]||'💎'}</span><p style={{fontSize:11,color:'var(--text-muted)',marginTop:8}}>Photo non disponible<br/><button style={{fontSize:10,color:'var(--or-deep)',background:'none',border:'none',cursor:'pointer',marginTop:4}} onClick={()=>{const k=`${selected.ref}-${selected.name}`;const cache=JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');delete cache[k];localStorage.setItem('chogan_img_cache',JSON.stringify(cache));loadAllImages();}}>↺ Réessayer</button></p></div>
+              : <div style={{textAlign:'center'}}><BottleSVG gender={selected.gender} size={80} /><p style={{fontSize:11,color:'var(--text-muted)',marginTop:8}}>Photo non disponible<br/><button style={{fontSize:10,color:'var(--or-deep)',background:'none',border:'none',cursor:'pointer',marginTop:4}} onClick={()=>{const k=`${selected.ref}-${selected.name}`;const cache=JSON.parse(localStorage.getItem('chogan_img_cache')||'{}');delete cache[k];localStorage.setItem('chogan_img_cache',JSON.stringify(cache));loadAllImages();}}>↺ Réessayer</button></p></div>
             }
             {selected.custom && <span style={S.majBadge}>✅ MàJ</span>}
           </div>
@@ -253,20 +262,9 @@ function InspirationsTab() {
   return (
     <div style={S.pad}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-        <p style={{fontSize:11,color:'var(--text-muted)'}}>{filtered.length} réf.</p>
-        <button
-          style={{...S.loadImgBtn, ...(loadingImgs?{opacity:0.7}:{})}}
-          onClick={loadAllImages}
-          disabled={loadingImgs}>
-          {loadingImgs ? `📸 ${imgProgress}%...` : '📸 Charger les photos'}
-        </button>
+        <p style={{fontSize:11,color:'var(--text-muted)'}}>{filtered.length} réf.{Object.keys(customPrix).length>0?` · ${Object.keys(customPrix).length} MàJ`:''}</p>
+        <button style={S.loadImgBtn} onClick={clearImgCache} title="Vider le cache photos">🗑 Cache photos</button>
       </div>
-
-      {loadingImgs && (
-        <div style={S.progressBar}>
-          <div style={{...S.progressFill, width:`${imgProgress}%`}} />
-        </div>
-      )}
 
       <input placeholder="🔍 Nom, marque ou référence..." value={search} onChange={e=>setSearch(e.target.value)} style={{marginBottom:10}} />
       <div style={S.filterRow}>
@@ -285,7 +283,7 @@ function InspirationsTab() {
                   ? <img src={img} alt={p.name} style={{width:'100%',height:'100%',objectFit:'contain',padding:6}} onError={e=>{e.target.style.display='none';}} />
                   : getCropStyle(p)
                     ? <div style={{width:'100%',height:'100%',...getCropStyle(p)}} />
-                    : <span style={{fontSize:36}}>{BOTTLE[p.gender]||'💎'}</span>
+                    : <BottleSVG gender={p.gender} size={40} />
                 }
                 {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
               </div>
