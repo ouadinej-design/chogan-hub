@@ -186,7 +186,10 @@ function InspirationsTab() {
       gender:p.genre==='homme'?'h':p.genre==='femme'?'f':'m',
       sizes:Object.entries(p.prix||{}).filter(([,v])=>v!=null).map(([s])=>s),
       prices:Object.fromEntries(Object.entries(p.prix||{}).filter(([,v])=>v!=null)),
-      img:p.img||null, custom:true,
+      img:p.img||null,
+      imgKey:p.imgKey||null,  // clé localStorage de l'image source
+      crop:p.crop||null,       // coordonnées de crop
+      custom:true,
     })).filter(p=>p.ref&&p.name&&p.sizes.length>0);
     const customRefs = new Set(customList.map(p=>p.ref));
     const staticFiltered = PERFUMES.filter(p=>!customRefs.has(normalizeRef(p.ref)));
@@ -201,18 +204,20 @@ function InspirationsTab() {
 
   const getImg = (p) => {
     if (p.img) return p.img;
-    if (p.imgCrop?.sourceImg) return null; // handled separately with CSS crop
-    return images[`${p.ref}-${p.name}`] || null;
+    return null; // crop handled separately via getCropStyle
   };
 
-  const getCropStyle = (p) => {
-    const crop = p.imgCrop;
-    if (!crop?.sourceImg || !crop?.crop) return null;
-    const c = crop.crop;
+  const getCropStyle = (p, containerW=100) => {
+    if (!p.crop || !p.imgKey) return null;
+    const sourceImg = localStorage.getItem(p.imgKey);
+    if (!sourceImg) return null;
+    const cr = p.crop;
+    // Calcul: afficher seulement la région cr.x,cr.y,cr.w,cr.h (en % de l'image)
+    const scale = 100 / cr.w;  // agrandir pour remplir le container
     return {
-      backgroundImage: `url(${crop.sourceImg})`,
-      backgroundSize: `${10000/c.w}%`,
-      backgroundPosition: `${-c.x*(10000/c.w)/100}px ${-c.y*(10000/c.w)/100}px`,
+      backgroundImage: `url(${sourceImg})`,
+      backgroundSize: `${scale * 100}%`,
+      backgroundPosition: `${-(cr.x / cr.w) * 100}% ${-(cr.y / cr.h) * 100}%`,
       backgroundRepeat: 'no-repeat',
     };
   };
@@ -486,25 +491,47 @@ function MajPrixTab() {
 
   const handleSave = () => {
     if (!result?.produits?.length) return;
-    const existing = JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}');
-    const updated = {...existing};
     const norm = r => (r||'').replace(/^[A-Za-z]+/,'').replace(/[A-Za-z]+$/,'').trim();
 
+    // Stocker l'image source UNE SEULE FOIS (pas par produit)
+    let imgKey = null;
+    if (result.sourceImg) {
+      imgKey = `chogan_src_${Date.now()}`;
+      try {
+        // Nettoyer les anciennes images sources
+        Object.keys(localStorage).filter(k=>k.startsWith('chogan_src_')).forEach(k=>localStorage.removeItem(k));
+        localStorage.setItem(imgKey, result.sourceImg);
+      } catch(e) {
+        // Si trop grande, on ignore les images
+        imgKey = null;
+        console.warn('Image trop grande pour localStorage');
+      }
+    }
+
+    const existing = JSON.parse(localStorage.getItem('chogan_prix_custom')||'{}');
+    const updated = {...existing};
     result.produits.forEach(p => {
       const ref = norm(p.ref);
-      // Générer une image cropée si on a l'image source et les coords
-      let imgCrop = null;
-      if (result.sourceImg && p.crop && p.crop.x != null) {
-        imgCrop = { sourceImg: result.sourceImg, crop: p.crop };
-      }
       updated[ref] = {
         ref, nom:p.nom, genre:p.genre||'mixte', marque:p.marque||'',
         categorie:p.categorie||'Parfum', prix:p.prix,
-        imgCrop, img:null, maj:new Date().toISOString(),
+        // Référence à l'image + coordonnées de crop (pas l'image entière)
+        imgKey: imgKey,
+        crop: (p.crop && p.crop.x != null) ? p.crop : null,
+        img: null,
+        maj: new Date().toISOString(),
       };
     });
-    localStorage.setItem('chogan_prix_custom', JSON.stringify(updated));
-    setSaved(true);
+    try {
+      localStorage.setItem('chogan_prix_custom', JSON.stringify(updated));
+      setSaved(true);
+    } catch(e) {
+      // Si toujours trop grand, sauvegarder sans images
+      result.produits.forEach(p => { const ref=norm(p.ref); if(updated[ref]) { delete updated[ref].imgKey; delete updated[ref].crop; } });
+      localStorage.setItem('chogan_prix_custom', JSON.stringify(updated));
+      setSaved(true);
+      alert('Produits enregistrés (images non sauvegardées — catalogue trop lourd).');
+    }
   };
 
   const handleReset = () => {
@@ -588,11 +615,12 @@ function MajPrixTab() {
               <div key={i} style={{...S.resultItem,display:'flex',alignItems:'center',gap:10}}>
                 {result.sourceImg && p.crop && (
                   <div style={{
-                    width:40,height:40,borderRadius:8,overflow:'hidden',
+                    width:44,height:44,borderRadius:8,overflow:'hidden',
                     flexShrink:0,border:'1px solid var(--or-border)',
                     backgroundImage:`url(${result.sourceImg})`,
-                    backgroundSize:`${10000/p.crop.w}%`,
-                    backgroundPosition:`${-p.crop.x*(10000/p.crop.w)/100}px ${-p.crop.y*(10000/p.crop.w)/100}px`,
+                    backgroundSize:`${100/p.crop.w*100}%`,
+                    backgroundPosition:`${-(p.crop.x/p.crop.w)*100}% ${-(p.crop.y/p.crop.h)*100}%`,
+                    backgroundRepeat:'no-repeat',
                   }}/>
                 )}
                 <div style={{flex:1}}>
