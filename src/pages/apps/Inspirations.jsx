@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { getPerfumeImage, preloadImages } from '../../utils/perfumeImages';
 import { useData } from '../../context/DataContext';
 import AppLayout from '../../components/AppLayout';
 import { PERFUMES, PRODUITS_PROMO, GENDER_COLOR } from '../../utils/choganData';
