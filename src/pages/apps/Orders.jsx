@@ -183,13 +183,17 @@ function InspirationsTab() {
 
 // ── BON DE COMMANDE ──────────────────────────────────────────────
 function BonCommandeTab() {
-  const [pays, setPays]       = useState('fr');
-  const [taux, setTaux]       = useState('245');
-  const [frais, setFrais]     = useState('');
-  const [cart, setCart]       = useState([]);
-  const [search, setSearch]   = useState('');
-  const [nom, setNom]         = useState('');
-  const [copied, setCopied]   = useState(false);
+  const [pays, setPays]         = useState('fr');
+  const [taux, setTaux]         = useState('245');
+  const [frais, setFrais]       = useState('');
+  const [cart, setCart]         = useState([]);
+  const [search, setSearch]     = useState('');
+  const [nom, setNom]           = useState('');
+  const [email, setEmail]       = useState('');
+  const [tel, setTel]           = useState('');
+  const [note, setNote]         = useState('');
+  const [copied, setCopied]     = useState(false);
+  const [savedAgenda, setSavedAgenda] = useState(false);
   const [showCart, setShowCart] = useState(false);
 
   const filtered = PERFUMES.filter(p => {
@@ -206,8 +210,8 @@ function BonCommandeTab() {
     });
   };
   const totalEur = cart.reduce((s,c) => s+c.price*c.qty, 0);
-  const tx = parseFloat(taux)||245;
-  const fr = parseFloat(frais)||0;
+  const tx       = parseFloat(taux)||245;
+  const fr       = parseFloat(frais)||0;
   const totalDzd = Math.round(totalEur*tx + (pays==='dz'?fr:0));
   const totalFr  = totalEur + (pays==='fr'?fr:0);
 
@@ -221,9 +225,52 @@ function BonCommandeTab() {
     navigator.clipboard?.writeText(lines.join('\n')).then(() => { setCopied(true); setTimeout(()=>setCopied(false),2500); });
   };
 
+  // ✦ Enregistrer automatiquement dans la rubrique Vente de l'agenda original
+  const saveToAgenda = () => {
+    try {
+      const existing = JSON.parse(localStorage.getItem('le_sales') || '[]');
+      const prodList = cart.map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', ');
+      const totalQty = cart.reduce((s,c) => s + c.qty, 0);
+      const sale = {
+        id:         `BC-${Date.now()}`,
+        client:     nom || '—',
+        prod:       prodList,
+        qty:        String(totalQty),
+        amt:        String(totalEur),
+        note:       note || `${pays==='dz'?`DZD: ${totalDzd.toLocaleString('fr-FR')} DA`:`Total: ${totalFr.toFixed(2)}€`}`,
+        email:      email || '',
+        tel:        tel || '',
+        consultant: '',
+        createdAt:  new Date().toISOString(),
+      };
+      localStorage.setItem('le_sales', JSON.stringify([sale, ...existing]));
+      setSavedAgenda(true);
+      setTimeout(() => setSavedAgenda(false), 3000);
+    } catch(e) { console.warn(e); }
+  };
+
   if (showCart) return (
     <div style={S.pad}>
       <button style={S.backLink} onClick={() => setShowCart(false)}>← Retour</button>
+
+      {savedAgenda && (
+        <div style={{ background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.25)', borderRadius:10, padding:'10px 14px', marginBottom:12, fontSize:13, color:'var(--green)', fontWeight:600 }}>
+          ✅ Vente enregistrée dans la rubrique Agenda !
+        </div>
+      )}
+
+      {/* Infos client */}
+      <div style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, padding:14, marginBottom:12 }}>
+        <p style={S.secLabel}>👤 Informations client</p>
+        <div className="field"><label className="label">Nom client *</label><input value={nom} onChange={e=>setNom(e.target.value)} placeholder="Prénom Nom" /></div>
+        <div className="grid-2">
+          <div className="field"><label className="label">Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@..." /></div>
+          <div className="field"><label className="label">Téléphone</label><input type="tel" value={tel} onChange={e=>setTel(e.target.value)} placeholder="06..." /></div>
+        </div>
+        <div className="field"><label className="label">Note</label><input value={note} onChange={e=>setNote(e.target.value)} placeholder="Note optionnelle..." /></div>
+      </div>
+
+      {/* Pays & taux */}
       <div className="field"><label className="label">Pays</label>
         <div style={{ display:'flex', gap:8 }}>
           {[['fr','🇫🇷 France'],['dz','🇩🇿 Algérie']].map(([v,l]) => (
@@ -234,11 +281,13 @@ function BonCommandeTab() {
       </div>
       {pays==='dz' && <div className="field"><label className="label">Taux 1€ = ? DA</label><input type="number" value={taux} onChange={e=>setTaux(e.target.value)} /></div>}
       <div className="field"><label className="label">Frais {pays==='fr'?'port (€)':'envoi (DA)'}</label><input type="number" value={frais} onChange={e=>setFrais(e.target.value)} placeholder="0" /></div>
-      <div className="field"><label className="label">Nom client</label><input value={nom} onChange={e=>setNom(e.target.value)} placeholder="Prénom Nom" /></div>
+
+      {/* Produits */}
+      <p style={{ ...S.secLabel, marginBottom:8 }}>🛒 Produits</p>
       {cart.map(c => (
         <div key={c.key} style={{ ...S.card, display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
           <div style={{ flex:1 }}>
-            <p style={{ fontSize:13, fontWeight:600 }}>{c.name} — {c.size}</p>
+            <p style={{ fontSize:13, fontWeight:600 }}>N°{c.ref} {c.name} — {c.size}</p>
             <p style={{ fontSize:11, color:'var(--text-muted)' }}>×{c.qty} = {(c.price*c.qty).toFixed(2)}€</p>
           </div>
           <div style={{ display:'flex', gap:6, alignItems:'center' }}>
@@ -249,12 +298,22 @@ function BonCommandeTab() {
           </div>
         </div>
       ))}
-      <div style={{ background:'var(--or-pale)', border:'1px solid var(--or-border)', borderRadius:12, padding:14, marginTop:10 }}>
+
+      {/* Total */}
+      <div style={{ background:'var(--or-pale)', border:'1px solid var(--or-border)', borderRadius:12, padding:14, marginTop:4 }}>
         <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:4 }}><span>Total produits</span><span style={{ fontWeight:700 }}>{totalEur.toFixed(2)}€</span></div>
-        {pays==='dz' && <div style={{ display:'flex', justifyContent:'space-between', fontSize:16, fontWeight:700, color:'var(--or-deep)', marginTop:8 }}><span>TOTAL DZD</span><span>{totalDzd.toLocaleString('fr-FR')} DA</span></div>}
-        {pays==='fr' && <div style={{ display:'flex', justifyContent:'space-between', fontSize:16, fontWeight:700, color:'var(--or-deep)', marginTop:8 }}><span>TOTAL</span><span>{totalFr.toFixed(2)}€</span></div>}
+        {fr > 0 && <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:4 }}><span>Frais</span><span>{pays==='fr'?`${fr.toFixed(2)}€`:`${fr.toLocaleString()} DA`}</span></div>}
+        {pays==='dz' && <div style={{ display:'flex', justifyContent:'space-between', fontSize:18, fontWeight:700, color:'var(--or-deep)', marginTop:8, borderTop:'1px solid var(--or-border)', paddingTop:8 }}><span>TOTAL DZD</span><span>{totalDzd.toLocaleString('fr-FR')} DA</span></div>}
+        {pays==='fr' && <div style={{ display:'flex', justifyContent:'space-between', fontSize:18, fontWeight:700, color:'var(--or-deep)', marginTop:8, borderTop:'1px solid var(--or-border)', paddingTop:8 }}><span>TOTAL</span><span>{totalFr.toFixed(2)}€</span></div>}
       </div>
-      <button className="btn-gold" style={{ marginTop:12 }} onClick={exportBC}>{copied?'✓ Copié !':'📋 Copier le bon de commande'}</button>
+
+      {/* Boutons */}
+      <button className="btn-gold" style={{ marginTop:12 }} onClick={saveToAgenda}>
+        📅 Enregistrer dans l'Agenda (Vente)
+      </button>
+      <button className="btn-outline" style={{ width:'100%', marginTop:8 }} onClick={exportBC}>
+        {copied ? '✓ Copié !' : '📋 Copier le bon de commande'}
+      </button>
     </div>
   );
 
