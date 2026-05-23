@@ -6,7 +6,8 @@ import { sendDailyReport, shouldSendReport } from './utils/emailReport';
 import { getTodayLogs, store } from './utils/storage';
 import Login      from './pages/Login';
 import Home       from './pages/Home';
-import Orders     from './pages/apps/Orders';
+import Orders      from './pages/apps/Orders';
+import Inspirations from './pages/apps/Inspirations';
 import Clients    from './pages/apps/Clients';
 import Fidelite   from './pages/apps/Fidelite';
 import Agenda     from './pages/apps/Agenda';
@@ -57,6 +58,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/"                   element={<Home />} />
         <Route path="/app/orders"         element={<Orders />} />
+        <Route path="/app/inspirations"    element={<Inspirations />} />
         <Route path="/app/clients"        element={<Clients />} />
         <Route path="/app/fidelite"       element={<Fidelite />} />
         <Route path="/app/agenda"         element={<Agenda />} />
