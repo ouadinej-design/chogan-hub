@@ -139,23 +139,29 @@ function CommandesTab() {
 }
 
 // ── INSPIRATIONS ─────────────────────────────────────────────────
-// Flacon SVG élégant selon le genre
-function BottleSVG({ gender, size=48 }) {
+// Flacon SVG élégant selon le genre avec ref
+function BottleSVG({ gender, size=48, ref='' }) {
   const colors = { h:'#3d6b9e', f:'#9e5a7a', m:'#4a7c59' };
   const col = colors[gender] || '#B89A6A';
+  const s = size;
   return (
-    <svg width={size} height={size*1.4} viewBox="0 0 60 84" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="22" y="2" width="16" height="8" rx="3" fill={col} opacity="0.6"/>
-      <rect x="26" y="8" width="8" height="6" rx="1" fill={col} opacity="0.4"/>
-      <rect x="8" y="14" width="44" height="64" rx="8" fill={col} opacity="0.12"/>
-      <rect x="8" y="14" width="44" height="64" rx="8" stroke={col} strokeWidth="1.5" fill="none"/>
-      <rect x="14" y="20" width="32" height="52" rx="5" fill={col} opacity="0.08"/>
-      <rect x="20" y="30" width="20" height="1.5" rx="1" fill={col} opacity="0.5"/>
-      <rect x="16" y="36" width="28" height="14" rx="3" fill={col} opacity="0.15"/>
-      <rect x="20" y="38" width="20" height="2" rx="1" fill={col} opacity="0.6"/>
-      <rect x="18" y="42" width="24" height="1.5" rx="1" fill={col} opacity="0.4"/>
-      <rect x="20" y="46" width="20" height="1.5" rx="1" fill={col} opacity="0.3"/>
-      <rect x="28" y="56" width="4" height="12" rx="2" fill={col} opacity="0.25"/>
+    <svg width={s} height={s*1.5} viewBox="0 0 60 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Bouchon */}
+      <rect x="22" y="2" width="16" height="7" rx="3" fill={col} opacity="0.7"/>
+      <rect x="26" y="7" width="8" height="5" rx="1" fill={col} opacity="0.5"/>
+      {/* Corps du flacon */}
+      <rect x="6" y="12" width="48" height="66" rx="10" fill={col} opacity="0.13"/>
+      <rect x="6" y="12" width="48" height="66" rx="10" stroke={col} strokeWidth="1.5" fill="none"/>
+      {/* Reflet */}
+      <rect x="12" y="16" width="12" height="55" rx="5" fill={col} opacity="0.06"/>
+      {/* Étiquette */}
+      <rect x="11" y="32" width="38" height="28" rx="4" fill={col} opacity="0.12" stroke={col} strokeWidth="0.8" strokeOpacity="0.3"/>
+      <rect x="15" y="36" width="30" height="1.2" rx="1" fill={col} opacity="0.5"/>
+      {/* Numéro de référence */}
+      {ref && <text x="30" y="52" textAnchor="middle" fontSize="10" fontFamily="serif" fill={col} opacity="0.8" fontWeight="bold">N°{ref}</text>}
+      <rect x="15" y="56" width="30" height="1" rx="1" fill={col} opacity="0.3"/>
+      {/* Base */}
+      <rect x="14" y="78" width="32" height="3" rx="1.5" fill={col} opacity="0.25"/>
     </svg>
   );
 }
@@ -261,7 +267,7 @@ function InspirationsTab() {
                   />
               : getCropStyle(selected)
                 ? <div style={{width:160,height:160,borderRadius:10,overflow:'hidden',margin:'0 auto',...getCropStyle(selected)}} />
-                : <div style={{textAlign:'center'}}><BottleSVG gender={selected.gender} size={80} /></div>
+                : <div style={{textAlign:'center'}}><BottleSVG gender={selected.gender} size={80} ref={selected.ref} /></div>
             }
             {selected.custom && <span style={S.majBadge}>✅ MàJ</span>}
           </div>
@@ -310,7 +316,7 @@ function InspirationsTab() {
                     />
                   : getCropStyle(p)
                     ? <div style={{width:'100%',height:'100%',...getCropStyle(p)}} />
-                    : <BottleSVG gender={p.gender} size={40} />
+                    : <BottleSVG gender={p.gender} size={40} ref={p.ref} />
                 }
                 {p.custom && <span style={S.majBadgeSm}>MàJ</span>}
               </div>
