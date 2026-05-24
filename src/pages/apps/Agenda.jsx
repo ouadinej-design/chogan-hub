@@ -15,7 +15,7 @@ const STRATEGIC = [
 const TC = { mus:'#059669', cath:'#7c3aed', comm:'#d97706', saison:'#0891b2' };
 const TL = { mus:'Islam', cath:'Chrétien', comm:'Commerce', saison:'Saison' };
 
-export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅' }) {
+export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', agendaAsLink = false }) {
   const [tab, setTab] = useState('agenda');
   return (
     <AppLayout title={appTitle} icon={appIcon}>
@@ -24,7 +24,7 @@ export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅' }) {
           <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:12, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
-      {tab === 'agenda'     && <AgendaIframe />}
+      {tab === 'agenda'     && <AgendaIframe asLink={agendaAsLink} />}
       {tab === 'evenements' && <EvenementsTab />}
       {tab === 'ventes'     && <VentesTab />}
     </AppLayout>
@@ -35,8 +35,24 @@ export default function Agenda() {
   return <AgendaTabs appTitle="Agenda" appIcon="📅" />;
 }
 
-// ── AGENDA (iframe) ───────────────────────────────────────────────
-function AgendaIframe() {
+// ── AGENDA TAB (iframe ou lien selon contexte) ───────────────────
+function AgendaIframe({ asLink = false }) {
+  if (asLink) {
+    return (
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'calc(100vh - 160px)', gap:20, padding:24 }}>
+        <div style={{ fontSize:60 }}>📅</div>
+        <p style={{ fontFamily:'var(--font-display)', fontSize:20, color:'var(--taupe)', textAlign:'center' }}>Ouvrir l'Agenda</p>
+        <p style={{ fontSize:13, color:'var(--text-muted)', textAlign:'center', lineHeight:1.6 }}>
+          Accédez à votre agenda complet avec vos rendez-vous, ventes et calendrier stratégique.
+        </p>
+        <a href="/app/agenda" style={{ display:'block', width:'100%', maxWidth:280 }}>
+          <button className="btn-gold" style={{ width:'100%', fontSize:15, padding:'14px' }}>
+            📅 Ouvrir l'Agenda
+          </button>
+        </a>
+      </div>
+    );
+  }
   return (
     <div style={{ height:'calc(100vh - 110px)' }}>
       <iframe src="/agenda-app.html" style={{ width:'100%', height:'100%', border:'none' }} title="Agenda"/>
