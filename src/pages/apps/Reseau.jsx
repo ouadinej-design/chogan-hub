@@ -69,11 +69,11 @@ export default function Reseau() {
         style={{ background:st.cardBg, border:`2px solid ${sel?st.border:st.border+'88'}`, borderRadius:14, padding:'10px 8px', textAlign:'center', cursor:'pointer', minWidth:90, maxWidth:110, flexShrink:0, boxShadow:sel?`0 0 0 2px ${st.border}`:'none', position:'relative' }}>
         {/* Badge Parrain si a des filleul(e)s */}
         {hasKids && (
-          <div style={{ position:'absolute', top:-8, left:'50%', transform:'translateX(-50%)', background:'#9e5a7a', color:'#fff', fontSize:8, fontWeight:700, padding:'2px 8px', borderRadius:20, whiteSpace:'nowrap' }}>
-            👑 Parrain · {kidCount}
+          <div style={{ background:'#9e5a7a', color:'#fff', fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, marginBottom:8, display:'inline-block', boxShadow:'0 2px 8px rgba(158,90,122,0.4)' }}>
+            👑 Parrain ({kidCount})
           </div>
         )}
-        <div style={{ width:34, height:34, borderRadius:'50%', background:st.avatarBg, display:'flex', alignItems:'center', justifyContent:'center', margin:`${hasKids?'8':'0'}px auto 6px`, fontSize:13, color:'#fff', fontWeight:700 }}>
+        <div style={{ width:34, height:34, borderRadius:'50%', background:st.avatarBg, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 6px', fontSize:13, color:'#fff', fontWeight:700 }}>
           {node.name[0]?.toUpperCase()}
         </div>
         <p style={{ fontSize:11, fontWeight:700, color:'#2d2520', lineHeight:1.2, marginBottom:3 }}>{node.name}</p>
