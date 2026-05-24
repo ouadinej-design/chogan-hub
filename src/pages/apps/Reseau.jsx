@@ -118,20 +118,16 @@ export default function Reseau() {
             </div>
           ) : (
             <>
-              {roots.length > 0 && (
-                <div>
-                  <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                    {roots.map(node => (
-                      <div key={node.id}>
-                        <NodeCard node={node}/>
-                        <RenderLevel parentId={node.id} depth={1}/>
-                      </div>
-                    ))}
-                  </div>
-                  <RenderLevel parentId={null} depth={0}/>
+              {tree.nodes.length > 0 && (
+                <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                  {roots.map(node => (
+                    <div key={node.id}>
+                      <NodeCard node={node}/>
+                      <RenderLevel parentId={node.id} depth={1}/>
+                    </div>
+                  ))}
                 </div>
               )}
-              {roots.length === 0 && <RenderLevel parentId={null} depth={0}/>}
             </>
           )}
         </div>
