@@ -68,8 +68,7 @@ export default function Reseau() {
         <div style={{ width:32, height:32, borderRadius:'50%', background:st.bg, border:`1.5px solid ${st.border}`, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 6px', fontSize:13, color:st.color, fontWeight:700 }}>
           {node.name[0]?.toUpperCase()}
         </div>
-        <p style={{ fontSize:11, fontWeight:700, color:'var(--taupe)', lineHeight:1.2, marginBottom:3 }}>{node.name}</p>
-        <span style={{ fontSize:8, padding:'2px 6px', borderRadius:20, background:st.bg, color:st.color, fontWeight:600 }}>{st.icon} {node.role}</span>
+        <p style={{ fontSize:11, fontWeight:700, color:'var(--taupe)', lineHeight:1.2 }}>{node.name}</p>
         {ca>0 && <p style={{ fontSize:8, color:'var(--or-deep)', fontWeight:700, marginTop:4 }}>{ca.toFixed(0)} DA</p>}
         {sel && (
           <div style={{ display:'flex', gap:4, marginTop:8 }}>
@@ -125,12 +124,7 @@ export default function Reseau() {
       {/* ORGANIGRAMME */}
       {tab === 'tree' && (
         <div style={{ padding:16 }}>
-          {/* Légende */}
-          <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:16 }}>
-            {Object.entries(ROLE_STYLE).map(([r,st]) => (
-              <span key={r} style={{ fontSize:10, padding:'3px 10px', borderRadius:20, background:st.bg, border:`1px solid ${st.border}`, color:st.color, fontWeight:600 }}>{st.icon} {r}</span>
-            ))}
-          </div>
+
 
           {tree.nodes.length === 0 ? (
             <div style={S.empty}>
