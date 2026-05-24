@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
 
 const EVENT_TYPES = ['Salon/Expo','Réunion domicile','Réseaux sociaux','Réunion équipe','Brocante','Événement Privé','Autre'];
@@ -16,7 +15,7 @@ const STRATEGIC = [
 const TC = { mus:'#059669', cath:'#7c3aed', comm:'#d97706', saison:'#0891b2' };
 const TL = { mus:'Islam', cath:'Chrétien', comm:'Commerce', saison:'Saison' };
 
-export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', agendaAsLink = false }) {
+export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅' }) {
   const [tab, setTab] = useState('agenda');
   return (
     <AppLayout title={appTitle} icon={appIcon}>
@@ -25,7 +24,7 @@ export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', agendaAsLink
           <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:12, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
-      {tab === 'agenda'     && <AgendaIframe asLink={agendaAsLink} />}
+      {tab === 'agenda'     && <AgendaIframe />}
       {tab === 'evenements' && <EvenementsTab />}
       {tab === 'ventes'     && <VentesTab />}
     </AppLayout>
@@ -87,11 +86,8 @@ const CAT = {
   perso:    { label:'PERSO',    color:'#9e5a7a', bg:'#fdf2f8', border:'#9e5a7a' },
 };
 
-function AgendaIframe({ asLink = false }) {
-  const navigate   = useNavigate();
+function AgendaIframe() {
   const [filter, setFilter] = useState('tout');
-
-  if (asLink) { navigate('/app/agenda'); return null; }
 
   const now = new Date(); now.setHours(0,0,0,0);
   const fmt = d => new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
