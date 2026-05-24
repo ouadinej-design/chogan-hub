@@ -181,7 +181,13 @@ function ClientsTab({ cfg, userName }) {
           {[
             { v:cfg.type==='stamps'?`${stamps}/${cfg.stampGoal}`:c.base, l:'Pts achats' },
             { v:c.bonus, l:'Pts bonus' },
-            { v:`${c.sales.reduce((t,s)=>t+(s.amount||0),0).toFixed(0)} DA`, l:'CA total' },
+            { v:(() => {
+                const daT = c.sales.filter(s=>(s.currency||s.cur||'€')==='DA').reduce((t,s)=>t+(parseFloat(s.amount)||0),0);
+                const euT = c.sales.filter(s=>(s.currency||s.cur||'€')==='€').reduce((t,s)=>t+(parseFloat(s.amount)||0),0);
+                if (daT>0&&euT>0) return `${Math.round(daT).toLocaleString('fr-FR')}DA + ${euT.toFixed(0)}€`;
+                if (daT>0) return `${Math.round(daT).toLocaleString('fr-FR')} DA`;
+                return `${euT.toFixed(0)} €`;
+              })(), l:'CA total' },
           ].map((x,i) => (
             <div key={i} style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:10, padding:'8px', textAlign:'center' }}>
               <p style={{ fontSize:14, fontWeight:700, color:'var(--or-deep)' }}>{x.v}</p>
