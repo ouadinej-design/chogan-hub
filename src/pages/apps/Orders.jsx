@@ -117,7 +117,8 @@ function BonCommandeTab() {
     if (!client.trim()) { alert('Entrez le nom de la cliente.'); return; }
     try {
       const existing = JSON.parse(localStorage.getItem('le_sales')||'[]');
-      const items = cart.map(c => ({ prod:`N°${c.ref} ${c.name} ${c.size}`, qty:c.qty, cat, amt:parseFloat((c.price*c.qty).toFixed(2)) }));
+      const tauxSave = parseFloat(taux)||245;
+      const items = cart.map(c => ({ prod:`N°${c.ref} ${c.name} ${c.size}`, qty:c.qty, cat, amt:cur==='DA'?Math.round(c.price*c.qty*tauxSave):parseFloat((c.price*c.qty).toFixed(2)), currency:cur }));
       const sale = {
         id: `BC-${Date.now()}`,
         client, email, tel,
@@ -406,7 +407,7 @@ function VentesTab() {
                     <div key={i} style={S.itemRow}>
                       <span style={{flex:1,fontSize:11,color:'var(--taupe)'}}>{it.prod} <span style={{color:'var(--text-muted)'}}>×{it.qty}</span></span>
                       <span className="badge badge-gold" style={{fontSize:9}}>{it.cat}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',marginLeft:6}}>{it.amt} {currency}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:'var(--or-deep)',marginLeft:6}}>{it.amt} {it.currency||currency}</span>
                     </div>))}</div>
                 : product ? <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,lineHeight:1.5}}>{product}</p> : null
               }
