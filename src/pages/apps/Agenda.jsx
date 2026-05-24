@@ -91,9 +91,9 @@ function AgendaOriginal() {
   return (
     <div style={{ height:'calc(100vh - 110px)' }}>
       <iframe
-        src="https://limitless-app-seven.vercel.app/"
+        src="https://agenda-chogan.vercel.app/"
         style={{ width:'100%', height:'100%', border:'none' }}
-        title="Agenda Limitless Elite"
+        title="Agenda Chogan"
       />
     </div>
   );
