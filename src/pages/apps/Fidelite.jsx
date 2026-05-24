@@ -9,6 +9,12 @@ const THEMES = [
   { label:'Saphir',    c1:'#0f1a2d', c2:'#1a2a42', acc:'#60a5fa' },
   { label:'Améthyste', c1:'#1f1030', c2:'#2d1a44', acc:'#c084fc' },
   { label:'Taupe',     c1:'#1a1614', c2:'#2d2520', acc:'#B89A6A' },
+  { label:'Rubis',     c1:'#2d0f0f', c2:'#4a1010', acc:'#f43f5e' },
+  { label:'Corail',    c1:'#2d1a0f', c2:'#3d2510', acc:'#fb923c' },
+  { label:'Lavande',   c1:'#1a1530', c2:'#252040', acc:'#a78bfa' },
+  { label:'Mint',      c1:'#0f1e1a', c2:'#152e28', acc:'#2dd4bf' },
+  { label:'Champagne', c1:'#1e1a0f', c2:'#2e2815', acc:'#fbbf24' },
+  { label:'Nuit',      c1:'#050510', c2:'#0d0d20', acc:'#818cf8' },
 ];
 const ICONS = [
   { k:'fa-crown', l:'Couronne' },{ k:'fa-star', l:'Étoile' },
@@ -193,6 +199,56 @@ function ClientsTab({ cfg, userName }) {
         )}
 
         {/* Actions */}
+        {/* Mode opératoire */}
+        <div style={{ background:'rgba(210,183,149,0.08)', border:'1px solid var(--or-border)', borderRadius:14, padding:14, marginBottom:12 }}>
+          <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.08em' }}>
+            📖 Comment gagner des {cfg.type==='stamps'?'tampons':'points'} ?
+          </p>
+          {cfg.type==='points' ? (
+            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              {[
+                ['🛍', '1 achat = 10 pts par euro dépensé', 'Chaque euro dépensé rapporte 10 points'],
+                ['⭐', 'Bonus parrainage = +50 pts', 'Parrainez une amie et recevez 50 points'],
+                ['🎂', 'Anniversaire = +100 pts', 'Double points le mois de votre anniversaire'],
+                ['📱', 'Partage réseaux = +20 pts', 'Partagez une publication et gagnez 20 pts'],
+              ].map(([icon,title,desc]) => (
+                <div key={title} style={{ display:'flex', gap:10, alignItems:'flex-start' }}>
+                  <span style={{ fontSize:16, flexShrink:0 }}>{icon}</span>
+                  <div>
+                    <p style={{ fontSize:12, fontWeight:600, color:'var(--taupe)' }}>{title}</p>
+                    <p style={{ fontSize:10, color:'var(--text-muted)', marginTop:1 }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
+              <div style={{ borderTop:'1px solid var(--or-border)', paddingTop:8, marginTop:4 }}>
+                <p style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)', marginBottom:4 }}>Niveaux de fidélité :</p>
+                {[['Starter','0 pts'],['Bronze 🥉','300 pts'],['Silver 🥈','1 000 pts'],['Gold ✨','3 000 pts']].map(([n,p])=>(
+                  <div key={n} style={{ display:'flex', justifyContent:'space-between', fontSize:10, padding:'3px 0' }}>
+                    <span style={{ color:'var(--taupe)', fontWeight:500 }}>{n}</span>
+                    <span style={{ color:'var(--or-deep)', fontWeight:700 }}>{p}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              {[
+                ['🛍', '1 achat = 1 tampon', 'Chaque achat vous rapporte un tampon'],
+                ['🎁', `Carte complète = ${cfg.rewardLabel}`, `À ${cfg.stampGoal} tampons, profitez de votre récompense`],
+                ['⭐', 'Parrainage = +1 tampon bonus', 'Parrainez une amie pour un tampon offert'],
+              ].map(([icon,title,desc]) => (
+                <div key={title} style={{ display:'flex', gap:10, alignItems:'flex-start' }}>
+                  <span style={{ fontSize:16, flexShrink:0 }}>{icon}</span>
+                  <div>
+                    <p style={{ fontSize:12, fontWeight:600, color:'var(--taupe)' }}>{title}</p>
+                    <p style={{ fontSize:10, color:'var(--text-muted)', marginTop:1 }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <button className="btn-gold" onClick={() => sendCard(c)} style={{ marginBottom:8 }}>
           📤 Envoyer la carte à {c.name.split(' ')[0]} ({c.total} pts)
         </button>
