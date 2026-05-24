@@ -86,14 +86,14 @@ const CAT = {
   perso:    { label:'PERSO',    color:'#9e5a7a', bg:'#fdf2f8', border:'#9e5a7a' },
 };
 
-// ── AGENDA ORIGINAL (iframe /agenda-app.html) ────────────────────
+// ── AGENDA ORIGINAL (Limitless Elite) ────────────────────────────
 function AgendaOriginal() {
   return (
     <div style={{ height:'calc(100vh - 110px)' }}>
       <iframe
-        src="/agenda-app.html"
+        src="https://limitless-app-seven.vercel.app/"
         style={{ width:'100%', height:'100%', border:'none' }}
-        title="Agenda"
+        title="Agenda Limitless Elite"
       />
     </div>
   );
