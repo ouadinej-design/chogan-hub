@@ -36,22 +36,138 @@ export default function Agenda() {
   return <AgendaTabs appTitle="Agenda" appIcon="📅" />;
 }
 
-// ── AGENDA TAB (iframe ou lien selon contexte) ───────────────────
+// ── Données calendrier stratégique ──────────────────────────────
+const EVENTS_2026 = [
+  // Islam
+  {n:'Ramadan (début)',       d:'2026-02-18', t:'islam', icon:'🌙'},
+  {n:'Aïd el-Fitr',          d:'2026-03-20', t:'islam', icon:'🎉'},
+  {n:'Aïd el-Adha',          d:'2026-05-27', t:'islam', icon:'🐑'},
+  {n:'Nouvel An Hégire',     d:'2026-07-17', t:'islam', icon:'🌙'},
+  {n:'Mawlid',               d:'2026-09-26', t:'islam', icon:'⭐'},
+  // Catho
+  {n:'Chandeleur',           d:'2026-02-02', t:'catho', icon:'🕯'},
+  {n:'Saint-Valentin',       d:'2026-02-14', t:'catho', icon:'❤️'},
+  {n:'Mardi Gras',           d:'2026-02-17', t:'catho', icon:'🎭'},
+  {n:'Pâques',               d:'2026-04-05', t:'catho', icon:'🐣'},
+  {n:'Pentecôte',            d:'2026-05-24', t:'catho', icon:'☁️'},
+  {n:'Toussaint',            d:'2026-11-01', t:'catho', icon:'🕯'},
+  {n:'Noël',                 d:'2026-12-25', t:'catho', icon:'🎄'},
+  // Business
+  {n:'Saint-Valentin 🛍',    d:'2026-02-14', t:'business', icon:'🛍'},
+  {n:'Fête des Mères',       d:'2026-05-31', t:'business', icon:'🌹'},
+  {n:'Fête des Pères',       d:'2026-06-21', t:'business', icon:'👔'},
+  {n:'Rentrée scolaire',     d:'2026-09-01', t:'business', icon:'📚'},
+  {n:'Halloween',            d:'2026-10-31', t:'business', icon:'🎃'},
+  {n:'Black Friday',         d:'2026-11-27', t:'business', icon:'🏷'},
+  {n:'Cyber Monday',         d:'2026-11-30', t:'business', icon:'💻'},
+  {n:'Noël 🛍',              d:'2026-12-25', t:'business', icon:'🎁'},
+  // Saison
+  {n:'Printemps',            d:'2026-03-20', t:'saison', icon:'🌸'},
+  {n:'Été',                  d:'2026-06-21', t:'saison', icon:'☀️'},
+  {n:'Automne',              d:'2026-09-23', t:'saison', icon:'🍂'},
+  {n:'Hiver',                d:'2026-12-21', t:'saison', icon:'❄️'},
+  // Push
+  {n:"Soldes d'Hiver (début)",  d:'2026-01-07', t:'push', icon:'🛒'},
+  {n:"Soldes d'Hiver (fin)",    d:'2026-02-04', t:'push', icon:'🛒'},
+  {n:'Fête des Mères 📣',       d:'2026-05-24', t:'push', icon:'📣'},
+  {n:'Fête des Pères 📣',       d:'2026-06-01', t:'push', icon:'📣'},
+  {n:"Soldes d'Été (début)",    d:'2026-06-24', t:'push', icon:'🛒'},
+  {n:"Soldes d'Été (fin)",      d:'2026-07-22', t:'push', icon:'🛒'},
+  {n:'Rentrée 📣',              d:'2026-08-25', t:'push', icon:'📣'},
+  {n:'Black Friday 📣',         d:'2026-11-20', t:'push', icon:'📣'},
+  {n:'Noël 📣',                 d:'2026-12-10', t:'push', icon:'📣'},
+];
+
+const CAT = {
+  islam:    { label:'ISLAM',    color:'#059669', bg:'#d1fae5', border:'#059669' },
+  catho:    { label:'CATHO',    color:'#7c3aed', bg:'#ede9fe', border:'#7c3aed' },
+  business: { label:'BUSINESS', color:'#b45309', bg:'#fef3c7', border:'#d97706' },
+  saison:   { label:'SAISON',   color:'#0891b2', bg:'#e0f2fe', border:'#0891b2' },
+  push:     { label:'🛒 PUSH',  color:'#92400e', bg:'#fef3c7', border:'#d97706' },
+};
+
 function AgendaIframe({ asLink = false }) {
-  const navigate = useNavigate();
-  if (asLink) {
-    // Navigation directe vers l'app Agenda
-    navigate('/app/agenda');
-    return null;
-  }
+  const navigate   = useNavigate();
+  const [filter, setFilter] = useState('tout');
+
+  if (asLink) { navigate('/app/agenda'); return null; }
+
+  const now = new Date(); now.setHours(0,0,0,0);
+  const fmt = d => new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+  const diffJ = d => Math.ceil((new Date(d)-now)/86400000);
+  const day = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+
+  const filtered = EVENTS_2026
+    .filter(e => filter === 'tout' || e.t === filter)
+    .sort((a,b) => new Date(a.d)-new Date(b.d));
+  const futurs = filtered.filter(e => diffJ(e.d) >= 0);
+  const passes = filtered.filter(e => diffJ(e.d) < 0);
+
   return (
-    <div style={{ height:'calc(100vh - 110px)' }}>
-      <iframe
-        src="https://limitless-app-seven.vercel.app/"
-        style={{ width:'100%', height:'100%', border:'none' }}
-        title="Agenda Limitless Elite"
-        allow="same-origin"
-      />
+    <div style={{ height:'calc(100vh - 110px)', overflowY:'auto', background:'#f9f7f5' }}>
+      {/* Header doré */}
+      <div style={{ background:'linear-gradient(135deg,#C9A84C,#E8C96A,#C9A84C)', padding:'16px 18px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <div>
+          <p style={{ fontSize:20, fontWeight:800, color:'white', fontFamily:'var(--font-display)', letterSpacing:'0.04em', textShadow:'0 1px 4px rgba(0,0,0,0.2)' }}>Calendrier</p>
+          <p style={{ fontSize:10, color:'rgba(255,255,255,0.85)', fontWeight:500, letterSpacing:'0.15em', textTransform:'uppercase', marginTop:2 }}>Stratégique 2026</p>
+        </div>
+      </div>
+
+      <div style={{ padding:'14px 16px' }}>
+        {/* Date */}
+        <p style={{ fontSize:11, color:'#9ca3af', textAlign:'right', marginBottom:12, fontStyle:'italic' }}>{day}</p>
+
+        {/* Filtres */}
+        <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none', marginBottom:16, paddingBottom:2 }}>
+          {[['tout','Tout'],['islam','Islam'],['catho','Catho'],['business','Business'],['saison','Saison'],['push','🛒 Push']].map(([k,l]) => (
+            <button key={k} onClick={() => setFilter(k)}
+              style={{ padding:'6px 14px', borderRadius:20, border:`1.5px solid ${filter===k?'#C9A84C':'#e5e7eb'}`, background:filter===k?'#C9A84C':'white', color:filter===k?'white':'#374151', fontSize:11, fontWeight:filter===k?700:500, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0, fontFamily:'var(--font-body)' }}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* Prochains */}
+        {futurs.length > 0 && (
+          <>
+            <p style={{ fontSize:10, fontWeight:800, color:'#C9A84C', letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:10 }}>✦ Prochains — {futurs.length}</p>
+            {futurs.map((e,i) => {
+              const cat = CAT[e.t]; const j = diffJ(e.d);
+              const jColor = j===0?'#ef4444':j<=7?'#f59e0b':j<=30?'#C9A84C':'#9ca3af';
+              return (
+                <div key={i} style={{ background:'white', borderRadius:14, padding:'12px 16px', marginBottom:10, display:'flex', alignItems:'center', gap:12, boxShadow:'0 1px 6px rgba(0,0,0,0.06)', borderLeft:`4px solid ${cat.border}` }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <p style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{e.icon} {e.n}</p>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:5 }}>
+                      <span style={{ fontSize:11, color:'#9ca3af' }}>{fmt(e.d)}</span>
+                      <span style={{ fontSize:9, fontWeight:800, padding:'2px 8px', borderRadius:20, background:cat.bg, color:cat.color, letterSpacing:'0.06em' }}>{cat.label}</span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize:13, fontWeight:800, color:jColor, flexShrink:0 }}>{j===0?'Auj.':j===1?'Dem.':`J-${j}`}</span>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* Passés */}
+        {passes.length > 0 && (
+          <>
+            <p style={{ fontSize:10, fontWeight:800, color:'#9ca3af', letterSpacing:'0.15em', textTransform:'uppercase', margin:'16px 0 10px' }}>📁 Passés — {passes.length}</p>
+            {passes.map((e,i) => {
+              const cat = CAT[e.t];
+              return (
+                <div key={i} style={{ background:'white', borderRadius:14, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'center', gap:10, opacity:0.5, borderLeft:`3px solid ${cat.border}` }}>
+                  <div style={{ flex:1 }}>
+                    <p style={{ fontSize:13, fontWeight:600, color:'#374151', textDecoration:'line-through' }}>{e.n}</p>
+                    <p style={{ fontSize:10, color:'#9ca3af', marginTop:3 }}>{fmt(e.d)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+      </div>
     </div>
   );
 }
