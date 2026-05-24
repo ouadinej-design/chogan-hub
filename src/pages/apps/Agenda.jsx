@@ -15,7 +15,7 @@ const STRATEGIC = [
 const TC = { mus:'#059669', cath:'#7c3aed', comm:'#d97706', saison:'#0891b2' };
 const TL = { mus:'Islam', cath:'Chrétien', comm:'Commerce', saison:'Saison' };
 
-export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅' }) {
+export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', showIframe = false }) {
   const [tab, setTab] = useState('agenda');
   return (
     <AppLayout title={appTitle} icon={appIcon}>
@@ -24,7 +24,7 @@ export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅' }) {
           <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:12, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
-      {tab === 'agenda'     && <AgendaIframe />}
+      {tab === 'agenda'     && (showIframe ? <AgendaOriginal /> : <AgendaIframe />)}
       {tab === 'evenements' && <EvenementsTab />}
       {tab === 'ventes'     && <VentesTab />}
     </AppLayout>
@@ -32,7 +32,7 @@ export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅' }) {
 }
 
 export default function Agenda() {
-  return <AgendaTabs appTitle="Agenda" appIcon="📅" />;
+  return <AgendaTabs appTitle="Agenda" appIcon="📅" showIframe={true} />;
 }
 
 // ── Données calendrier stratégique ──────────────────────────────
@@ -86,6 +86,20 @@ const CAT = {
   perso:    { label:'PERSO',    color:'#9e5a7a', bg:'#fdf2f8', border:'#9e5a7a' },
 };
 
+// ── AGENDA ORIGINAL (iframe /agenda-app.html) ────────────────────
+function AgendaOriginal() {
+  return (
+    <div style={{ height:'calc(100vh - 110px)' }}>
+      <iframe
+        src="/agenda-app.html"
+        style={{ width:'100%', height:'100%', border:'none' }}
+        title="Agenda"
+      />
+    </div>
+  );
+}
+
+// ── CALENDRIER STRATÉGIQUE ────────────────────────────────────────
 function AgendaIframe() {
   const [filter, setFilter] = useState('tout');
 
