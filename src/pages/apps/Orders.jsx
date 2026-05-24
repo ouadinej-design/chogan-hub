@@ -235,12 +235,22 @@ function BonCommandeTab() {
 
   return (
     <div style={S.pad}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <p style={S.secLabel}>Catalogue ({allProducts.length} réf.)</p>
-        <button className="btn-gold" style={{ padding:'8px 14px', width:'auto' }} onClick={() => setShowForm(true)}>
+      {/* Sélecteur devise + taux */}
+      <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:10, flexWrap:'wrap' }}>
+        <div style={S.curSel}>
+          {['€','DA'].map(c => (
+            <button key={c} style={{ ...S.curBtn, ...(cur===c?S.curActive:{}) }} onClick={() => setCur(c)}>{c}</button>
+          ))}
+        </div>
+        {cur==='DA' && (
+          <input type="number" value={taux} onChange={e=>setTaux(e.target.value)}
+            placeholder="Taux 1€=?DA" style={{ width:100, fontSize:11, padding:'5px 8px' }}/>
+        )}
+        <button className="btn-gold" style={{ padding:'8px 14px', width:'auto', marginLeft:'auto' }} onClick={() => setShowForm(true)}>
           🛒 {cart.reduce((s,c)=>s+c.qty,0)} — Récap
         </button>
       </div>
+      <p style={{ fontSize:10, color:'var(--text-muted)', marginBottom:8 }}>Catalogue ({allProducts.length} réf.)</p>
       <input placeholder="🔍 Ref ou nom..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:10 }} />
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
         {filtered.map(p => (
@@ -252,7 +262,7 @@ function BonCommandeTab() {
             {p.sizes.map(sz => (
               <button key={sz} style={S.sizeBtn} onClick={() => addToCart(p, sz)}>
                 <span style={{ fontSize:10, color:'var(--text-muted)' }}>{sz}</span>
-                <span style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)' }}>{p.prices?.[sz]}€ +</span>
+                <span style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)' }}>{cur==='DA'?Math.round((p.prices?.[sz]||0)*(parseFloat(taux)||245)).toLocaleString('fr-FR')+' DA':p.prices?.[sz]+'€'} +</span>
               </button>
             ))}
           </div>
