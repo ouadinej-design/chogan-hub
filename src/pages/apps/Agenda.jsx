@@ -16,7 +16,7 @@ const STRATEGIC = [
 const TC = { mus:'#059669', cath:'#7c3aed', comm:'#d97706', saison:'#0891b2' };
 const TL = { mus:'Islam', cath:'Chrétien', comm:'Commerce', saison:'Saison' };
 
-export function AgendaTabs({ appTitle = 'Planner', appIcon = '🗓', agendaAsLink = false }) {
+export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', agendaAsLink = false }) {
   const [tab, setTab] = useState('agenda');
   return (
     <AppLayout title={appTitle} icon={appIcon}>
@@ -33,7 +33,7 @@ export function AgendaTabs({ appTitle = 'Planner', appIcon = '🗓', agendaAsLin
 }
 
 export default function Agenda() {
-  return <AgendaTabs appTitle="Planner" appIcon="🗓" />;
+  return <AgendaTabs appTitle="Agenda" appIcon="📅" />;
 }
 
 // ── Données calendrier stratégique ──────────────────────────────
