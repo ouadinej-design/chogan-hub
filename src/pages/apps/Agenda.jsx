@@ -84,6 +84,7 @@ const CAT = {
   business: { label:'BUSINESS', color:'#b45309', bg:'#fef3c7', border:'#d97706' },
   saison:   { label:'SAISON',   color:'#0891b2', bg:'#e0f2fe', border:'#0891b2' },
   push:     { label:'🛒 PUSH',  color:'#92400e', bg:'#fef3c7', border:'#d97706' },
+  perso:    { label:'PERSO',    color:'#9e5a7a', bg:'#fdf2f8', border:'#9e5a7a' },
 };
 
 function AgendaIframe({ asLink = false }) {
@@ -97,7 +98,18 @@ function AgendaIframe({ asLink = false }) {
   const diffJ = d => Math.ceil((new Date(d)-now)/86400000);
   const day = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 
-  const filtered = EVENTS_2026
+  // Charger les événements perso depuis localStorage
+  const persoEvts = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('le_cevents')||'[]').map(e => ({
+        n: e.n, d: e.d, t: 'perso', icon: '📌', id: e.id, lbl: e.lbl
+      }));
+    } catch { return []; }
+  })();
+
+  const allEvts = [...EVENTS_2026, ...persoEvts];
+
+  const filtered = allEvts
     .filter(e => filter === 'tout' || e.t === filter)
     .sort((a,b) => new Date(a.d)-new Date(b.d));
   const futurs = filtered.filter(e => diffJ(e.d) >= 0);
@@ -119,7 +131,7 @@ function AgendaIframe({ asLink = false }) {
 
         {/* Filtres */}
         <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none', marginBottom:16, paddingBottom:2 }}>
-          {[['tout','Tout'],['islam','Islam'],['catho','Catho'],['business','Business'],['saison','Saison'],['push','🛒 Push']].map(([k,l]) => (
+          {[['tout','Tout'],['islam','Islam'],['catho','Catho'],['business','Business'],['saison','Saison'],['push','🛒 Push'],['perso','📌 Perso']].map(([k,l]) => (
             <button key={k} onClick={() => setFilter(k)}
               style={{ padding:'6px 14px', borderRadius:20, border:`1.5px solid ${filter===k?'#C9A84C':'#e5e7eb'}`, background:filter===k?'#C9A84C':'white', color:filter===k?'white':'#374151', fontSize:11, fontWeight:filter===k?700:500, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0, fontFamily:'var(--font-body)' }}>
               {l}
