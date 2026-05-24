@@ -13,6 +13,26 @@ export default function Reseau() {
 
   const saveTree = (t) => { setTree(t); localStorage.setItem('le_tree', JSON.stringify(t)); };
 
+  const [editNode, setEditNode] = useState(null); // node being edited
+  const [editForm, setEditForm] = useState({name:'',role:'Consultante',parentId:''});
+
+  const openEditNode = (node) => {
+    setEditNode(node.id);
+    setEditForm({ name:node.name, role:node.role, parentId:node.parentId||'' });
+    setTab('add');
+  };
+
+  const saveEditNode = () => {
+    if (!editForm.name.trim()) return;
+    const exists = tree.nodes.some(n => n.id !== editNode && n.name.toLowerCase().trim() === editForm.name.toLowerCase().trim());
+    if (exists) { alert(`"${editForm.name}" existe déjà.`); return; }
+    saveTree({ nodes: tree.nodes.map(n => n.id === editNode
+      ? { ...n, name:editForm.name.trim(), role:editForm.role, parentId:editForm.parentId||null }
+      : n
+    )});
+    setEditNode(null); setEditForm({name:'',role:'Consultante',parentId:''});
+  };
+
   const addNode = () => {
     if (!name.trim()) return;
     // Vérifier doublon
@@ -71,7 +91,10 @@ export default function Reseau() {
         <p style={{ fontSize:7, color: isManager?'var(--or-deep)':'var(--text-muted)', fontWeight:600, marginTop:2 }}>{node.role}</p>
         {ca > 0 && <p style={{ fontSize:7, color:'var(--text-dim)', marginTop:2 }}>{ca.toFixed(0)} DA</p>}
         {selected === node.id && (
-          <button onClick={e=>{e.stopPropagation();delNode(node.id);}} style={{ marginTop:6, background:'rgba(192,57,43,0.1)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:6, padding:'3px 8px', fontSize:9, color:'var(--red)', cursor:'pointer', fontFamily:'var(--font-body)', width:'100%' }}>🗑 Suppr.</button>
+          <div style={{display:'flex',gap:4,marginTop:6}}>
+            <button onClick={e=>{e.stopPropagation();openEditNode(node);}} style={{ flex:1, background:'var(--or-pale)', border:'1px solid var(--or-border)', borderRadius:6, padding:'3px 6px', fontSize:9, color:'var(--or-deep)', cursor:'pointer', fontFamily:'var(--font-body)' }}>✏️</button>
+            <button onClick={e=>{e.stopPropagation();delNode(node.id);}} style={{ flex:1, background:'rgba(192,57,43,0.1)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:6, padding:'3px 6px', fontSize:9, color:'var(--red)', cursor:'pointer', fontFamily:'var(--font-body)' }}>🗑</button>
+          </div>
         )}
       </div>
     );
@@ -133,23 +156,41 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* AJOUTER */}
+      {/* AJOUTER / MODIFIER */}
       {tab === 'add' && (
         <div style={S.pad}>
           <div style={S.section}>
-            <p style={S.secLabel}>Nouveau membre</p>
-            <div className="field"><label className="label">Nom *</label>
-              <input value={name} onChange={e=>setName(e.target.value)} placeholder="Prénom Nom" /></div>
-            <div className="field"><label className="label">Rôle</label>
-              <select value={role} onChange={e=>setRole(e.target.value)}>
-                {['Consultante','Manager','Marraine','VIP'].map(r => <option key={r}>{r}</option>)}
-              </select></div>
-            <div className="field"><label className="label">Parrainée par (optionnel)</label>
-              <select value={parentId} onChange={e=>setParentId(e.target.value)}>
-                <option value="">— Racine (moi) —</option>
-                {tree.nodes.map(n => <option key={n.id} value={n.id}>{n.name} ({n.role})</option>)}
-              </select></div>
-            <button className="btn-gold" onClick={addNode} disabled={!name.trim()}>➕ Ajouter au réseau</button>
+            <p style={S.secLabel}>{editNode ? '✏️ Modifier le membre' : '➕ Nouveau membre'}</p>
+            {editNode ? (<>
+              <div className="field"><label className="label">Nom *</label>
+                <input value={editForm.name} onChange={e=>setEditForm(p=>({...p,name:e.target.value}))} placeholder="Prénom Nom" /></div>
+              <div className="field"><label className="label">Rôle</label>
+                <select value={editForm.role} onChange={e=>setEditForm(p=>({...p,role:e.target.value}))}>
+                  {['Consultante','Manager','Marraine','VIP'].map(r => <option key={r}>{r}</option>)}
+                </select></div>
+              <div className="field"><label className="label">Rattachée à</label>
+                <select value={editForm.parentId} onChange={e=>setEditForm(p=>({...p,parentId:e.target.value}))}>
+                  <option value="">— Racine (moi) —</option>
+                  {tree.nodes.filter(n=>n.id!==editNode).map(n => <option key={n.id} value={n.id}>{n.name} ({n.role})</option>)}
+                </select></div>
+              <div style={{display:'flex',gap:8}}>
+                <button className="btn-gold" style={{flex:1}} onClick={saveEditNode}>💾 Enregistrer</button>
+                <button className="btn-outline" style={{padding:'10px 14px',width:'auto'}} onClick={()=>{setEditNode(null);setEditForm({name:'',role:'Consultante',parentId:''});}}>Annuler</button>
+              </div>
+            </>) : (<>
+              <div className="field"><label className="label">Nom *</label>
+                <input value={name} onChange={e=>setName(e.target.value)} placeholder="Prénom Nom" /></div>
+              <div className="field"><label className="label">Rôle</label>
+                <select value={role} onChange={e=>setRole(e.target.value)}>
+                  {['Consultante','Manager','Marraine','VIP'].map(r => <option key={r}>{r}</option>)}
+                </select></div>
+              <div className="field"><label className="label">Parrainée par (optionnel)</label>
+                <select value={parentId} onChange={e=>setParentId(e.target.value)}>
+                  <option value="">— Racine (moi) —</option>
+                  {tree.nodes.filter(n=>n.id!==editNode).map(n => <option key={n.id} value={n.id}>{n.name} ({n.role})</option>)}
+                </select></div>
+              <button className="btn-gold" onClick={addNode} disabled={!name.trim()}>➕ Ajouter au réseau</button>
+            </>)}
           </div>
           <div style={{marginTop:8}}>
             <button className="btn-outline" style={{width:'100%',fontSize:11}} onClick={removeDuplicates}>🧹 Supprimer les doublons existants</button>
