@@ -55,7 +55,12 @@ function AgendaIframe({ asLink = false }) {
   }
   return (
     <div style={{ height:'calc(100vh - 110px)' }}>
-      <iframe src="/agenda-app.html" style={{ width:'100%', height:'100%', border:'none' }} title="Agenda"/>
+      <iframe
+        src="https://limitless-app-seven.vercel.app/"
+        style={{ width:'100%', height:'100%', border:'none' }}
+        title="Agenda Limitless Elite"
+        allow="same-origin"
+      />
     </div>
   );
 }
