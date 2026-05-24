@@ -2,12 +2,12 @@ import { useState } from 'react';
 import AppLayout from '../../components/AppLayout';
 
 const ROLE_STYLE = {
-  'Consultante': { bg:'rgba(61,107,158,0.10)', border:'rgba(61,107,158,0.25)', color:'#3d6b9e', icon:'👤' },
-  'Manager':     { bg:'rgba(184,154,106,0.15)', border:'rgba(184,154,106,0.4)', color:'#B89A6A', icon:'⭐' },
-  'Marraine':    { bg:'rgba(158,90,122,0.12)', border:'rgba(158,90,122,0.35)', color:'#9e5a7a', icon:'👑' },
-  'VIP':         { bg:'rgba(139,90,43,0.10)',  border:'rgba(139,90,43,0.3)',   color:'#8b5a2b', icon:'💎' },
+  'Consultante': { cardBg:'#EFF4FB', border:'#A8C0E0', color:'#3d6b9e', avatarBg:'#3d6b9e', icon:'👤' },
+  'Manager':     { cardBg:'#FDF6E3', border:'#D4AF37', color:'#8a6800', avatarBg:'#D4AF37', icon:'⭐' },
+  'Marraine':    { cardBg:'#F9EEF5', border:'#C97FB3', color:'#9e5a7a', avatarBg:'#9e5a7a', icon:'👑' },
+  'VIP':         { cardBg:'#F5EFE8', border:'#B89A6A', color:'#6b4a1e', avatarBg:'#B89A6A', icon:'💎' },
 };
-const DEF = { bg:'rgba(74,124,89,0.1)', border:'rgba(74,124,89,0.3)', color:'#4a7c59', icon:'👤' };
+const DEF = { cardBg:'#EFF7F1', border:'#7EC8A0', color:'#2d7a4a', avatarBg:'#4a7c59', icon:'👤' };
 
 export default function Reseau() {
   const [tree, setTree]         = useState(() => { try { return JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}'); } catch { return {nodes:[]}; } });
@@ -64,11 +64,12 @@ export default function Reseau() {
     const sel = selected === node.id;
     return (
       <div onClick={() => setSelected(sel ? null : node.id)}
-        style={{ background:sel?st.bg:'var(--bg-card)', border:`2px solid ${sel?st.border:'var(--or-border)'}`, borderRadius:14, padding:'10px 8px', textAlign:'center', cursor:'pointer', minWidth:80, maxWidth:100, flexShrink:0 }}>
-        <div style={{ width:32, height:32, borderRadius:'50%', background:st.bg, border:`1.5px solid ${st.border}`, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 6px', fontSize:13, color:st.color, fontWeight:700 }}>
+        style={{ background:st.cardBg, border:`2px solid ${sel?st.border:st.border+'88'}`, borderRadius:14, padding:'10px 8px', textAlign:'center', cursor:'pointer', minWidth:85, maxWidth:105, flexShrink:0, boxShadow:sel?`0 0 0 2px ${st.border}`:'none' }}>
+        <div style={{ width:34, height:34, borderRadius:'50%', background:st.avatarBg, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 6px', fontSize:13, color:'#fff', fontWeight:700 }}>
           {node.name[0]?.toUpperCase()}
         </div>
-        <p style={{ fontSize:11, fontWeight:700, color:'var(--taupe)', lineHeight:1.2 }}>{node.name}</p>
+        <p style={{ fontSize:11, fontWeight:700, color:'#2d2520', lineHeight:1.2, marginBottom:3 }}>{node.name}</p>
+        <span style={{ fontSize:9, color:st.color, fontWeight:600 }}>{st.icon} {node.role}</span>
         {ca>0 && <p style={{ fontSize:8, color:'var(--or-deep)', fontWeight:700, marginTop:4 }}>{ca.toFixed(0)} DA</p>}
         {sel && (
           <div style={{ display:'flex', gap:4, marginTop:8 }}>
