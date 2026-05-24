@@ -15,9 +15,31 @@ export default function Reseau() {
 
   const addNode = () => {
     if (!name.trim()) return;
+    // Vérifier doublon
+    const exists = tree.nodes.some(n => n.name.toLowerCase().trim() === name.toLowerCase().trim());
+    if (exists) {
+      alert(`"${name.trim()}" existe déjà dans le réseau.`);
+      return;
+    }
     const n = { id:Date.now().toString(), name:name.trim(), role, parentId:parentId||null };
     saveTree({ nodes:[...tree.nodes, n] });
     setName(''); setParentId('');
+  };
+
+  const removeDuplicates = () => {
+    const seen = new Set();
+    const deduped = tree.nodes.filter(n => {
+      const key = n.name.toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    if (deduped.length < tree.nodes.length) {
+      saveTree({ nodes:deduped });
+      alert(`✅ ${tree.nodes.length - deduped.length} doublon(s) supprimé(s).`);
+    } else {
+      alert('Aucun doublon trouvé.');
+    }
   };
 
   const delNode = (id) => {
@@ -132,6 +154,9 @@ export default function Reseau() {
                 {tree.nodes.map(n => <option key={n.id} value={n.id}>{n.name} ({n.role})</option>)}
               </select></div>
             <button className="btn-gold" onClick={addNode} disabled={!name.trim()}>➕ Ajouter au réseau</button>
+          </div>
+          <div style={{marginTop:8}}>
+            <button className="btn-outline" style={{width:'100%',fontSize:11}} onClick={removeDuplicates}>🧹 Supprimer les doublons existants</button>
           </div>
           {tree.nodes.length > 0 && (
             <div style={S.section}>
