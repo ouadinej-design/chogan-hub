@@ -10,6 +10,7 @@ const ALL_APPS = [
   { id:'clients',   label:'Clients',      icon:'👥', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/clients' },
   { id:'fidelite',  label:'Fidélité',     icon:'🎁', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/fidelite' },
   { id:'agenda',    label:'Agenda',       icon:'📅', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/agenda' },
+  { id:'planner',   label:'Planner',      icon:'🗓', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/planner' },
   { id:'wallet',    label:'Wallet',       icon:'💰', color:'#9e7a3d', bg:'rgba(158,122,61,0.12)',  path:'/app/wallet' },
   { id:'reseau',    label:'Mon Réseau',   icon:'🌐', color:'#6b4d8a', bg:'rgba(107,77,138,0.12)',  path:'/app/reseau' },
   { id:'catalogue', label:'Chogan Élite', icon:'💎', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/catalogue' },
