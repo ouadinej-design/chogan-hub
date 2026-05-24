@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import AppLayout from '../../components/AppLayout';
 
+// Couleurs par rôle
+const ROLE_STYLE = {
+  'Consultante': { bg:'rgba(61,107,158,0.12)', border:'rgba(61,107,158,0.3)', color:'#3d6b9e', icon:'👤' },
+  'Manager':     { bg:'rgba(184,154,106,0.18)', border:'rgba(184,154,106,0.5)', color:'#B89A6A', icon:'⭐' },
+  'Marraine':    { bg:'rgba(158,90,122,0.14)', border:'rgba(158,90,122,0.4)', color:'#9e5a7a', icon:'👑' },
+  'VIP':         { bg:'rgba(139,90,43,0.12)',  border:'rgba(139,90,43,0.3)',  color:'#8b5a2b', icon:'💎' },
+};
+const DEFAULT_STYLE = { bg:'rgba(74,124,89,0.1)', border:'rgba(74,124,89,0.3)', color:'#4a7c59', icon:'👤' };
+
 export default function Reseau() {
   const [tree, setTree]         = useState(() => { try { return JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}'); } catch { return {nodes:[]}; } });
   const [name, setName]         = useState('');
@@ -79,21 +88,28 @@ export default function Reseau() {
   };
 
   const NodeCard = ({ node }) => {
-    const ca = getCA(node.name);
-    const isManager = node.role === 'Manager' || node.role === 'Marraine';
+    const ca  = getCA(node.name);
+    const st  = ROLE_STYLE[node.role] || DEFAULT_STYLE;
+    const isSelected = selected === node.id;
     return (
-      <div onClick={() => setSelected(node.id === selected ? null : node.id)}
-        style={{ background:isManager?'linear-gradient(135deg,rgba(184,154,106,0.15),rgba(184,154,106,0.05))':'var(--bg-card)', border:`1px solid ${isManager?'var(--or-border)':'rgba(210,183,149,0.2)'}`, borderRadius:12, padding:'10px', textAlign:'center', cursor:'pointer', width:90, flexShrink:0 }}>
-        <div style={{ width:28, height:28, borderRadius:'50%', background:isManager?'linear-gradient(135deg,var(--or),var(--or-deep))':'rgba(210,183,149,0.15)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 5px', fontSize:13 }}>
-          {isManager ? '👑' : '👤'}
+      <div onClick={() => setSelected(isSelected ? null : node.id)}
+        style={{ background:isSelected?st.bg:'var(--bg-card)', border:`2px solid ${isSelected?st.border:'var(--or-border)'}`, borderRadius:14, padding:'12px 8px', textAlign:'center', cursor:'pointer', transition:'all 0.15s', position:'relative' }}>
+        {/* Badge rôle */}
+        <div style={{ position:'absolute', top:6, right:6, fontSize:10, lineHeight:1 }}>{st.icon}</div>
+        {/* Avatar */}
+        <div style={{ width:36, height:36, borderRadius:'50%', background:st.bg, border:`1.5px solid ${st.border}`, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 8px', fontSize:14, color:st.color, fontWeight:700 }}>
+          {node.name[0]?.toUpperCase()}
         </div>
-        <p style={{ fontSize:9, fontWeight:700, color:'var(--taupe)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', width:'100%' }}>{node.name}</p>
-        <p style={{ fontSize:7, color: isManager?'var(--or-deep)':'var(--text-muted)', fontWeight:600, marginTop:2 }}>{node.role}</p>
-        {ca > 0 && <p style={{ fontSize:7, color:'var(--text-dim)', marginTop:2 }}>{ca.toFixed(0)} DA</p>}
-        {selected === node.id && (
-          <div style={{display:'flex',gap:4,marginTop:6}}>
-            <button onClick={e=>{e.stopPropagation();openEditNode(node);}} style={{ flex:1, background:'var(--or-pale)', border:'1px solid var(--or-border)', borderRadius:6, padding:'3px 6px', fontSize:9, color:'var(--or-deep)', cursor:'pointer', fontFamily:'var(--font-body)' }}>✏️</button>
-            <button onClick={e=>{e.stopPropagation();delNode(node.id);}} style={{ flex:1, background:'rgba(192,57,43,0.1)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:6, padding:'3px 6px', fontSize:9, color:'var(--red)', cursor:'pointer', fontFamily:'var(--font-body)' }}>🗑</button>
+        {/* Nom */}
+        <p style={{ fontSize:11, fontWeight:700, color:'var(--taupe)', marginBottom:3, lineHeight:1.2 }}>{node.name}</p>
+        {/* Badge rôle coloré */}
+        <span style={{ fontSize:9, padding:'2px 8px', borderRadius:20, background:st.bg, color:st.color, fontWeight:600, border:`1px solid ${st.border}` }}>{node.role}</span>
+        {ca > 0 && <p style={{ fontSize:9, color:'var(--or-deep)', fontWeight:700, marginTop:5 }}>{ca.toFixed(0)} DA</p>}
+        {/* Actions */}
+        {isSelected && (
+          <div style={{ display:'flex', gap:4, marginTop:8 }}>
+            <button onClick={e=>{e.stopPropagation();openEditNode(node);}} style={{ flex:1, background:'var(--or-pale)', border:'1px solid var(--or-border)', borderRadius:8, padding:'5px 4px', fontSize:10, color:'var(--or-deep)', cursor:'pointer', fontFamily:'var(--font-body)' }}>✏️ Éditer</button>
+            <button onClick={e=>{e.stopPropagation();delNode(node.id);}} style={{ flex:1, background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:8, padding:'5px 4px', fontSize:10, color:'var(--red)', cursor:'pointer', fontFamily:'var(--font-body)' }}>🗑</button>
           </div>
         )}
       </div>
@@ -133,6 +149,15 @@ export default function Reseau() {
       {/* ORGANIGRAMME */}
       {tab === 'tree' && (
         <div style={S.pad}>
+          {/* Légende couleurs */}
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:14 }}>
+            {Object.entries(ROLE_STYLE).map(([role, st]) => (
+              <span key={role} style={{ fontSize:10, padding:'3px 10px', borderRadius:20, background:st.bg, border:`1px solid ${st.border}`, color:st.color, fontWeight:600 }}>
+                {st.icon} {role}
+              </span>
+            ))}
+          </div>
+
           {tree.nodes.length === 0 ? (
             <div style={S.empty}>
               <p style={{ fontSize:32, marginBottom:8 }}>🌐</p>
@@ -140,18 +165,11 @@ export default function Reseau() {
               <p style={{ fontSize:12, marginTop:4 }}>Ajoutez vos membres depuis l'onglet ➕ Ajouter.</p>
             </div>
           ) : (
-            <>
-              {tree.nodes.length > 0 && (
-                <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-                  {roots.map(node => (
-                    <div key={node.id}>
-                      <NodeCard node={node}/>
-                      <RenderLevel parentId={node.id} depth={1}/>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10 }}>
+              {tree.nodes.map(node => (
+                <NodeCard key={node.id} node={node}/>
+              ))}
+            </div>
           )}
         </div>
       )}
