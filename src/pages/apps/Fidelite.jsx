@@ -74,7 +74,7 @@ function ClientsTab({ cfg, userName }) {
 
   const saveBP = (bp) => { setBonusPoints(bp); localStorage.setItem('le_fidelite', JSON.stringify(bp)); };
 
-  const calcPts = (s) => s.currency==='€' ? Math.floor(s.amount*10) : Math.floor(s.amount/100);
+  const calcPts = (s) => s.currency==='€' ? Math.floor(s.amount*10) : Math.floor((s.amount/245)*10);
 
   const getLevel = (pts) => {
     if (pts>=3000) return { name:'Gold ✨',   color:'#D4AF37', next:null,  needed:0 };
@@ -250,7 +250,7 @@ function ClientsTab({ cfg, userName }) {
         </div>
 
         <button className="btn-gold" onClick={() => sendCard(c)} style={{ marginBottom:8 }}>
-          📤 Envoyer la carte à {c.name.split(' ')[0]} ({c.total} pts)
+          📤 Envoyer la carte à {c.name.split(' ')[0]} {cfg.type==='stamps'?`(${Math.min(stampsEarned,cfg.stampGoal)}/${cfg.stampGoal} tampons)`:`(${c.total} pts)`}
         </button>
 
         {cfg.type==='stamps' && (
