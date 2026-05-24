@@ -11,7 +11,6 @@ import Inspirations from './pages/apps/Inspirations';
 import Clients    from './pages/apps/Clients';
 import Fidelite   from './pages/apps/Fidelite';
 import Agenda     from './pages/apps/Agenda';
-import Planner    from './pages/apps/Planner';
 import Wallet     from './pages/apps/Wallet';
 import Reseau     from './pages/apps/Reseau';
 import Catalogue  from './pages/apps/Catalogue';
@@ -63,7 +62,6 @@ function AppRoutes() {
         <Route path="/app/clients"        element={<Clients />} />
         <Route path="/app/fidelite"       element={<Fidelite />} />
         <Route path="/app/agenda"         element={<Agenda />} />
-        <Route path="/app/planner"        element={<Planner />} />
         <Route path="/app/wallet"         element={<Wallet />} />
         <Route path="/app/reseau"         element={<Reseau />} />
         <Route path="/app/catalogue"      element={<Catalogue />} />
