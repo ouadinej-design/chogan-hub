@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
 
 const EVENT_TYPES = ['Salon/Expo','Réunion domicile','Réseaux sociaux','Réunion équipe','Brocante','Événement Privé','Autre'];
@@ -37,21 +38,11 @@ export default function Agenda() {
 
 // ── AGENDA TAB (iframe ou lien selon contexte) ───────────────────
 function AgendaIframe({ asLink = false }) {
+  const navigate = useNavigate();
   if (asLink) {
-    return (
-      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'calc(100vh - 160px)', gap:20, padding:24 }}>
-        <div style={{ fontSize:60 }}>📅</div>
-        <p style={{ fontFamily:'var(--font-display)', fontSize:20, color:'var(--taupe)', textAlign:'center' }}>Ouvrir l'Agenda</p>
-        <p style={{ fontSize:13, color:'var(--text-muted)', textAlign:'center', lineHeight:1.6 }}>
-          Accédez à votre agenda complet avec vos rendez-vous, ventes et calendrier stratégique.
-        </p>
-        <a href="/app/agenda" style={{ display:'block', width:'100%', maxWidth:280 }}>
-          <button className="btn-gold" style={{ width:'100%', fontSize:15, padding:'14px' }}>
-            📅 Ouvrir l'Agenda
-          </button>
-        </a>
-      </div>
-    );
+    // Navigation directe vers l'app Agenda
+    navigate('/app/agenda');
+    return null;
   }
   return (
     <div style={{ height:'calc(100vh - 110px)' }}>
