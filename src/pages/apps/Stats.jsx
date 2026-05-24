@@ -60,7 +60,15 @@ function StatsTab({ user }) {
       const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
       monthly[k] = { label:d.toLocaleDateString('fr-FR',{month:'short'}), val:0 };
     }
-    s.forEach(x => { const k=(x.date||x.createdAt||'').substring(0,7); if(monthly[k]) monthly[k].val += parseFloat(x.amount||x.amt)||0; });
+    s.forEach(x => {
+      // Essayer plusieurs formats de date
+      const raw = x.date || x.createdAt || '';
+      let k = '';
+      if (raw.match(/^\d{4}-\d{2}/)) k = raw.substring(0,7); // YYYY-MM-DD
+      else if (raw.match(/^\d{2}\/\d{2}\/\d{4}/)) { const parts=raw.split('/'); k=`${parts[2]}-${parts[1]}`; } // DD/MM/YYYY
+      else if (raw.match(/^\d{2}\/\d{2}\/\d{2}/)) { const parts=raw.split('/'); k=`20${parts[2]}-${parts[1]}`; } // DD/MM/YY
+      if (k && monthly[k]) monthly[k].val += parseFloat(x.amount||x.amt)||0;
+    });
     const mVals = Object.values(monthly);
     const maxM  = Math.max(...mVals.map(m=>m.val), 1);
     const CHART_H = 52;
@@ -134,7 +142,7 @@ function StatsTab({ user }) {
             {mVals.map((m,i) => (
               <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
                 <span style={{ fontSize:7, color:ac, fontWeight:700 }}>{m.val>0?m.val.toFixed(0):''}</span>
-                <div style={{ width:'100%', borderRadius:'3px 3px 0 0', minHeight:3, background:`linear-gradient(180deg,${ac},${ac}88)`, height:Math.max(Math.round((m.val/maxM)*CHART_H),3)+'px' }}/>
+                <div style={{ width:'100%', borderRadius:'3px 3px 0 0', minHeight:3, background:`linear-gradient(180deg,${ac},${ac}88)`, height:Math.max(Math.round((m.val/maxM)*CHART_H),m.val>0?6:2)+'px' }}/>
                 <span style={{ fontSize:7, color:'var(--text-muted)' }}>{m.label}</span>
               </div>
             ))}
