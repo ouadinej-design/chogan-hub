@@ -47,6 +47,7 @@ function BonCommandeTab() {
   const [cat, setCat]               = useState('Parfum');
   const [amt, setAmt]               = useState('');
   const [cur, setCur]               = useState('€');
+  const [taux, setTaux]             = useState('245');
   const [date, setDate]             = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote]             = useState('');
   const [consultant, setConsultant] = useState('');
@@ -93,7 +94,8 @@ function BonCommandeTab() {
     if (cart.length === 0) { setProd(''); setQty('0'); setAmt(''); return; }
     setProd(cart.map(c => `N°${c.ref} ${c.name} ${c.size} ×${c.qty}`).join(', '));
     setQty(String(cart.reduce((s,c) => s+c.qty, 0)));
-    setAmt(cart.reduce((s,c) => s+c.price*c.qty, 0).toFixed(2));
+    const total = cart.reduce((s,c) => s+c.price*c.qty, 0);
+    setAmt(cur==='DA' ? String(Math.round(total*(parseFloat(taux)||245))) : total.toFixed(2));
   }, [cart]);
 
   const addToCart = (p, size) => {
@@ -106,7 +108,10 @@ function BonCommandeTab() {
   };
 
   const updateCart = (newCart) => setCart(newCart);
+  const tauxN = parseFloat(taux)||245;
   const totalEur = cart.reduce((s,c) => s+c.price*c.qty, 0);
+  const totalDisplay = cur==='DA' ? Math.round(totalEur*tauxN) : totalEur;
+  const fmtAmt = (eur) => cur==='DA' ? Math.round(eur*tauxN).toLocaleString('fr-FR')+' DA' : eur.toFixed(2)+'€';
 
   const saveToAgenda = () => {
     if (!client.trim()) { alert('Entrez le nom de la cliente.'); return; }
@@ -137,7 +142,7 @@ function BonCommandeTab() {
       `👤 Cliente : ${client||'—'}`,
       `📅 ${new Date(date).toLocaleDateString('fr-FR')}`,
       '─────────────────',
-      ...cart.map(c => `• N°${c.ref} ${c.name} ${c.size} ×${c.qty} = ${(c.price*c.qty).toFixed(2)}€`),
+      ...cart.map(c => `• N°${c.ref} ${c.name} ${c.size} ×${c.qty} = ${fmtAmt(c.price*c.qty)}`),
       '─────────────────',
       `💶 TOTAL : ${amt} ${cur}`,
       ...(note ? [`📝 ${note}`] : []),
@@ -173,7 +178,7 @@ function BonCommandeTab() {
                   <span style={{ fontSize:12, fontWeight:600 }}>N°{c.ref} {c.name} {c.size}</span>
                   <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:6 }}>×{c.qty}</span>
                 </div>
-                <span style={{ fontSize:12, fontWeight:700, color:'var(--or-deep)' }}>{(c.price*c.qty).toFixed(2)}€</span>
+                <span style={{ fontSize:12, fontWeight:700, color:'var(--or-deep)' }}>{fmtAmt(c.price*c.qty)}</span>
                 <button style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:13, padding:'0 4px' }}
                   onClick={() => updateCart(cart.map(x=>x.key===c.key?{...x,qty:Math.max(0,x.qty-1)}:x).filter(x=>x.qty>0))}>−</button>
                 <button style={{ background:'none', border:'none', color:'var(--green)', cursor:'pointer', fontSize:13, padding:'0 4px' }}
@@ -207,7 +212,8 @@ function BonCommandeTab() {
               ))}
             </div>
           </div>
-          {totalEur > 0 && <p style={{ fontSize:11, color:'var(--green)', marginTop:4 }}>Total calculé : {totalEur.toFixed(2)}€</p>}
+          {totalEur > 0 && <p style={{ fontSize:11, color:'var(--green)', marginTop:4 }}>Total calculé : {fmtAmt(totalEur)}</p>}
+          {cur==='DA' && <div className="field" style={{marginTop:6}}><label className="label" style={{fontSize:10}}>Taux (1€ = ? DA)</label><input type="number" value={taux} onChange={e=>setTaux(e.target.value)} style={{fontSize:13}}/></div>}
         </div>
 
         <div className="field"><label className="label">Date</label>
