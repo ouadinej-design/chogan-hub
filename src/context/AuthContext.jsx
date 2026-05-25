@@ -143,7 +143,19 @@ export function AuthProvider({ children }) {
   };
 
   const getAllConsultants = () => store.get('consultants', []);
-  const canAccess = (appId) => ROLES[user?.role]?.apps.includes(appId) ?? false;
+  const canAccess = (appId) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true; // Admin has access to everything
+    // Check dynamic permissions from Settings
+    try {
+      const dynPerms = JSON.parse(localStorage.getItem('chogan_permissions') || 'null');
+      if (dynPerms && dynPerms[user.role]) {
+        return dynPerms[user.role].includes(appId);
+      }
+    } catch {}
+    // Fallback to default role apps
+    return ROLES[user.role]?.apps.includes(appId) ?? false;
+  };
 
   // Filtrer les ventes selon le rôle
   const getFilteredSales = () => {
