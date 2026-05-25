@@ -21,7 +21,8 @@ export default function Stats() {
 
 // ── STATS ─────────────────────────────────────────────────────────
 function StatsTab({ user }) {
-  const sales = (() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } })();
+  const { getFilteredSales } = useAuth();
+  const sales = getFilteredSales();
   const objs_raw = (() => { try { return JSON.parse(localStorage.getItem('le_objectives')||'{}'); } catch { return {}; } })();
   const [objs, setObjs]       = useState(objs_raw);
   const [editObj, setEditObj] = useState(false);
@@ -225,7 +226,8 @@ function StatsTab({ user }) {
 
 // ── DASHBOARD ─────────────────────────────────────────────────────
 function DashboardTab() {
-  const sales = (() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } })();
+  const { getFilteredSales } = useAuth();
+  const sales = getFilteredSales();
   const now   = new Date();
   const nowM  = new Date(); nowM.setHours(0,0,0,0);
 
