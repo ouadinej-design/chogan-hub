@@ -93,9 +93,9 @@ export default function Reseau() {
 
   // ── Flèche connecteur horizontal ──────────────────────
   const Arrow = () => (
-    <div style={{ display:'flex', alignItems:'center', flexShrink:0, padding:'0 4px' }}>
-      <div style={{ width:24, height:2, background:'var(--or-border)' }}/>
-      <div style={{ width:0, height:0, borderTop:'5px solid transparent', borderBottom:'5px solid transparent', borderLeft:'7px solid var(--or-border)' }}/>
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'2px 0', paddingLeft:20 }}>
+      <div style={{ width:2, height:18, background:'var(--or-border)' }}/>
+      <div style={{ width:0, height:0, borderLeft:'5px solid transparent', borderRight:'5px solid transparent', borderTop:'7px solid var(--or-border)' }}/>
     </div>
   );
 
@@ -103,17 +103,19 @@ export default function Reseau() {
   const getChildren = parentId => tree.nodes.filter(n => n.parentId === parentId);
 
   // Rendu récursif horizontal : node → enfant → enfant...
-  const RenderChain = ({ nodeId }) => {
+  const RenderChain = ({ nodeId, depth = 0 }) => {
     const node = tree.nodes.find(n => n.id === nodeId);
     if (!node) return null;
     const children = getChildren(nodeId);
     return (
-      <div style={{ display:'flex', alignItems:'center', gap:0 }}>
-        <MemberCard node={node}/>
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-start' }}>
+        <div style={{ marginLeft: depth * 24 }}>
+          <MemberCard node={node}/>
+        </div>
         {children.map(child => (
-          <div key={child.id} style={{ display:'flex', alignItems:'center' }}>
+          <div key={child.id} style={{ display:'flex', flexDirection:'column', marginLeft: depth * 24 }}>
             <Arrow/>
-            <RenderChain nodeId={child.id}/>
+            <RenderChain nodeId={child.id} depth={depth + 1}/>
           </div>
         ))}
       </div>
@@ -160,7 +162,7 @@ export default function Reseau() {
                     <SectionLabel label="💎 VIP" color="#8b5a2b"/>
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                       {vips.map(root => (
-                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                        <div key={root.id} style={{ paddingBottom:4 }}>
                           <RenderChain nodeId={root.id}/>
                         </div>
                       ))}
@@ -175,7 +177,7 @@ export default function Reseau() {
                     <SectionLabel label="⭐ Manager" color="#B89A6A"/>
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                       {managers.map(root => (
-                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                        <div key={root.id} style={{ paddingBottom:4 }}>
                           <RenderChain nodeId={root.id}/>
                         </div>
                       ))}
@@ -207,7 +209,7 @@ export default function Reseau() {
                     <SectionLabel label="👑 Marraines / Parrains" color="#9e5a7a"/>
                     <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                       {others.filter(n=>n.role==='Marraine'||n.role==='Parrain').map(root => (
-                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                        <div key={root.id} style={{ paddingBottom:4 }}>
                           <RenderChain nodeId={root.id}/>
                         </div>
                       ))}
@@ -222,7 +224,7 @@ export default function Reseau() {
                     <SectionLabel label="👤 Consultantes" color="#3d6b9e"/>
                     <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                       {others.filter(n=>n.role==='Consultante').map(root => (
-                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                        <div key={root.id} style={{ paddingBottom:4 }}>
                           <RenderChain nodeId={root.id}/>
                         </div>
                       ))}
