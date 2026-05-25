@@ -292,7 +292,7 @@ const ALL_APPS = [
 
 const DEFAULT_PERMS = {
   marraine:    ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','coach','objections','stats','formation','familles','catalogues','checklist'],
-  consultante: ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','coach','objections','formation','familles','catalogues','checklist'],
+  consultante: ['commandes','orders','inspirations','clients','fidelite','planner','wallet','coach','objections','stats','formation','familles','catalogues','checklist'],
 };
 
 function PermissionsTab() {
