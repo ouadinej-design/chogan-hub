@@ -5,6 +5,5 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "_ts": 1779721207
+  ]
 }
