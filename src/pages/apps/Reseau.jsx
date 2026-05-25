@@ -24,6 +24,12 @@ export default function Reseau() {
   const sales = (() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } })();
   const saveTree = t => { setTree(t); localStorage.setItem('le_tree', JSON.stringify(t)); };
   const getCA    = name => sales.filter(s=>s.consultant===name).reduce((t,s)=>t+(parseFloat(s.amount||s.amt)||0),0);
+  const getCAByCur = (name) => {
+    const ns = sales.filter(s => s.consultant === name);
+    const da = ns.filter(x=>(x.currency||x.cur)==='DA').reduce((t,x)=>t+(parseFloat(x.amount||x.amt)||0),0);
+    const eu = ns.filter(x=>(x.currency||x.cur)==='€'||(!x.currency&&!x.cur)).reduce((t,x)=>t+(parseFloat(x.amount||x.amt)||0),0);
+    return { da, eu, total:da+eu };
+  };
 
   const addNode = () => {
     if (!name.trim()) return;
@@ -468,11 +474,6 @@ export default function Reseau() {
           }
         </div>
       )}
-      {/* TABLEAU ADMIN */}
-      {tab === 'table' && user?.role === 'admin' && (
-        <TableauTab tree={tree} saveTree={saveTree} getCAByCur={getCAByCur}/>
-      )}
-
       {/* TABLEAU ADMIN */}
       {tab === 'table' && user?.role === 'admin' && (
         <TableauTab tree={tree} saveTree={saveTree} getCAByCur={getCAByCur}/>
