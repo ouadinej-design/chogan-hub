@@ -238,27 +238,77 @@ export default function Reseau() {
           </div>
           {tree.nodes.length === 0
             ? <div style={S.empty}>Ajoutez des membres pour voir les statistiques.</div>
-            : <div style={S.section}>
-                <p style={S.secLabel}>Performance</p>
-                {tree.nodes.sort((a,b)=>getCA(b.name)-getCA(a.name)).map((n,i)=>{
-                  const ca=getCA(n.name), maxCA=Math.max(...tree.nodes.map(x=>getCA(x.name)),1), st=ROLE_STYLE[n.role]||DEF;
-                  return (
-                    <div key={n.id} style={{ marginBottom:12 }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:12, marginBottom:4 }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                          <div style={{ width:18,height:18,borderRadius:4,background:i===0?'linear-gradient(135deg,var(--or),var(--or-deep))':st.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:i===0?'#fff':st.color }}>{i+1}</div>
-                          <span style={{ fontWeight:600, color:'var(--taupe)' }}>{n.name}</span>
-                          <span style={{ fontSize:10, color:st.color }}>{st.icon}</span>
+            : (() => {
+                // Only Consultantes in performance stats
+                const consultantes = tree.nodes
+                  .filter(n => n.role === 'Consultante')
+                  .map(n => ({ ...n, ...getCAByCur(n.name) }))
+                  .sort((a,b) => (b.eu*245+b.da) - (a.eu*245+a.da));
+                const maxEU = Math.max(...consultantes.map(n=>n.eu), 1);
+                const maxDA = Math.max(...consultantes.map(n=>n.da), 1);
+
+                return <>
+                  {/* Stats globales équipe */}
+                  <div style={S.section}>
+                    <p style={S.secLabel}>CA Équipe</p>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                      {[
+                        { v:`${consultantes.reduce((t,n)=>t+n.eu,0).toFixed(0)} €`, l:'Total €', c:'var(--or-deep)' },
+                        { v:`${consultantes.reduce((t,n)=>t+n.da,0).toLocaleString('fr-FR')} DA`, l:'Total DA', c:'var(--blue)' },
+                      ].map((x,i) => (
+                        <div key={i} style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:10, padding:'10px', textAlign:'center' }}>
+                          <p style={{ fontSize:16, fontWeight:700, color:x.c, fontFamily:'var(--font-display)' }}>{x.v}</p>
+                          <p style={{ fontSize:9, color:'var(--text-muted)' }}>{x.l}</p>
                         </div>
-                        <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{ca.toFixed(0)} DA</span>
-                      </div>
-                      <div style={{ background:'rgba(210,183,149,0.2)', borderRadius:3, height:5, overflow:'hidden' }}>
-                        <div style={{ height:'100%', borderRadius:3, width:Math.round((ca/maxCA)*100)+'%', background:`linear-gradient(90deg,${st.color},${st.color}88)` }}/>
-                      </div>
+                      ))}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+
+                  {/* Classement consultantes en € */}
+                  {consultantes.some(n=>n.eu>0) && (
+                    <div style={S.section}>
+                      <p style={S.secLabel}>Classement € (Euros)</p>
+                      {consultantes.filter(n=>n.eu>0).map((n,i) => (
+                        <div key={n.id} style={{ marginBottom:10 }}>
+                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:12, marginBottom:3 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                              <div style={{ width:18,height:18,borderRadius:4,background:i===0?'linear-gradient(135deg,var(--or),var(--or-deep))':'rgba(210,183,149,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:i===0?'#fff':'var(--text-muted)' }}>{i+1}</div>
+                              <span style={{ fontWeight:600, color:'var(--taupe)' }}>{n.name}</span>
+                            </div>
+                            <span style={{ fontWeight:700, color:'var(--or-deep)' }}>{n.eu.toFixed(0)} €</span>
+                          </div>
+                          <div style={{ background:'rgba(210,183,149,0.2)', borderRadius:3, height:4, overflow:'hidden' }}>
+                            <div style={{ height:'100%', borderRadius:3, width:Math.round((n.eu/maxEU)*100)+'%', background:'linear-gradient(90deg,var(--or),var(--or-deep))' }}/>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Classement consultantes en DA */}
+                  {consultantes.some(n=>n.da>0) && (
+                    <div style={S.section}>
+                      <p style={S.secLabel}>Classement DA (Dinars)</p>
+                      {consultantes.filter(n=>n.da>0).map((n,i) => (
+                        <div key={n.id} style={{ marginBottom:10 }}>
+                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:12, marginBottom:3 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                              <div style={{ width:18,height:18,borderRadius:4,background:i===0?'linear-gradient(135deg,#3d6b9e,#1a4a8e)':'rgba(61,107,158,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:i===0?'#fff':'var(--text-muted)' }}>{i+1}</div>
+                              <span style={{ fontWeight:600, color:'var(--taupe)' }}>{n.name}</span>
+                            </div>
+                            <span style={{ fontWeight:700, color:'var(--blue)' }}>{Math.round(n.da).toLocaleString('fr-FR')} DA</span>
+                          </div>
+                          <div style={{ background:'rgba(61,107,158,0.15)', borderRadius:3, height:4, overflow:'hidden' }}>
+                            <div style={{ height:'100%', borderRadius:3, width:Math.round((n.da/maxDA)*100)+'%', background:'linear-gradient(90deg,#3d6b9e,#1a4a8e)' }}/>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {consultantes.length === 0 && <div style={S.empty}>Aucune consultante dans le réseau.</div>}
+                </>;
+              })()
           }
         </div>
       )}
