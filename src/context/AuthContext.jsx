@@ -13,12 +13,12 @@ export const ROLES = {
   marraine: {
     label: 'Marraine', icon: '🌸', color: '#9e5a7a',
     bg: 'rgba(158,90,122,0.12)', border: 'rgba(158,90,122,0.4)',
-    apps: ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','catalogue','coach','objections','stats','formation','familles','catalogues','checklist'],
+    apps: ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','coach','objections','stats','formation','familles','catalogues','checklist'],
   },
   consultante: {
     label: 'Consultante', icon: '💼', color: '#3d6b9e',
     bg: 'rgba(61,107,158,0.12)', border: 'rgba(61,107,158,0.4)',
-    apps: ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','catalogue','coach','objections','formation','familles','catalogues','checklist'],
+    apps: ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','coach','objections','formation','familles','catalogues','checklist'],
   },
 };
 
