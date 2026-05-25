@@ -373,9 +373,185 @@ export default function Reseau() {
           }
         </div>
       )}
+      {/* TABLEAU ADMIN */}
+      {tab === 'table' && user?.role === 'admin' && (
+        <TableauTab tree={tree} saveTree={saveTree} getCAByCur={getCAByCur}/>
+      )}
+
+      {/* TABLEAU ADMIN */}
+      {tab === 'table' && user?.role === 'admin' && (
+        <TableauTab tree={tree} saveTree={saveTree} getCAByCur={getCAByCur}/>
+      )}
     </AppLayout>
   );
 }
+
+// ── TABLEAU ADMIN ─────────────────────────────────────────────────
+
+function TableauTab({ tree, saveTree, getCAByCur }) {
+  const [editId, setEditId] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [addForm, setAddForm] = useState({ name:'', lastName:'', role:'Consultante', parentId:'' });
+  const [showAdd, setShowAdd] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterRole, setFilterRole] = useState('tous');
+
+  const ROLES_LIST = ['VIP','Manager','Marraine','Consultante','Parrain'];
+  const ROLE_STYLE_T = {
+    'VIP':'#8b5a2b','Manager':'#B89A6A','Marraine':'#9e5a7a',
+    'Consultante':'#3d6b9e','Parrain':'#9e5a7a'
+  };
+
+  const openEdit = (n) => {
+    setEditId(n.id);
+    setEditForm({ name:n.name, lastName:n.lastName||'', role:n.role, parentId:n.parentId||'' });
+  };
+
+  const saveEdit = () => {
+    saveTree({ nodes: tree.nodes.map(n => n.id !== editId ? n : {
+      ...n, name:editForm.name.trim(), lastName:editForm.lastName.trim(),
+      role:editForm.role, parentId:editForm.parentId||null
+    })});
+    setEditId(null);
+  };
+
+  const deleteNode = (id) => {
+    if (!window.confirm('Supprimer ce membre ?')) return;
+    saveTree({ nodes: tree.nodes.filter(n => n.id !== id && n.parentId !== id) });
+  };
+
+  const addNode = () => {
+    if (!addForm.name.trim()) return;
+    const n = {
+      id: Date.now().toString(),
+      name: addForm.name.trim(),
+      lastName: addForm.lastName.trim(),
+      role: addForm.role,
+      parentId: addForm.parentId || null
+    };
+    saveTree({ nodes:[...tree.nodes, n] });
+    setAddForm({ name:'', lastName:'', role:'Consultante', parentId:'' });
+    setShowAdd(false);
+  };
+
+  let nodes = [...tree.nodes].sort((a,b) => {
+    const order = {'VIP':0,'Manager':1,'Marraine':2,'Parrain':3,'Consultante':4};
+    return (order[a.role]??5) - (order[b.role]??5) || (a.name||'').localeCompare(b.name||'');
+  });
+  if (search) nodes = nodes.filter(n => (n.name+' '+(n.lastName||'')).toLowerCase().includes(search.toLowerCase()));
+  if (filterRole !== 'tous') nodes = nodes.filter(n => n.role === filterRole);
+
+  return (
+    <div style={{ padding:16 }}>
+      {/* Header */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+        <p style={{ fontSize:14, fontWeight:700, color:'var(--taupe)', fontFamily:'var(--font-display)' }}>
+          📋 {tree.nodes.length} membres
+        </p>
+        <button className="btn-gold" style={{ padding:'8px 14px', width:'auto', fontSize:12 }}
+          onClick={() => setShowAdd(!showAdd)}>
+          {showAdd ? '✕ Annuler' : '➕ Nouveau'}
+        </button>
+      </div>
+
+      {/* Formulaire ajout */}
+      {showAdd && (
+        <div style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:14, marginBottom:14 }}>
+          <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.08em' }}>Ajouter un membre</p>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8 }}>
+            <div className="field"><label className="label">Prénom *</label>
+              <input value={addForm.name} onChange={e=>setAddForm(p=>({...p,name:e.target.value}))} placeholder="Marie" /></div>
+            <div className="field"><label className="label">Nom</label>
+              <input value={addForm.lastName} onChange={e=>setAddForm(p=>({...p,lastName:e.target.value}))} placeholder="O" /></div>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+            <div className="field"><label className="label">Statut</label>
+              <select value={addForm.role} onChange={e=>setAddForm(p=>({...p,role:e.target.value}))}>
+                {ROLES_LIST.map(r => <option key={r}>{r}</option>)}
+              </select></div>
+            <div className="field"><label className="label">Rattaché à</label>
+              <select value={addForm.parentId} onChange={e=>setAddForm(p=>({...p,parentId:e.target.value}))}>
+                <option value="">— Aucun —</option>
+                {tree.nodes.map(n => <option key={n.id} value={n.id}>{n.name} {n.lastName||''} ({n.role})</option>)}
+              </select></div>
+          </div>
+          <button className="btn-gold" onClick={addNode} disabled={!addForm.name.trim()}>✦ Ajouter</button>
+        </div>
+      )}
+
+      {/* Filtres */}
+      <div style={{ display:'flex', gap:6, marginBottom:10, overflowX:'auto', scrollbarWidth:'none' }}>
+        <input placeholder="🔍 Rechercher..." value={search} onChange={e=>setSearch(e.target.value)}
+          style={{ flex:1, minWidth:120 }}/>
+        <select value={filterRole} onChange={e=>setFilterRole(e.target.value)}
+          style={{ fontSize:11, padding:'7px 8px', borderRadius:10, border:'1px solid var(--or-border)', background:'var(--bg-card)', color:'var(--taupe)', fontFamily:'var(--font-body)', flexShrink:0 }}>
+          <option value="tous">Tous</option>
+          {ROLES_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+        </select>
+      </div>
+
+      {/* Tableau */}
+      <div style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, overflow:'hidden' }}>
+        {/* En-tête */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 90px 70px', background:'rgba(210,183,149,0.12)', padding:'9px 12px', borderBottom:'1px solid var(--or-border)' }}>
+          {['Prénom','Nom','Statut','Actions'].map(h => (
+            <span key={h} style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{h}</span>
+          ))}
+        </div>
+
+        {nodes.length === 0 && (
+          <p style={{ textAlign:'center', color:'var(--text-muted)', padding:'24px', fontSize:13 }}>Aucun membre trouvé.</p>
+        )}
+
+        {nodes.map((n, idx) => {
+          const { eu, da } = getCAByCur(n.name);
+          const isEven = idx % 2 === 0;
+          const color = ROLE_STYLE_T[n.role] || '#6b7280';
+          const parent = tree.nodes.find(x => x.id === n.parentId);
+
+          if (editId === n.id) {
+            return (
+              <div key={n.id} style={{ padding:'10px 12px', background:'rgba(210,183,149,0.06)', borderBottom:'1px solid var(--or-border)' }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 90px', gap:6, marginBottom:8 }}>
+                  <input value={editForm.name} onChange={e=>setEditForm(p=>({...p,name:e.target.value}))} placeholder="Prénom" style={{ fontSize:12 }}/>
+                  <input value={editForm.lastName} onChange={e=>setEditForm(p=>({...p,lastName:e.target.value}))} placeholder="Nom" style={{ fontSize:12 }}/>
+                  <select value={editForm.role} onChange={e=>setEditForm(p=>({...p,role:e.target.value}))} style={{ fontSize:11, borderRadius:8, border:'1px solid var(--or-border)', padding:'5px 6px', background:'var(--bg)', fontFamily:'var(--font-body)' }}>
+                    {ROLES_LIST.map(r => <option key={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr auto auto', gap:6 }}>
+                  <select value={editForm.parentId} onChange={e=>setEditForm(p=>({...p,parentId:e.target.value}))} style={{ fontSize:11, borderRadius:8, border:'1px solid var(--or-border)', padding:'5px 6px', background:'var(--bg)', fontFamily:'var(--font-body)' }}>
+                    <option value="">— Aucun —</option>
+                    {tree.nodes.filter(x=>x.id!==n.id).map(x=><option key={x.id} value={x.id}>{x.name} {x.lastName||''}</option>)}
+                  </select>
+                  <button className="btn-gold" style={{ padding:'6px 12px', width:'auto', fontSize:11 }} onClick={saveEdit}>💾</button>
+                  <button className="btn-outline" style={{ padding:'6px 12px', width:'auto', fontSize:11 }} onClick={() => setEditId(null)}>✕</button>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={n.id} style={{ display:'grid', gridTemplateColumns:'1fr 1fr 90px 70px', padding:'10px 12px', background:isEven?'transparent':'rgba(210,183,149,0.03)', borderBottom:'1px solid rgba(210,183,149,0.1)', alignItems:'center' }}>
+              <div>
+                <p style={{ fontSize:12, fontWeight:600, color:'var(--taupe)' }}>{n.name}</p>
+                {parent && <p style={{ fontSize:9, color:'var(--text-dim)' }}>↑ {parent.name}</p>}
+                {(eu>0||da>0) && <p style={{ fontSize:9, color:'var(--or-deep)', fontWeight:700 }}>{eu>0?`${eu.toFixed(0)}€`:''}{eu>0&&da>0?' · ':''}{da>0?`${Math.round(da).toLocaleString('fr-FR')}DA`:''}</p>}
+              </div>
+              <p style={{ fontSize:12, color:'var(--text-muted)' }}>{n.lastName||'—'}</p>
+              <span style={{ fontSize:10, fontWeight:700, color, background:`${color}15`, padding:'3px 8px', borderRadius:20, border:`1px solid ${color}30`, width:'fit-content' }}>{n.role}</span>
+              <div style={{ display:'flex', gap:4 }}>
+                <button onClick={() => openEdit(n)} style={{ background:'var(--or-pale)', border:'1px solid var(--or-border)', borderRadius:6, padding:'4px 8px', fontSize:12, cursor:'pointer', color:'var(--or-deep)' }}>✏️</button>
+                <button onClick={() => deleteNode(n.id)} style={{ background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:6, padding:'4px 8px', fontSize:12, cursor:'pointer', color:'var(--red)' }}>🗑</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 
 const S = {
   tabs:      { display:'flex', borderBottom:'1px solid var(--or-border)' },
