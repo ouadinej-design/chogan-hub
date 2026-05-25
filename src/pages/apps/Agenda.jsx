@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
 const EVENT_TYPES = ['Salon/Expo','Réunion domicile','Réseaux sociaux','Réunion équipe','Brocante','Événement Privé','Autre'];
@@ -196,7 +197,8 @@ function AgendaIframe() {
 
 // ── ÉVÉNEMENTS ────────────────────────────────────────────────────
 function EvenementsTab() {
-  const [evts, setEvts]     = useState(() => { try { return JSON.parse(localStorage.getItem('le_cevents')||'[]'); } catch { return []; } });
+  const { getFilteredEvents, user:evtUser } = useAuth();
+  const [evts, setEvts]     = useState(() => getFilteredEvents());
   const [editId, setEditId] = useState(null);
   const [form, setForm]     = useState({ name:'', type:'Salon/Expo', date:new Date().toISOString().split('T')[0], email:'', tel:'' });
   const [filter, setFilter] = useState('perso');
