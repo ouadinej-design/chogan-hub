@@ -137,20 +137,81 @@ export default function Reseau() {
         <div style={{ padding:16 }}>
 
 
-          {tree.nodes.length === 0 ? (
-            <div style={S.empty}>
-              <p style={{ fontSize:32, marginBottom:8 }}>🌐</p>
-              <p>Réseau vide. Ajoutez des membres.</p>
-            </div>
-          ) : (
-            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-              {roots.map(root => (
-                <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
-                  <RenderChain nodeId={root.id}/>
-                </div>
-              ))}
-            </div>
-          )}
+          {(() => {
+            const vips      = roots.filter(n => n.role === 'VIP');
+            const managers  = roots.filter(n => n.role === 'Manager');
+            const others    = roots.filter(n => n.role !== 'VIP' && n.role !== 'Manager');
+
+            const SectionLabel = ({ label, color }) => (
+              <p style={{ fontSize:9, fontWeight:800, textTransform:'uppercase', letterSpacing:'0.12em', color, marginBottom:6, paddingLeft:2 }}>{label}</p>
+            );
+
+            const CardRow = ({ nodes }) => (
+              <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:8 }}>
+                {nodes.map(n => <MemberCard key={n.id} node={n}/>)}
+              </div>
+            );
+
+            return (
+              <div>
+                {/* 1. VIP */}
+                {vips.length > 0 && (
+                  <div style={{ marginBottom:14 }}>
+                    <SectionLabel label="💎 VIP" color="#8b5a2b"/>
+                    <CardRow nodes={vips}/>
+                    <div style={{ height:1, background:'var(--or-border)', marginBottom:10 }}/>
+                  </div>
+                )}
+
+                {/* 2. Manager */}
+                {managers.length > 0 && (
+                  <div style={{ marginBottom:14 }}>
+                    <SectionLabel label="⭐ Manager" color="#B89A6A"/>
+                    <CardRow nodes={managers}/>
+                    <div style={{ height:1, background:'var(--or-border)', marginBottom:10 }}/>
+                  </div>
+                )}
+
+                {/* 3. Marraine (compte connecté) */}
+                {user && (user.role === 'marraine' || user.role === 'admin') && (
+                  <div style={{ marginBottom:14 }}>
+                    <SectionLabel label="👑 Marraine" color="#9e5a7a"/>
+                    <div style={{ background:'rgba(158,90,122,0.08)', border:'2px solid rgba(158,90,122,0.3)', borderRadius:14, padding:'10px 12px', display:'inline-flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                      <div style={{ width:34, height:34, borderRadius:'50%', background:'#9e5a7a', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, color:'#fff', fontWeight:700, flexShrink:0 }}>
+                        {(user.firstName||'?')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p style={{ fontSize:12, fontWeight:700, color:'var(--taupe)' }}>{user.firstName} {user.lastName}</p>
+                        <p style={{ fontSize:9, color:'#9e5a7a', fontWeight:600 }}>👑 Marraine</p>
+                      </div>
+                    </div>
+                    <div style={{ height:1, background:'var(--or-border)', marginBottom:10 }}/>
+                  </div>
+                )}
+
+                {/* 4. Consultantes avec chaînes */}
+                {others.length > 0 && (
+                  <div>
+                    <SectionLabel label="👤 Consultantes" color="#3d6b9e"/>
+                    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                      {others.map(root => (
+                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                          <RenderChain nodeId={root.id}/>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {tree.nodes.length === 0 && (
+                  <div style={S.empty}>
+                    <p style={{ fontSize:32, marginBottom:8 }}>🌐</p>
+                    <p>Réseau vide. Ajoutez des membres.</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 
