@@ -145,11 +145,63 @@ export function AuthProvider({ children }) {
   const getAllConsultants = () => store.get('consultants', []);
   const canAccess = (appId) => ROLES[user?.role]?.apps.includes(appId) ?? false;
 
+  // Filtrer les ventes selon le rôle
+  const getFilteredSales = () => {
+    try {
+      const all = JSON.parse(localStorage.getItem('le_sales')||'[]');
+      if (!user || user.role === 'admin') return all;
+      const name = (user.firstName||'').toLowerCase();
+      if (user.role === 'consultante') {
+        return all.filter(s => {
+          const cons = (s.consultant||'').toLowerCase();
+          return !cons || cons === name || cons.includes(name) || name.includes(cons);
+        });
+      }
+      if (user.role === 'marraine') {
+        try {
+          const tree = JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes || [];
+          const teamNames = tree.map(n => (n.name||'').toLowerCase());
+          return all.filter(s => {
+            const cons = (s.consultant||'').toLowerCase();
+            return !cons || cons === name || teamNames.some(t => t===cons || t.includes(cons) || cons.includes(t));
+          });
+        } catch { return all; }
+      }
+      return all;
+    } catch { return []; }
+  };
+
+  // Filtrer les événements selon le rôle
+  const getFilteredEvents = () => {
+    try {
+      const all = JSON.parse(localStorage.getItem('le_cevents')||'[]');
+      if (!user || user.role === 'admin') return all;
+      const name = (user.firstName||'').toLowerCase();
+      if (user.role === 'consultante') {
+        return all.filter(e => {
+          const cons = (e.consultant||'').toLowerCase();
+          return !cons || cons === name || cons.includes(name);
+        });
+      }
+      if (user.role === 'marraine') {
+        try {
+          const tree = JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes || [];
+          const teamNames = tree.map(n => (n.name||'').toLowerCase());
+          return all.filter(e => {
+            const cons = (e.consultant||'').toLowerCase();
+            return !cons || cons === name || teamNames.some(t => t===cons || t.includes(cons));
+          });
+        } catch { return all; }
+      }
+      return all;
+    } catch { return []; }
+  };
+
   return (
     <AuthContext.Provider value={{
       user, loading, login, logout, changePassword,
       createConsultant, resetPassword, toggleLock, deleteConsultant,
-      getAllConsultants, canAccess, ROLES,
+      getAllConsultants, canAccess, ROLES, getFilteredSales, getFilteredEvents,
     }}>
       {!loading && children}
     </AuthContext.Provider>
