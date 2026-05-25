@@ -158,8 +158,14 @@ export default function Reseau() {
                 {vips.length > 0 && (
                   <div style={{ marginBottom:14 }}>
                     <SectionLabel label="💎 VIP" color="#8b5a2b"/>
-                    <CardRow nodes={vips}/>
-                    <div style={{ height:1, background:'var(--or-border)', marginBottom:10 }}/>
+                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                      {vips.map(root => (
+                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                          <RenderChain nodeId={root.id}/>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ height:1, background:'var(--or-border)', marginBottom:10, marginTop:10 }}/>
                   </div>
                 )}
 
@@ -167,8 +173,14 @@ export default function Reseau() {
                 {managers.length > 0 && (
                   <div style={{ marginBottom:14 }}>
                     <SectionLabel label="⭐ Manager" color="#B89A6A"/>
-                    <CardRow nodes={managers}/>
-                    <div style={{ height:1, background:'var(--or-border)', marginBottom:10 }}/>
+                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                      {managers.map(root => (
+                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                          <RenderChain nodeId={root.id}/>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ height:1, background:'var(--or-border)', marginBottom:10, marginTop:10 }}/>
                   </div>
                 )}
 
@@ -189,12 +201,27 @@ export default function Reseau() {
                   </div>
                 )}
 
-                {/* 4. Consultantes avec chaînes */}
-                {others.length > 0 && (
+                {/* 4. Marraines du réseau (racines avec rôle Marraine) */}
+                {others.filter(n=>n.role==='Marraine'||n.role==='Parrain').length > 0 && (
+                  <div style={{ marginBottom:14 }}>
+                    <SectionLabel label="👑 Marraines / Parrains" color="#9e5a7a"/>
+                    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                      {others.filter(n=>n.role==='Marraine'||n.role==='Parrain').map(root => (
+                        <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
+                          <RenderChain nodeId={root.id}/>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ height:1, background:'var(--or-border)', marginTop:10, marginBottom:10 }}/>
+                  </div>
+                )}
+
+                {/* 5. Consultantes sans parrain (racines) */}
+                {others.filter(n=>n.role==='Consultante').length > 0 && (
                   <div>
                     <SectionLabel label="👤 Consultantes" color="#3d6b9e"/>
                     <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                      {others.map(root => (
+                      {others.filter(n=>n.role==='Consultante').map(root => (
                         <div key={root.id} style={{ overflowX:'auto', paddingBottom:4 }}>
                           <RenderChain nodeId={root.id}/>
                         </div>
