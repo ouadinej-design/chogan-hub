@@ -67,7 +67,8 @@ function ClientsTab({ cfg, userName }) {
   const [bonusReason, setBonusReason] = useState('');
   const [addingBonus, setAddingBonus] = useState(null);
 
-  const sales = (() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } })();
+  const { getFilteredSales } = useAuth();
+  const sales = getFilteredSales();
   const [bonusPoints, setBonusPoints] = useState(() => {
     try { return JSON.parse(localStorage.getItem('le_fidelite')||'{}'); } catch { return {}; }
   });
