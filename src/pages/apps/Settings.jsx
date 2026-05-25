@@ -73,10 +73,10 @@ export default function Settings() {
   };
 
   const consultants = getAllConsultants();
-  const TABS_ADMIN    = ['profile', 'create', 'manage', 'email'];
+  const TABS_ADMIN    = ['profile', 'create', 'manage', 'permissions', 'email'];
   const TABS_CONSULTANT = ['profile'];
   const tabs = user?.role === 'admin' ? TABS_ADMIN : TABS_CONSULTANT;
-  const tabLabels = { profile: '👤 Profil', create: '➕ Créer', manage: '👥 Comptes', email: '✉ Email' };
+  const tabLabels = { profile: '👤 Profil', create: '➕ Créer', manage: '👥 Comptes', permissions: '🔐 Accès', email: '✉ Email' };
 
   return (
     <AppLayout title="Paramètres" icon="⚙️">
@@ -200,6 +200,10 @@ export default function Settings() {
         )}
 
         {/* ── EMAIL ── */}
+        {tab === 'permissions' && user?.role === 'admin' && (
+          <PermissionsTab />
+        )}
+
         {tab === 'email' && user?.role === 'admin' && (
           <div>
             <div style={S.helpBox}>
@@ -264,6 +268,132 @@ function InfoRow({ label, value }) {
     </div>
   );
 }
+
+// ── PERMISSIONS TAB ───────────────────────────────────────────────
+const ALL_APPS = [
+  { id:'commandes',  label:'🛒 Commandes' },
+  { id:'inspirations',label:'🌹 Inspirations' },
+  { id:'clients',    label:'👥 Clients' },
+  { id:'fidelite',   label:'💳 Fidélité' },
+  { id:'planner',    label:'🗓 Planner' },
+  { id:'wallet',     label:'💰 Wallet' },
+  { id:'reseau',     label:'🌐 Mon Réseau' },
+  { id:'stats',      label:'📊 Statistiques' },
+  { id:'coach',      label:'🎙 Coach Vocal' },
+  { id:'objections', label:'💬 Coach Obj.' },
+  { id:'formation',  label:'🚀 Formation' },
+  { id:'familles',   label:'💐 Familles' },
+  { id:'catalogues', label:'📖 Catalogues' },
+  { id:'checklist',  label:'✨ Check-list' },
+  { id:'agenda',     label:'📅 Agenda', adminOnly: true },
+  { id:'catalogue',  label:'💎 Chogan Élite', adminOnly: true },
+  { id:'settings',   label:'⚙️ Paramètres', adminOnly: true },
+];
+
+const DEFAULT_PERMS = {
+  marraine:    ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','coach','objections','stats','formation','familles','catalogues','checklist'],
+  consultante: ['commandes','orders','inspirations','clients','fidelite','planner','wallet','reseau','coach','objections','formation','familles','catalogues','checklist'],
+};
+
+function PermissionsTab() {
+  const [perms, setPerms] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('chogan_permissions')) || DEFAULT_PERMS; }
+    catch { return DEFAULT_PERMS; }
+  });
+  const [saved, setSaved] = useState(false);
+
+  const toggle = (role, appId) => {
+    setPerms(p => {
+      const current = p[role] || [];
+      const updated = current.includes(appId)
+        ? current.filter(x => x !== appId)
+        : [...current, appId];
+      return { ...p, [role]: updated };
+    });
+    setSaved(false);
+  };
+
+  const save = () => {
+    localStorage.setItem('chogan_permissions', JSON.stringify(perms));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const reset = () => {
+    setPerms(DEFAULT_PERMS);
+    localStorage.removeItem('chogan_permissions');
+    setSaved(false);
+  };
+
+  const apps = ALL_APPS.filter(a => !a.adminOnly);
+
+  return (
+    <div>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+        <div>
+          <p style={{ fontSize:14, fontWeight:700, color:'var(--taupe)', fontFamily:'var(--font-display)' }}>🔐 Gestion des accès</p>
+          <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:3 }}>L'Admin a accès à tout. Cochez pour donner accès.</p>
+        </div>
+        <button style={{ background:'rgba(210,183,149,0.1)', border:'1px solid var(--or-border)', borderRadius:8, padding:'5px 10px', fontSize:10, color:'var(--text-muted)', cursor:'pointer', fontFamily:'var(--font-body)' }} onClick={reset}>Réinitialiser</button>
+      </div>
+
+      {/* Tableau */}
+      <div style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, overflow:'hidden', marginBottom:12 }}>
+        {/* Header */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 80px 80px', background:'rgba(210,183,149,0.12)', padding:'10px 14px', borderBottom:'1px solid var(--or-border)' }}>
+          <span style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Application</span>
+          <span style={{ fontSize:11, fontWeight:700, color:'#9e5a7a', textAlign:'center', textTransform:'uppercase', letterSpacing:'0.06em' }}>Marraine</span>
+          <span style={{ fontSize:11, fontWeight:700, color:'#3d6b9e', textAlign:'center', textTransform:'uppercase', letterSpacing:'0.06em' }}>Consultante</span>
+        </div>
+
+        {/* Rows */}
+        {apps.map((app, i) => (
+          <div key={app.id} style={{ display:'grid', gridTemplateColumns:'1fr 80px 80px', padding:'11px 14px', borderBottom:i<apps.length-1?'1px solid rgba(210,183,149,0.1)':'none', alignItems:'center' }}>
+            <span style={{ fontSize:13, color:'var(--taupe)', fontWeight:500 }}>{app.label}</span>
+            {['marraine','consultante'].map(role => (
+              <div key={role} style={{ display:'flex', justifyContent:'center' }}>
+                <label style={{ position:'relative', display:'inline-block', cursor:'pointer' }}>
+                  <input type="checkbox"
+                    checked={perms[role]?.includes(app.id) || false}
+                    onChange={() => toggle(role, app.id)}
+                    style={{ display:'none' }}
+                  />
+                  <div style={{
+                    width:24, height:24, borderRadius:6,
+                    background: perms[role]?.includes(app.id) ? (role==='marraine'?'#9e5a7a':'#3d6b9e') : 'rgba(210,183,149,0.1)',
+                    border: `2px solid ${perms[role]?.includes(app.id) ? (role==='marraine'?'#9e5a7a':'#3d6b9e') : 'var(--or-border)'}`,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:14, transition:'all 0.15s',
+                  }}>
+                    {perms[role]?.includes(app.id) && <span style={{ color:'white', fontSize:13, lineHeight:1 }}>✓</span>}
+                  </div>
+                </label>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        {/* Admin only section */}
+        <div style={{ padding:'10px 14px', background:'rgba(184,154,106,0.06)', borderTop:'1px solid var(--or-border)' }}>
+          <p style={{ fontSize:10, color:'var(--or-deep)', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase' }}>👑 Admin uniquement (non modifiable)</p>
+          {ALL_APPS.filter(a => a.adminOnly).map(a => (
+            <div key={a.id} style={{ display:'grid', gridTemplateColumns:'1fr 80px 80px', padding:'8px 0', alignItems:'center' }}>
+              <span style={{ fontSize:12, color:'var(--text-muted)' }}>{a.label}</span>
+              <div style={{ display:'flex', justifyContent:'center' }}><span style={{ fontSize:14 }}>🔒</span></div>
+              <div style={{ display:'flex', justifyContent:'center' }}><span style={{ fontSize:14 }}>🔒</span></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {saved
+        ? <div style={{ background:'rgba(74,124,89,0.1)', border:'1px solid rgba(74,124,89,0.3)', borderRadius:10, padding:'10px 14px', color:'var(--green)', fontSize:13, fontWeight:600, textAlign:'center', marginBottom:10 }}>✅ Permissions enregistrées !</div>
+        : <button className="btn-gold" onClick={save}>💾 Enregistrer les permissions</button>
+      }
+    </div>
+  );
+}
+
 
 const S = {
   tabs: { display: 'flex', borderBottom: '1px solid var(--or-border)', overflowX: 'auto' },
