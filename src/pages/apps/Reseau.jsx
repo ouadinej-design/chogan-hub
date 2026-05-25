@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
 const ROLE_STYLE = {
@@ -10,6 +11,7 @@ const ROLE_STYLE = {
 const DEF = { cardBg:'#EFF7F1', border:'#7EC8A0', color:'#2d7a4a', avatarBg:'#4a7c59', icon:'👤' };
 
 export default function Reseau() {
+  const { user } = useAuth();
   const [tree, setTree]         = useState(() => { try { return JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}'); } catch { return {nodes:[]}; } });
   const [name, setName]         = useState('');
   const [role, setRole]         = useState('Consultante');
