@@ -282,7 +282,7 @@ function VentesTab() {
   const [form, setForm]     = useState({});
 
   const save = (updated) => { localStorage.setItem('le_sales', JSON.stringify(updated)); setSales(updated); };
-  const refresh = () => { try { setSales(JSON.parse(localStorage.getItem('le_sales')||'[]')); } catch {} };
+  const refresh = () => { setSales(getFilteredSales()); };
 
   const deleteSale = (id) => { if (!window.confirm('Supprimer cette vente ?')) return; save(sales.filter(s=>s.id!==id)); };
 
