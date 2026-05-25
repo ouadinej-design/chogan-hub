@@ -158,7 +158,12 @@ export default function Reseau() {
       {tab === 'add' && (
         <div style={{ padding:16 }}>
           <div style={S.section}>
-            <p style={S.secLabel}>{editNode ? '✏️ Modifier' : '➕ Nouveau membre'}</p>
+            <p style={S.secLabel}>{editNode ? '✏️ Modifier' : '➕ Ajouter une consultante'}</p>
+            {!editNode && user?.role === 'marraine' && (
+              <div style={{ background:'rgba(158,90,122,0.08)', border:'1px solid rgba(158,90,122,0.2)', borderRadius:10, padding:'8px 12px', marginBottom:12, fontSize:11, color:'#9e5a7a' }}>
+                👑 En tant que Marraine, vous gérez votre équipe de consultantes.
+              </div>
+            )}
             {editNode ? (<>
               <div className="field"><label className="label">Nom *</label>
                 <input value={editForm.name} onChange={e=>setEditForm(p=>({...p,name:e.target.value}))}/></div>
