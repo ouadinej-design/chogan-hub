@@ -60,14 +60,17 @@ export default function Reseau() {
   };
 
   // ── Mini carte membre ──────────────────────────────────
+  const [detail, setDetail] = useState(null);
+
   const MemberCard = ({ node }) => {
     const st       = ROLE_STYLE[node.role] || DEF;
-    const ca       = getCA(node.name);
+    const { da, eu } = getCAByCur(node.name);
+    const nodeSales = sales.filter(s => s.consultant === node.name);
     const sel      = selected === node.id;
     const hasKids  = tree.nodes.some(n => n.parentId === node.id);
     const kidCount = tree.nodes.filter(n => n.parentId === node.id).length;
     return (
-      <div onClick={() => setSelected(sel ? null : node.id)}
+      <div onClick={() => setDetail(detail?.id === node.id ? null : { ...node, da, eu, nodeSales, kidCount })}
         style={{ background:st.cardBg, border:`2px solid ${sel?st.border:st.border+'88'}`, borderRadius:14, padding:'10px 8px', textAlign:'center', cursor:'pointer', minWidth:90, maxWidth:110, flexShrink:0, boxShadow:sel?`0 0 0 2px ${st.border}`:'none', position:'relative' }}>
         {/* Badge Parrain si a des filleul(e)s */}
         {hasKids && (
@@ -80,6 +83,11 @@ export default function Reseau() {
         </div>
         <p style={{ fontSize:11, fontWeight:700, color:'#2d2520', lineHeight:1.2, marginBottom:3 }}>{node.name}</p>
         <span style={{ fontSize:9, color:st.color, fontWeight:600 }}>{st.icon} {node.role}</span>
+        <div style={{ marginTop:6, lineHeight:1.5 }}>
+          {eu > 0 && <p style={{ fontSize:9, color:'var(--or-deep)', fontWeight:800 }}>{eu.toFixed(0)} €</p>}
+          {da > 0 && <p style={{ fontSize:9, color:'#3d6b9e', fontWeight:800 }}>{Math.round(da).toLocaleString('fr-FR')} DA</p>}
+          {eu===0 && da===0 && <p style={{ fontSize:8, color:'var(--text-dim)' }}>—</p>}
+        </div>
         {ca>0 && <p style={{ fontSize:8, color:'var(--or-deep)', fontWeight:700, marginTop:4 }}>{ca.toFixed(0)} DA</p>}
         {sel && (
           <div style={{ display:'flex', gap:4, marginTop:8 }}>
@@ -241,6 +249,64 @@ export default function Reseau() {
               </div>
             );
           })()}
+        </div>
+      )}
+
+
+      {/* Panneau détail */}
+      {tab === 'tree' && detail && (
+        <div style={{ position:'fixed', bottom:0, left:0, right:0, background:'var(--bg)', border:'1px solid var(--or-border)', borderRadius:'20px 20px 0 0', padding:'20px 16px', boxShadow:'0 -4px 24px rgba(0,0,0,0.15)', zIndex:100, maxHeight:'65vh', overflowY:'auto' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <div style={{ width:46, height:46, borderRadius:'50%', background:(ROLE_STYLE[detail.role]||DEF).avatarBg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, color:'#fff', fontWeight:700 }}>{detail.name[0]?.toUpperCase()}</div>
+              <div>
+                <p style={{ fontSize:17, fontWeight:700, color:'var(--taupe)', fontFamily:'var(--font-display)' }}>{detail.name}</p>
+                <span style={{ fontSize:11, color:(ROLE_STYLE[detail.role]||DEF).color, fontWeight:600 }}>{(ROLE_STYLE[detail.role]||DEF).icon} {detail.role}</span>
+              </div>
+            </div>
+            <button onClick={() => setDetail(null)} style={{ background:'rgba(210,183,149,0.15)', border:'1px solid var(--or-border)', borderRadius:20, padding:'5px 14px', fontSize:13, color:'var(--text-muted)', cursor:'pointer', fontFamily:'var(--font-body)' }}>✕</button>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:14 }}>
+            {[{ v:`${detail.eu.toFixed(0)} €`, l:'CA Euros', c:'var(--or-deep)' },
+              { v:`${Math.round(detail.da).toLocaleString('fr-FR')} DA`, l:'CA Dinars', c:'#3d6b9e' },
+              { v:detail.nodeSales.length, l:'Ventes', c:'var(--taupe)' }
+            ].map((x,i) => (
+              <div key={i} style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, padding:'10px 8px', textAlign:'center' }}>
+                <p style={{ fontSize:14, fontWeight:800, color:x.c, fontFamily:'var(--font-display)' }}>{x.v}</p>
+                <p style={{ fontSize:9, color:'var(--text-muted)', marginTop:2 }}>{x.l}</p>
+              </div>
+            ))}
+          </div>
+          {detail.kidCount > 0 && (
+            <div style={{ marginBottom:12 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>👥 Filleul(e)s ({detail.kidCount})</p>
+              {tree.nodes.filter(n => n.parentId === detail.id).map(f => {
+                const fc = getCAByCur(f.name);
+                return (
+                  <div key={f.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid rgba(210,183,149,0.1)' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <div style={{ width:28,height:28,borderRadius:'50%',background:(ROLE_STYLE[f.role]||DEF).avatarBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'#fff',fontWeight:700 }}>{f.name[0]?.toUpperCase()}</div>
+                      <span style={{ fontSize:12, color:'var(--taupe)' }}>{f.name}</span>
+                    </div>
+                    <span style={{ fontSize:11, color:'var(--or-deep)', fontWeight:700 }}>
+                      {fc.eu>0?`${fc.eu.toFixed(0)}€`:''}{fc.da>0?` ${Math.round(fc.da).toLocaleString('fr-FR')}DA`:''}{fc.eu===0&&fc.da===0?'—':''}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {detail.nodeSales.length > 0 && (
+            <div>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.08em' }}>💰 Dernières ventes</p>
+              {detail.nodeSales.slice(-3).reverse().map((s,i) => (
+                <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'7px 0', borderBottom:'1px solid rgba(210,183,149,0.08)', fontSize:12 }}>
+                  <span style={{ color:'var(--taupe)' }}>{s.client||'—'}</span>
+                  <span style={{ color:'var(--or-deep)', fontWeight:700 }}>{s.amount||s.amt} {s.currency||s.cur||'€'}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
