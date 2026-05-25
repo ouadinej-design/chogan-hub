@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
 const COLORS = ['#B89A6A','#9e5a7a','#3d6b9e','#4a7c59','#6b4d8a','#8a4d4d','#3d7a8a'];
@@ -8,7 +9,8 @@ export default function Clients() {
   const [search,   setSearch]   = useState('');
   const [selected, setSelected] = useState(null);
 
-  const sales = (() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } })();
+  const { getFilteredSales } = useAuth();
+  const sales = getFilteredSales();
   const now = useMemo(() => { const d=new Date(); d.setHours(0,0,0,0); return d; }, []);
 
   const map = useMemo(() => {
