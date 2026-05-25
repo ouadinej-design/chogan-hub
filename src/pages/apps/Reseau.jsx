@@ -142,9 +142,9 @@ export default function Reseau() {
 
   return (
     <AppLayout title="Mon Réseau" icon="🌐">
-      <div style={S.tabs}>
+      <div style={{ ...S.tabs, overflowX:'auto', scrollbarWidth:'none', flexShrink:0 }}>
         {[['tree','🌳 Organigramme'],['add','➕ Ajouter'],['stats','📊 Stats']].map(([k,l]) => (
-          <button key={k} style={{ ...S.tab, ...(tab===k?S.tabActive:{}) }} onClick={() => setTab(k)}>{l}</button>
+          <button key={k} style={{ ...S.tab, ...(tab===k?S.tabActive:{}), fontSize:10, padding:'12px 8px', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
 
@@ -260,7 +260,7 @@ export default function Reseau() {
 
 
       {/* Panneau détail */}
-      {tab === 'tree' && detail && (
+      {tab === 'tree' && detail && detail.name && (
         <div style={{ position:'fixed', bottom:0, left:0, right:0, background:'var(--bg)', border:'1px solid var(--or-border)', borderRadius:'20px 20px 0 0', padding:'20px 16px', boxShadow:'0 -4px 24px rgba(0,0,0,0.15)', zIndex:100, maxHeight:'65vh', overflowY:'auto' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
