@@ -72,7 +72,7 @@ export default function Reseau() {
         {/* Badge Parrain si a des filleul(e)s */}
         {hasKids && (
           <div style={{ background:'#9e5a7a', color:'#fff', fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, marginBottom:8, display:'inline-block', boxShadow:'0 2px 8px rgba(158,90,122,0.4)' }}>
-            👑 Parrain ({kidCount})
+            👑 {node.role === 'Marraine' ? 'Marraine' : node.role === 'Parrain' ? 'Parrain' : node.role} ({kidCount})
           </div>
         )}
         <div style={{ width:34, height:34, borderRadius:'50%', background:st.avatarBg, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 6px', fontSize:13, color:'#fff', fontWeight:700 }}>
