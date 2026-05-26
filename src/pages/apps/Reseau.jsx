@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { userStore } from '../../utils/storage'; // Import ajouté pour la synchro
 
 export default function Reseau() {
   const [activeTab, setActiveTab] = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
 
-  // 🏢 Structure complète avec indicateurs commerciaux + Objectifs Personnels & Progressions
+  // 🏢 Structure complète (Identique à ton code)
   const defaultTree = {
     nodes: [
       { id: "kheira_b", name: "Kheira BELARIBI", role: "Manager", genre: "femme", parentId: null, ca: "12 500 €", caNum: 12500, objNum: 15000, objectif: "Atteindre 15 000 € de CA d'équipe", events: "Séminaire Annuel, Masterclass Or", fidelity: "Platine (1500 pts)", mdp: "Limitless*2026A", topClient: "Sarah Benali", bestSeller: "Parfum Prestige Luxury", meilleuresVentes: "Pack Élite & Soins Éclat" },
@@ -44,6 +45,17 @@ export default function Reseau() {
     } catch (e) {}
     return defaultTree;
   });
+
+  // 🔄 SYNCHRONISATION AUTOMATIQUE DES DONNÉES RÉELLES
+  useEffect(() => {
+    const nodesSynchronises = tree.nodes.map(n => {
+      const db = userStore(n.id);
+      const orders = db?.get('orders', []) || [];
+      const totalCA = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+      return totalCA > 0 ? { ...n, caNum: totalCA, ca: `${totalCA.toLocaleString()} €` } : n;
+    });
+    setTree({ nodes: nodesSynchronises });
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('limitless_team_tree_v4', JSON.stringify(tree));
@@ -114,7 +126,6 @@ export default function Reseau() {
     );
   };
 
-  // Calcul du pourcentage d'avancement pour la pop-up
   const pctProgress = selectedMember 
     ? Math.min(100, Math.round((selectedMember.caNum / (selectedMember.objNum || 1)) * 100)) 
     : 0;
@@ -122,13 +133,11 @@ export default function Reseau() {
   return (
     <div style={{ padding: '15px', fontFamily: 'sans-serif', background: '#FAF7F2', minHeight: '100vh' }}>
       
-      {/* 👑 BOUTONS ONGLETS */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
         <button onClick={() => setActiveTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'arbre' ? '#D2B795' : 'white', color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre</button>
         <button onClick={() => setActiveTab('tableau')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'tableau' ? '#D2B795' : 'white', color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>📊 Gestion & Mots de passe</button>
       </div>
 
-      {/* 🌳 VUE ARBRE */}
       {activeTab === 'arbre' && (
         <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '20px' }}>
           <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%', gap: '20px' }}>
@@ -137,11 +146,8 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* 📊 VUE TABLEAU RÉCAPITULATIF ADMINISTRATEUR */}
       {activeTab === 'tableau' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-          
-          {/* Form d'inscription */}
           <div style={{ background: 'white', padding: '15px', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <h3 style={{ marginTop: 0, color: '#4A3E3D', textAlign: 'center', fontSize: '15px' }}>✨ Inscrire un nouveau membre</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -178,7 +184,6 @@ export default function Reseau() {
             </div>
           </div>
 
-          {/* Grand Tableau Récapitulatif */}
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left', minWidth: '950px' }}>
               <thead>
@@ -212,16 +217,13 @@ export default function Reseau() {
               </tbody>
             </table>
           </div>
-
         </div>
       )}
 
-      {/* 👑 FENÊTRE MODALE DES PERFORMANCES (Avec Jauge d'Objectif Personnel) */}
       {selectedMember && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: 'white', border: '2px solid #D2B795', borderRadius: '16px', padding: '20px', width: '90%', maxWidth: '360px', position: 'relative', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
             <button onClick={() => setSelectedMember(null)} style={{ position: 'absolute', top: '12px', right: '15px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#777' }}>✕</button>
-            
             <div style={{ textAlign: 'center', marginBottom: '12px', borderBottom: '1px solid #F0E6DA', paddingBottom: '10px' }}>
               <div style={{ fontSize: '32px', marginBottom: '5px' }}>{selectedMember.genre === 'homme' ? '👨' : '👩'}</div>
               <h3 style={{ margin: '5px 0', color: '#4A3E3D', fontSize: '18px' }}>{selectedMember.name}</h3>
@@ -229,67 +231,46 @@ export default function Reseau() {
                 {displayRole(selectedMember.role, selectedMember.genre)}
               </span>
             </div>
-
-            {/* 🎯 SECTION OBJECTIF PERSONNEL DIRECT (JAUGE DE PROGRESSION LUXE) */}
             <div style={{ background: '#FAF5EE', padding: '12px', borderRadius: '10px', border: '1px solid rgba(210,183,149,0.4)', marginBottom: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#4A3E3D', fontWeight: '700', marginBottom: '4px' }}>
                 <span>🎯 Objectif Personnel :</span>
                 <span style={{ color: '#8C6D4F' }}>{pctProgress}% Réalisé</span>
               </div>
-              <div style={{ fontSize: '13px', fontStyle: 'italic', color: '#666', marginBottom: '8px' }}>
-                "{selectedMember.objectif || "Non défini"}"
-              </div>
-              {/* Barre de jauge */}
+              <div style={{ fontSize: '13px', fontStyle: 'italic', color: '#666', marginBottom: '8px' }}>"{selectedMember.objectif || "Non défini"}"</div>
               <div style={{ width: '100%', height: '8px', background: '#E6DCD0', borderRadius: '4px', overflow: 'hidden' }}>
                 <div style={{ width: `${pctProgress}%`, height: '100%', background: 'linear-gradient(90deg, #D2B795, #8C6D4F)', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
               </div>
             </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
-              
-              {/* 📊 Chiffre d'Affaires */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #2d7a4a' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>📊 Chiffre d'Affaires :</span>
                 <span style={{ color: '#2d7a4a', fontWeight: '700', fontSize: '14px' }}>{selectedMember.ca || "0 €"}</span>
               </div>
-
-              {/* 📅 Événements */}
               <div style={{ background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>📅 Événements :</span>
                 <div style={{ color: '#4A3E3D', fontWeight: '600', marginTop: '2px' }}>{selectedMember.events || "Aucun"}</div>
               </div>
-
-              {/* 👑 Top Client */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>👤 Top Client :</span>
                 <span style={{ color: '#4A3E3D', fontWeight: '600' }}>{selectedMember.topClient || "Non défini"}</span>
               </div>
-
-              {/* 💄 Best-seller produit */}
               <div style={{ background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>💄 Best-seller produit :</span>
                 <div style={{ color: '#8C6D4F', fontWeight: '600', marginTop: '2px' }}>{selectedMember.bestSeller || "Non défini"}</div>
               </div>
-
-              {/* 🏆 Fidélité */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>🏆 Fidélité :</span>
                 <span style={{ color: '#B39266', fontWeight: '700' }}>{selectedMember.fidelity || "Niveau Initial"}</span>
               </div>
-
-              {/* 📈 Meilleures ventes */}
               <div style={{ background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>📈 Meilleures ventes :</span>
                 <div style={{ color: '#2d7a4a', fontWeight: '600', marginTop: '2px' }}>{selectedMember.meilleuresVentes || "Non défini"}</div>
               </div>
-
             </div>
-
             <button onClick={() => setSelectedMember(null)} style={{ width: '100%', padding: '11px', background: '#4A3E3D', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', marginTop: '12px', cursor: 'pointer' }}>Fermer</button>
           </div>
         </div>
       )}
-
     </div>
   );
 }
