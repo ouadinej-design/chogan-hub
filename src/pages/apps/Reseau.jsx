@@ -12,7 +12,7 @@ export default function Reseau() {
 
   // 1. Génération et injection automatique de l'organisation de la Limitless Team
   useEffect(() => {
-    const consultants Existants = store.get('consultants', []);
+    const consultantsExistants = store.get('consultants', []);
 
     // Si aucun conseiller n'est créé (à part l'admin), on injecte toute l'équipe d'un coup
     if (consultantsExistants.length === 0) {
@@ -104,14 +104,11 @@ export default function Reseau() {
     const consultants = getAllConsultants();
 
     const dynamicNodes = consultants.map(c => {
-      // Accès au store unique de chaque consultante via son ID ou prénom
       const userDb = userStore(c.id);
       
-      // Récupération et calcul du CA réel à partir de ses commandes sauvegardées
       const orders = userDb?.get('orders', []) || [];
       const totalCA = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
 
-      // Récupération de ses clients pour trouver son top client
       const clients = userDb?.get('clients', []) || [];
       let topClientName = "Aucun client";
       if (clients.length > 0) {
@@ -119,13 +116,11 @@ export default function Reseau() {
         topClientName = `${topC.firstName} ${topC.lastName}`;
       }
 
-      // Extraction des événements enregistrés dans son propre agenda
       const events = userDb?.get('agenda', []) || [];
       const eventTitles = events.length > 0 
         ? events.map(e => e.title).join(', ') 
         : 'Aucun atelier validé';
 
-      // Détermination automatique du niveau d'équipe global basé sur son CA
       let autoLevel = "Initial (0 pts)";
       if (totalCA >= 5000) autoLevel = "Platine (1500 pts)";
       else if (totalCA >= 3000) autoLevel = "Or (900 pts)";
@@ -141,7 +136,7 @@ export default function Reseau() {
         ca: `${totalCA.toLocaleString()} €`,
         caNum: totalCA,
         objNum: parseFloat(c.objNum) || 1000, 
-        objectif: c.objectif || "Fixer un objectif personnel", 
+        objectif: c.objectif || "Fixer un objective personnel", 
         events: eventTitles,
         fidelity: autoLevel,
         mdp: c.password || "Non défini",
@@ -151,7 +146,6 @@ export default function Reseau() {
       };
     });
 
-    // Ajout systématique du compte Administrateur au sommet
     const hasAdmin = dynamicNodes.some(n => n.id === 'admin-root');
     if (!hasAdmin) {
       dynamicNodes.unshift({
@@ -223,13 +217,11 @@ export default function Reseau() {
   return (
     <div style={{ padding: '15px', fontFamily: 'sans-serif', background: '#FAF7F2', minHeight: '100vh' }}>
       
-      {/* 👑 BOUTONS ONGLETS */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
         <button onClick={() => setActiveTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'arbre' ? '#D2B795' : 'white', color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre Généalogique</button>
         <button onClick={() => setActiveTab('tableau')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'tableau' ? '#D2B795' : 'white', color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>📊 Vue Globale & Mots de passe</button>
       </div>
 
-      {/* 🌳 VUE ARBRE */}
       {activeTab === 'arbre' && (
         <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '20px' }}>
           <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%', gap: '20px' }}>
@@ -238,10 +230,8 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* 📊 VUE TABLEAU RÉCAPITULATIF ADMINISTRATEUR */}
       {activeTab === 'tableau' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-          
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left', minWidth: '950px' }}>
               <thead>
@@ -278,7 +268,6 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* 👑 FENÊTRE MODALE DES PERFORMANCES */}
       {selectedMember && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: 'white', border: '2px solid #D2B795', borderRadius: '16px', padding: '20px', width: '90%', maxWidth: '360px', position: 'relative', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
@@ -292,7 +281,6 @@ export default function Reseau() {
               </span>
             </div>
 
-            {/* JAUGE DE PROGRESSION DYNAMIQUE */}
             <div style={{ background: '#FAF5EE', padding: '12px', borderRadius: '10px', border: '1px solid rgba(210,183,149,0.4)', marginBottom: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#4A3E3D', fontWeight: '700', marginBottom: '4px' }}>
                 <span>🎯 Objectif Personnel :</span>
@@ -307,7 +295,6 @@ export default function Reseau() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
-              
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #2d7a4a' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>📊 CA Réel Automatique :</span>
                 <span style={{ color: '#2d7a4a', fontWeight: '700', fontSize: '14px' }}>{selectedMember.ca}</span>
@@ -332,14 +319,12 @@ export default function Reseau() {
                 <span style={{ color: '#666', fontWeight: '500' }}>🏆 Statut Équipe :</span>
                 <span style={{ color: '#B39266', fontWeight: '700' }}>{selectedMember.fidelity}</span>
               </div>
-
             </div>
 
             <button onClick={() => setSelectedMember(null)} style={{ width: '100%', padding: '11px', background: '#4A3E3D', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', marginTop: '12px', cursor: 'pointer' }}>Fermer la fiche</button>
           </div>
         </div>
       )}
-
     </div>
   );
 }
