@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Reseau() {
+export default function Reseau({ onBack }) {
   const [activeTab, setActiveTab] = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
-  const [treeRootId, setTreeRootId] = useState(null); // Stocke l'ID du membre focus pour l'arbre
+  const [treeRootId, setTreeRootId] = useState(null);
 
   // États pour l'édition dans le tableau
   const [editingId, setEditingId] = useState(null);
@@ -102,7 +102,6 @@ export default function Reseau() {
     ]
   };
 
-  // Remplissage automatique pour les autres membres d'origine afin de garantir un affichage fluide
   const completeBaseData = () => {
     const backupNodes = [
       { id: "nawel", name: "Nawel", role: "Consultante", genre: "femme", parentId: "marie", caNum: 1850, objNum: 2000, mdp: "Nawel#Lmtl", fidelity: "Bronze (150 pts)", objectif: "Valider le palier à 2 000 €", topProduct: "Rouge à Lèvres Mat Intense", topCategory: "Coffrets Découverte", client: "Yasmine K." },
@@ -124,7 +123,7 @@ export default function Reseau() {
       { id: "yasmin", name: "Yasmin", role: "Consultante", genre: "femme", parentId: "nadia_n", caNum: 900, objNum: 1500, mdp: "Yasmin#Lmtl", fidelity: "Initial (40 pts)", objectif: "Passer le palier Bronze", topProduct: "Gloss Repulpant Éclat", topCategory: "Mini Kits Lèvres", client: "Sonia Aloui" },
       { id: "anita", name: "Anita", role: "Consultante", genre: "femme", parentId: "isabelle", caNum: 3800, objNum: 5000, mdp: "Anita#Lmtl", fidelity: "Argent (480 pts)", objectif: "Atteindre les 5 000 €", topProduct: "Eau Micellaire Apaisante", topCategory: "Démaquillants Douceur", client: "Manon Roussel" },
       { id: "khayra", name: "Khayra", role: "Consultante", genre: "femme", parentId: "isabelle", caNum: 2250, objNum: 3000, mdp: "Khayra#Lmtl", fidelity: "Argent (250 pts)", objectif: "Valider l'objectif Argent", topProduct: "Brume Fixatrice Teint", topCategory: "Incontournables Teint", client: "Houria B." },
-      { id: "yasmina", name: "Yasmina", role: "Consultante", genre: "femme", parentId: "blandine", caNum: 4100, objNum: 5000, mdp: "Yasmina#Lmtl", fidelity: "Or (510 pts)", joke: true, objectif: "Atteindre les 5 000 €", topProduct: "Concentré Anti-Tâches", topCategory: "Sérums Haute Performance", client: "Nathalie Robert" },
+      { id: "yasmina", name: "Yasmina", role: "Consultante", genre: "femme", parentId: "blandine", caNum: 4100, objNum: 5000, mdp: "Yasmina#Lmtl", fidelity: "Or (510 pts)", objectif: "Atteindre les 5 000 €", topProduct: "Concentré Anti-Tâches", topCategory: "Sérums Haute Performance", client: "Nathalie Robert" },
       { id: "adam", name: "Adam", role: "Consultante", genre: "homme", parentId: "blandine", caNum: 1980, objNum: 2500, mdp: "Adam#Lmtl", fidelity: "Bronze (160 pts)", objectif: "Atteindre les 2 500 €", topProduct: "Gel Douche Énergisant", topCategory: "Soins Corps Dynamisants", client: "Lucas Michel" }
     ];
 
@@ -162,7 +161,6 @@ export default function Reseau() {
     });
   };
 
-  // Exécution de l'injection des listes par défaut
   if(defaultTree.nodes.length === 3) { completeBaseData(); }
 
   const [tree, setTree] = useState(() => {
@@ -182,7 +180,6 @@ export default function Reseau() {
 
   const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
 
-  // 📈 Totaux globaux
   const totalCA = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.caNum) || 0), 0);
   const totalObjectifs = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.objNum) || 0), 0);
   const globalPerformance = totalObjectifs > 0 ? Math.min(100, Math.round((totalCA / totalObjectifs) * 100)) : 0;
@@ -233,7 +230,6 @@ export default function Reseau() {
     const cNum = parseFloat(newMember.caNum) || 0;
     const oNum = parseFloat(newMember.objNum) || 1000;
 
-    // Création automatique des top listes chronologiques pour les nouveaux inscrits
     const newNode = {
       id: Date.now().toString(),
       name: newMember.name.trim(),
@@ -304,6 +300,58 @@ export default function Reseau() {
   return (
     <div style={{ padding: '15px', fontFamily: 'sans-serif', background: '#FAF7F2', minHeight: '100vh' }}>
       
+      {/* 👑 TITRE ET NAVIGATION SUPÉRIEURE (Inspiré du style Commandes) */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px',
+        maxWidth: '1000px',
+        margin: '5px auto 25px auto',
+        padding: '0 5px'
+      }}>
+        <button
+          onClick={() => {
+            if (onBack) {
+              onBack();
+            } else {
+              alert("Retour vers l'écran d'accueil Chogan Hub");
+            }
+          }}
+          style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            background: 'white',
+            border: 'none',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: '#4A3E3D',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            transition: 'transform 0.2s'
+          }}
+        >
+          ←
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px' }}>👥</span>
+          <h1 style={{
+            fontSize: '22px',
+            fontWeight: '300',
+            textTransform: 'uppercase',
+            letterSpacing: '3px',
+            color: '#4A3E3D',
+            margin: 0,
+            fontFamily: 'serif'
+          }}>
+            Réseau
+          </h1>
+        </div>
+      </div>
+
       {/* 👑 DASHBOARD GENERAL */}
       <div style={{ 
         maxWidth: '1000px', margin: '0 auto 20px auto', background: 'white', 
@@ -332,7 +380,7 @@ export default function Reseau() {
         <button onClick={() => setActiveTab('gestion')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'gestion' ? '#D2B795' : 'white', color: activeTab === 'gestion' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>⚙️ Gestion</button>
       </div>
 
-      {/* 🌳 ARBRE (ACCUEIL) */}
+      {/* 🌳 ARBRE */}
       {activeTab === 'arbre' && (
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
           {treeRootId && (
@@ -352,7 +400,6 @@ export default function Reseau() {
       {/* ⚙️ GESTION */}
       {activeTab === 'gestion' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-          {/* Formulaire */}
           <div style={{ background: 'white', padding: '15px', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <h3 style={{ marginTop: 0, color: '#4A3E3D', textAlign: 'center', fontSize: '15px' }}>✨ Inscrire un nouveau membre</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -379,7 +426,7 @@ export default function Reseau() {
             </div>
           </div>
 
-          {/* Tableau Administrateur */}
+          {/* Tableau */}
           <div style={{ overflowX: 'auto', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left', minWidth: '950px' }}>
               <thead>
@@ -417,7 +464,7 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* 👑 MODAL ENRICHI AVEC ZOOM CHRONOLOGIQUE ET TOP 5 (Du plus récent au plus ancien) */}
+      {/* 👑 MODAL ENRICHI ACCUEIL DE ZOOM */}
       {selectedMember && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '10px' }}>
           <div style={{ background: 'white', border: '2px solid #D2B795', borderRadius: '16px', padding: '20px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
@@ -429,7 +476,7 @@ export default function Reseau() {
               <span style={{ background: '#F5EFE8', color: '#8C6D4F', padding: '4px 14px', borderRadius: '12px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>{displayRole(selectedMember.role, selectedMember.genre)}</span>
             </div>
 
-            {/* Barre d'objectif */}
+            {/* Objectif */}
             <div style={{ background: '#FAF5EE', padding: '12px', borderRadius: '10px', border: '1px solid rgba(210,183,149,0.4)', marginBottom: '15px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#4A3E3D', fontWeight: '700', marginBottom: '4px' }}>
                 <span>🎯 Objectif Personnel :</span>
@@ -441,18 +488,18 @@ export default function Reseau() {
               </div>
             </div>
 
-            {/* Chiffre d'Affaires Global en avant */}
+            {/* Chiffre d'Affaires */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F0F9F4', padding: '10px 14px', borderRadius: '10px', borderLeft: '4px solid #2d7a4a', marginBottom: '15px' }}>
               <span style={{ color: '#2d7a4a', fontWeight: '600', fontSize: '13px' }}>📊 Chiffre d'Affaires Actuel :</span>
               <span style={{ color: '#2d7a4a', fontWeight: '800', fontSize: '16px' }}>{selectedMember.ca || "0 €"}</span>
             </div>
 
-            {/* Chronologie Activité Détaillée */}
+            {/* Chronologie Listes */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               
-              {/* 🏆 FIDÉLITÉ & TOP 5 CLIENTS */}
+              {/* FIDÉLITÉ & TOP 5 CLIENTS */}
               <div style={{ border: '1px solid #E6DCD0', borderRadius: '10px', padding: '10px' }}>
-                <div style={{ fontWeight: '700', fontSize: '13px', color: '#8C6D4F', marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ fontWeight: '700', fontSize: '13px', color: '#8C6D4F', marginBottom: '6px' }}>
                   <span>🏆 Fidélité : {selectedMember.fidelity || "Niveau Initial"}</span>
                 </div>
                 <div style={{ fontSize: '11px', color: '#A18A68', fontWeight: '600', textTransform: 'uppercase', marginBottom: '4px' }}>👑 Top 5 Clients (Du + récent au - récent)</div>
@@ -466,7 +513,7 @@ export default function Reseau() {
                 </div>
               </div>
 
-              {/* 📅 ÉVÉNEMENTS (3 PROCHAINS) */}
+              {/* ÉVÉNEMENTS (3 PROCHAINS) */}
               <div style={{ border: '1px solid #E6DCD0', borderRadius: '10px', padding: '10px' }}>
                 <div style={{ fontWeight: '700', fontSize: '13px', color: '#4A3E3D', marginBottom: '6px' }}>📅 3 Prochains Événements Planning</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -479,10 +526,9 @@ export default function Reseau() {
                 </div>
               </div>
 
-              {/* 💄 TOP 5 BEST-SELLERS PRODUITS */}
+              {/* TOP 5 BEST-SELLERS */}
               <div style={{ border: '1px solid #E6DCD0', borderRadius: '10px', padding: '10px' }}>
                 <div style={{ fontWeight: '700', fontSize: '13px', color: '#8C6D4F', marginBottom: '4px' }}>💄 Top 5 Best-Sellers Produits</div>
-                <div style={{ fontSize: '10px', color: '#aaa', marginBottom: '6px' }}>Classement par ordre de vente récent</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {(selectedMember.bestSellersList || []).map((b, idx) => (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', background: '#FDFBF9', padding: '5px 8px', borderRadius: '4px', fontSize: '12px' }}>
@@ -493,7 +539,7 @@ export default function Reseau() {
                 </div>
               </div>
 
-              {/* 📈 TOP 5 MEILLEURES VENTES */}
+              {/* TOP 5 MEILLEURES VENTES */}
               <div style={{ border: '1px solid #E6DCD0', borderRadius: '10px', padding: '10px' }}>
                 <div style={{ fontWeight: '700', fontSize: '13px', color: '#4A3E3D', marginBottom: '4px' }}>📈 Top 5 Catégories & Volumes Enregistrés</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -508,7 +554,7 @@ export default function Reseau() {
 
             </div>
 
-            {/* Actions de la modal */}
+            {/* Actions */}
             <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 onClick={() => { setTreeRootId(selectedMember.id); setSelectedMember(null); }}
