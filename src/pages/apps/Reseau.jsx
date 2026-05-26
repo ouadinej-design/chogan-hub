@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 
-// Si vous avez besoin d'importer TableauTab et ArbreTab depuis le même dossier (apps), utilisez "./"
-// Exemple (ajustez selon vos vrais fichiers s'ils sont dans le même dossier) :
-// import TableauTab from './TableauTab.jsx';
-// import ArbreTab from './ArbreTab.jsx';
-
 export default function Reseau({ tree, saveTree, getCAByCur }) {
   const [activeTab, setActiveTab] = useState('arbre');
+  
+  // États locaux pour la gestion du tableau d'administration
+  const [search, setSearch] = useState('');
+  const [filterRole, setFilterRole] = useState('tous');
+  const [editId, setEditId] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '' });
 
-  // Rôles pour l'affichage selon le genre
+  // État pour le formulaire d'ajout d'un NOUVEAU membre
+  const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '' });
+
+  const ROLES_LIST = ['Consultante', 'Manager', 'Marraine', 'VIP'];
+
+  // Fonction pour adapter le rôle selon le genre
   const displayRole = (role, genre) => {
     if (genre === 'homme') {
       if (role === 'Consultante') return 'Consultant';
@@ -17,7 +23,79 @@ export default function Reseau({ tree, saveTree, getCAByCur }) {
     return role;
   };
 
-  // Fonction récursive pour afficher l'arbre généalogique
+  // ➕ AJOUTER UN NOUVEAU MEMBRE
+  const handleAddMember = (e) => {
+    e.preventDefault();
+    if (!newMember.name.trim()) return;
+
+    const newNode = {
+      id: Date.now().toString(), // Génère un identifiant unique
+      name: newMember.name.trim(),
+      role: newMember.role,
+      genre: newMember.genre,
+      parentId: newMember.parentId || null
+    };
+
+    saveTree({
+      nodes: [...tree.nodes, newNode]
+    });
+
+    // Réinitialiser le formulaire d'ajout
+    setNewMember({ name: '', role: 'Consultante', genre: 'femme', parentId: '' });
+  };
+
+  // ✏️ ÉDITION EN LIGNE
+  const startEdit = (n) => {
+    setEditId(n.id);
+    setEditForm({
+      name: n.name,
+      role: n.role || 'Consultante',
+      genre: n.genre || 'femme',
+      parentId: n.parentId || ''
+    });
+  };
+
+  const handleSaveRow = () => {
+    if (!editForm.name.trim()) return;
+    if (editForm.parentId === editId) {
+      alert("Un membre ne peut pas être son propre parrain/marraine !");
+      return;
+    }
+
+    saveTree({
+      nodes: tree.nodes.map(n => n.id === editId ? {
+        ...n,
+        name: editForm.name.trim(),
+        role: editForm.role,
+        genre: editForm.genre,
+        parentId: editForm.parentId || null
+      } : n)
+    });
+    setEditId(null);
+  };
+
+  // 🗑️ SUPPRESSION
+  const handleDeleteRow = (id) => {
+    if (!window.confirm('Supprimer définitivement ce membre ? Ses filleuls seront rattachés à la racine.')) return;
+    saveTree({
+      nodes: tree.nodes
+        .filter(n => n.id !== id)
+        .map(n => n.parentId === id ? { ...n, parentId: null } : n)
+    });
+    if (editId === id) setEditId(null);
+  };
+
+  // Filtrage et recherche pour le tableau
+  const filteredNodes = (tree?.nodes || [])
+    .filter(n => {
+      const matchesSearch = n.name.toLowerCase().includes(search.toLowerCase());
+      const displayedRoleName = displayRole(n.role, n.genre);
+      const matchesRole = filterRole === 'tous' || n.role === filterRole || displayedRoleName === filterRole;
+      return matchesSearch && matchesRole;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // 🌳 RENDU DE L'ARBRE (RÉCURSIF)
   const renderTreeNodes = (node) => {
     if (!node) return null;
 
@@ -38,7 +116,6 @@ export default function Reseau({ tree, saveTree, getCAByCur }) {
 
     return (
       <div key={node.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {/* CARTE MEMBRE */}
         <div style={{
           background: 'white',
           border: '1px solid #D2B795',
@@ -61,7 +138,6 @@ export default function Reseau({ tree, saveTree, getCAByCur }) {
           </div>
         </div>
 
-        {/* ENFANTS */}
         {enfants.length > 0 && (
           <div style={childrenContainerStyle}>
             {enfants.map(enfant => renderTreeNodes(enfant))}
@@ -74,13 +150,14 @@ export default function Reseau({ tree, saveTree, getCAByCur }) {
   const rootNode = tree?.nodes?.find(n => !n.parentId);
 
   return (
-    <div style={{ padding: '10px' }}>
-      {/* SOUS-ONGLETS INTERNES A L'APP RESEAU */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
+    <div style={{ padding: '10px', fontFamily: 'sans-serif' }}>
+      
+      {/* 👑 BOUTONS DES SOUS-ONGLETS */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', justifyContent: 'center' }}>
         <button 
           onClick={() => setActiveTab('arbre')}
           style={{
-            padding: '8px 16px', borderRadius: '20px', border: '1px solid #D2B795',
+            padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795',
             background: activeTab === 'arbre' ? '#D2B795' : 'white',
             color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600'
           }}
@@ -90,7 +167,7 @@ export default function Reseau({ tree, saveTree, getCAByCur }) {
         <button 
           onClick={() => setActiveTab('tableau')}
           style={{
-            padding: '8px 16px', borderRadius: '20px', border: '1px solid #D2B795',
+            padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795',
             background: activeTab === 'tableau' ? '#D2B795' : 'white',
             color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600'
           }}
@@ -99,17 +176,186 @@ export default function Reseau({ tree, saveTree, getCAByCur }) {
         </button>
       </div>
 
-      {/* CONTENU DE L'ONGLET SÉLECTIONNÉ */}
-      {activeTab === 'arbre' ? (
+      {/* 🌳 CONTENU : ONGLET ARBRE */}
+      {activeTab === 'arbre' && (
         <div style={{ width: '100%', overflowX: 'auto', padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
-          {rootNode ? renderTreeNodes(rootNode) : <p>Aucun membre détecté.</p>}
-        </div>
-      ) : (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-          {/* Le composant TableauTab peut être appelé directement ici s'il est importé */}
-          <p>Tableau de gestion prêt pour l'administration.</p>
+          {rootNode ? renderTreeNodes(rootNode) : (
+            <p style={{ color: '#666', fontStyle: 'italic' }}>
+              Aucun membre détecté. Allez dans l'onglet "Vue Tableau (Admin)" pour ajouter le premier membre racine.
+            </p>
+          )}
         </div>
       )}
+
+      {/* 📊 CONTENU : ONGLET TABLEAU (ADMIN) */}
+      {activeTab === 'tableau' && (
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          
+          {/* 🔥 FORMULAIRE D'AJOUT DE MEMBRE */}
+          <div style={{ background: '#FDFBF7', border: '1px solid #D2B795', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
+            <h3 style={{ marginTop: 0, color: '#4A3E3D', marginBottom: '15px' }}>✨ Ajouter un nouveau membre à la Limitless Team</h3>
+            <form onSubmit={handleAddMember} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div style={{ flex: 2, minWidth: '180px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Nom / Prénom</label>
+                <input 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
+                  placeholder="Ex: Sarah..."
+                  value={newMember.name}
+                  onChange={e => setNewMember(p => ({ ...p, name: e.target.value }))}
+                />
+              </div>
+
+              <div style={{ flex: 1, minWidth: '110px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Genre</label>
+                <select 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', background: 'white' }}
+                  value={newMember.genre}
+                  onChange={e => setNewMember(p => ({ ...p, genre: e.target.value }))}
+                >
+                  <option value="femme">👩 Femme</option>
+                  <option value="homme">👨 Homme</option>
+                </select>
+              </div>
+
+              <div style={{ flex: 1, minWidth: '130px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Statut</label>
+                <select 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', background: 'white' }}
+                  value={newMember.role}
+                  onChange={e => setNewMember(p => ({ ...p, role: e.target.value }))}
+                >
+                  {ROLES_LIST.map(r => <option key={r} value={r}>{r === 'Consultante' ? 'Consultante / Consultant' : r === 'Marraine' ? 'Marraine / Parrain' : r}</option>)}
+                </select>
+              </div>
+
+              <div style={{ flex: 1.5, minWidth: '160px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Rattacher à (Parrain)</label>
+                <select 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', background: 'white' }}
+                  value={newMember.parentId}
+                  onChange={e => setNewMember(p => ({ ...p, parentId: e.target.value }))}
+                >
+                  <option value="">— Aucun (Membre Racine) —</option>
+                  {tree?.nodes?.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <button type="submit" style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+                ➕ Ajouter
+              </button>
+            </form>
+          </div>
+
+          {/* 🔍 BARRE DE FILTRES DU TABLEAU */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+            <input 
+              style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '1px solid #D2B795' }}
+              placeholder="🔍 Rechercher dans le tableau..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+            />
+            <select
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #D2B795', background: 'white' }}
+              value={filterRole}
+              onChange={e => setFilterRole(e.target.value)}
+            >
+              <option value="tous">👑 Tous les rôles</option>
+              <option value="Consultante">Consultantes / Consultants</option>
+              <option value="Marraine">Marraines / Parrains</option>
+              <option value="Manager">Managers</option>
+              <option value="VIP">VIP</option>
+            </select>
+          </div>
+
+          {/* 📊 TABLEAU STYLE EXCEL */}
+          <div style={{ overflowX: 'auto', background: 'white', borderRadius: '12px', border: '1px solid #D2B795' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: '#F5EFE8', color: '#4A3E3D' }}>
+                  <th style={{ padding: '12px 10px' }}>Membre</th>
+                  <th style={{ padding: '12px 10px' }}>Genre</th>
+                  <th style={{ padding: '12px 10px' }}>Rôle</th>
+                  <th style={{ padding: '12px 10px' }}>Parrain / Marraine</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredNodes.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#999' }}>Aucun membre enregistré pour le moment.</td>
+                  </tr>
+                ) : (
+                  filteredNodes.map(n => {
+                    const isEditing = editId === n.id;
+                    const currentParent = tree.nodes.find(p => p.id === n.parentId);
+
+                    return (
+                      <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.2)', background: isEditing ? 'rgba(214,175,55,0.04)' : 'transparent' }}>
+                        
+                        {/* 1. NOM */}
+                        <td style={{ padding: '12px 10px', fontWeight: '600' }}>
+                          {isEditing ? (
+                            <input style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37', width: '100%' }} value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
+                          ) : n.name}
+                        </td>
+
+                        {/* 2. GENRE */}
+                        <td style={{ padding: '12px 10px' }}>
+                          {isEditing ? (
+                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.genre} onChange={e => setEditForm(p => ({ ...p, genre: e.target.value }))}>
+                              <option value="femme">👩 Femme</option>
+                              <option value="homme">👨 Homme</option>
+                            </select>
+                          ) : (n.genre === 'homme' ? '👨 Homme' : '👩 Femme')}
+                        </td>
+
+                        {/* 3. RÔLE */}
+                        <td style={{ padding: '12px 10px' }}>
+                          {isEditing ? (
+                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.role} onChange={e => setEditForm(p => ({ ...p, role: e.target.value }))}>
+                              {ROLES_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                          ) : displayRole(n.role, n.genre)}
+                        </td>
+
+                        {/* 4. PARRAIN */}
+                        <td style={{ padding: '12px 10px', color: '#666' }}>
+                          {isEditing ? (
+                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.parentId} onChange={e => setEditForm(p => ({ ...p, parentId: e.target.value }))}>
+                              <option value="">— Aucun —</option>
+                              {tree.nodes.filter(cand => cand.id !== n.id).map(cand => <option key={cand.id} value={cand.id}>{cand.name}</option>)}
+                            </select>
+                          ) : (currentParent ? currentParent.name : 'Aucun')}
+                        </td>
+
+                        {/* 5. ACTIONS */}
+                        <td style={{ padding: '12px 10px', textAlign: 'center' }}>
+                          {isEditing ? (
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                              <button onClick={handleSaveRow} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>💾</button>
+                              <button onClick={() => setEditId(null)} style={{ background: '#ccc', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                              <button onClick={() => startEdit(n)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
+                              <button onClick={() => handleDeleteRow(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
+                            </div>
+                          )}
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      )}
+
     </div>
   );
 }
