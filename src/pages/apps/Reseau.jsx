@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useCloudData } from '../../lib/useCloudData';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Reseau() {
@@ -10,47 +11,19 @@ export default function Reseau() {
   const [editForm, setEditForm]             = useState({});
   const [lastRefresh, setLastRefresh]       = useState(Date.now());
 
-  // ── Lecture live depuis localStorage ──────────────────────────
-  const readTree = useCallback(() => {
-    try { return JSON.parse(localStorage.getItem('limitless_team_tree_v5') || '{"nodes":[]}'); }
-    catch { return { nodes: [] }; }
-  }, []);
+  const [tree, setTree_]    = useCloudData('limitless_team_tree_v5', {nodes:[]});
+  const [sales]             = useCloudData('le_sales', []);
+  const [events]            = useCloudData('le_cevents', []);
 
-  const readSales = useCallback(() => {
-    try { return JSON.parse(localStorage.getItem('le_sales') || '[]'); }
-    catch { return []; }
-  }, []);
-
-  const readEvents = useCallback(() => {
-    try { return JSON.parse(localStorage.getItem('le_cevents') || '[]'); }
-    catch { return []; }
-  }, []);
-
-  const [tree, setTree]     = useState(readTree);
-  const [sales, setSales]   = useState(readSales);
-  const [events, setEvents] = useState(readEvents);
-
-  // ── Auto-refresh : écoute les changements localStorage ────────
-  const refresh = useCallback(() => {
-    setTree(readTree());
-    setSales(readSales());
-    setEvents(readEvents());
-    setLastRefresh(Date.now());
-  }, [readTree, readSales, readEvents]);
-
+  // Auto-refresh via useCloudData + storage events
   useEffect(() => {
-    // Écouter les changements depuis d'autres onglets
-    window.addEventListener('storage', refresh);
-    // Polling toutes les 3s pour les changements du même onglet
-    const interval = setInterval(refresh, 3000);
-    return () => { window.removeEventListener('storage', refresh); clearInterval(interval); };
-  }, [refresh]);
+    const onStorage = () => setLastRefresh(Date.now());
+    window.addEventListener('storage', onStorage);
+    const interval = setInterval(() => setLastRefresh(Date.now()), 3000);
+    return () => { window.removeEventListener('storage', onStorage); clearInterval(interval); };
+  }, []);
 
-  // ── Persistance arbre ─────────────────────────────────────────
-  const persistTree = (newTree) => {
-    setTree(newTree);
-    localStorage.setItem('limitless_team_tree_v5', JSON.stringify(newTree));
-  };
+  const persistTree = (newTree) => { setTree_(newTree); };
 
   // ── Filtrage selon le rôle ────────────────────────────────────
   const getVisibleNodes = () => {
