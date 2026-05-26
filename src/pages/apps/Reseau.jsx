@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
@@ -29,6 +28,7 @@ export default function Reseau() {
     ];
     store.set('consultants', equipe);
     setRefreshKey(prev => prev + 1);
+    alert("✅ Structure équipe synchronisée !");
   };
 
   useEffect(() => {
@@ -37,33 +37,24 @@ export default function Reseau() {
       const userDb = userStore(c.id);
       const orders = userDb?.get('orders', []) || [];
       const caNum = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
-      const clients = userDb?.get('clients', []) || [];
-      const top = clients.length > 0 ? [...clients].sort((a,b) => b.totalSpent - a.totalSpent)[0] : {firstName: "Aucun"};
       const pct = Math.min(100, Math.round((caNum / (c.objNum || 1000)) * 100));
-      return { ...c, caNum, ca: `${caNum.toLocaleString()} €`, pct, top: top.firstName };
+      return { ...c, caNum, ca: `${caNum.toLocaleString()} €`, pct };
     });
     setTreeNodes(data);
   }, [refreshKey]);
 
-  const MemberCard = ({ m }) => (
-    <div style={{ background: 'white', border: '1px solid #E0D0C0', borderRadius: '12px', padding: '12px', width: '160px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', textAlign: 'center' }}>
-      <div style={{ fontWeight: 'bold', color: '#4A3E3D' }}>{m.name}</div>
-      <div style={{ fontSize: '10px', color: '#8C6D4F', textTransform: 'uppercase', marginBottom: '8px' }}>{m.role}</div>
-      <div style={{ fontSize: '12px', color: '#2d7a4a', fontWeight: 'bold' }}>{m.ca}</div>
-      <div style={{ width: '100%', height: '4px', background: '#eee', margin: '6px 0', borderRadius: '2px' }}>
-        <div style={{ width: `${m.pct}%`, height: '100%', background: '#D2B795' }} />
-      </div>
-      <div style={{ fontSize: '9px', color: '#666' }}>Top Client: {m.top}</div>
-    </div>
-  );
-
+  // Fonction récursive améliorée pour afficher TOUT le réseau
   const renderNodes = (parentId) => {
     const children = treeNodes.filter(n => n.parentId === parentId);
+    if (children.length === 0) return null;
     return (
-      <div style={{ display: 'flex', gap: '15px', marginTop: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ marginLeft: '20px', borderLeft: '2px solid #D2B795', paddingLeft: '10px' }}>
         {children.map(child => (
-          <div key={child.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <MemberCard m={child} />
+          <div key={child.id} style={{ marginTop: '10px' }}>
+            <div style={{ padding: '8px', background: 'white', borderRadius: '8px', border: '1px solid #E0D0C0', display: 'inline-block' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{child.name}</div>
+              <div style={{ fontSize: '10px', color: '#8C6D4F' }}>{child.role} • {child.ca}</div>
+            </div>
             {renderNodes(child.id)}
           </div>
         ))}
@@ -74,19 +65,24 @@ export default function Reseau() {
   return (
     <div style={{ padding: '20px', background: '#FAF7F2', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button onClick={() => setActiveTab('arbre')} style={{ flex: 1, padding: '10px', borderRadius: '20px', border: 'none', background: activeTab === 'arbre' ? '#4A3E3D' : '#D2B795', color: 'white' }}>🌳 Arbre</button>
-        <button onClick={() => setActiveTab('tableau')} style={{ flex: 1, padding: '10px', borderRadius: '20px', border: 'none', background: activeTab === 'tableau' ? '#4A3E3D' : '#D2B795', color: 'white' }}>📊 Tableau</button>
+        <button onClick={() => setActiveTab('arbre')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: activeTab === 'arbre' ? '#4A3E3D' : '#D2B795', color: 'white' }}>🌳 Arbre</button>
+        <button onClick={() => setActiveTab('tableau')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: activeTab === 'tableau' ? '#4A3E3D' : '#D2B795', color: 'white' }}>📊 Tableau</button>
       </div>
 
       <button onClick={injecterEquipeComplete} style={{ width: '100%', padding: '10px', background: '#4A3E3D', color: '#D2B795', border: 'none', borderRadius: '8px', marginBottom: '20px' }}>⚡ Synchroniser les données</button>
 
       {activeTab === 'arbre' ? (
-        <div>{treeNodes.filter(n => !n.parentId).map(root => (<div key={root.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><MemberCard m={root} />{renderNodes(root.id)}</div>))}</div>
+        <div>{treeNodes.filter(n => !n.parentId).map(root => (
+          <div key={root.id}>
+            <div style={{ padding: '10px', background: '#F5EFE8', borderRadius: '8px', display: 'inline-block', fontWeight: 'bold' }}>{root.name} ({root.role})</div>
+            {renderNodes(root.id)}
+          </div>
+        ))}</div>
       ) : (
-        <div style={{ overflowX: 'auto', background: 'white', borderRadius: '12px' }}>
+        <div style={{ background: 'white', borderRadius: '8px', overflowX: 'auto' }}>
           <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-            <thead><tr style={{ background: '#F5EFE8' }}><th style={{ padding: '10px' }}>Nom</th><th>CA</th><th>Progression</th><th>Mdp</th></tr></thead>
-            <tbody>{treeNodes.map(n => <tr key={n.id} style={{ borderBottom: '1px solid #eee' }}><td style={{ padding: '10px' }}>{n.name}</td><td>{n.ca}</td><td>{n.pct}%</td><td>{n.mdp}</td></tr>)}</tbody>
+            <thead><tr style={{ background: '#F5EFE8' }}><th style={{ padding: '8px' }}>Nom</th><th>Rôle</th><th>CA</th><th>Progression</th></tr></thead>
+            <tbody>{treeNodes.map(n => <tr key={n.id} style={{ borderBottom: '1px solid #eee' }}><td style={{ padding: '8px' }}>{n.name}</td><td>{n.role}</td><td>{n.ca}</td><td>{n.pct}%</td></tr>)}</tbody>
           </table>
         </div>
       )}
