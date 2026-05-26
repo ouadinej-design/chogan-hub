@@ -5,7 +5,6 @@ import { userStore, store } from '../../utils/storage';
 
 export default function Reseau() {
   const { getAllConsultants } = useAuth();
-  const { log } = useData();
   const [activeTab, setActiveTab] = useState('arbre');
   const [treeNodes, setTreeNodes] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -28,34 +27,34 @@ export default function Reseau() {
     ];
     store.set('consultants', equipe);
     setRefreshKey(prev => prev + 1);
-    alert("✅ Structure équipe synchronisée !");
   };
 
   useEffect(() => {
     const rawNodes = store.get('consultants', []);
-    const data = rawNodes.map(c => {
-      const userDb = userStore(c.id);
-      const orders = userDb?.get('orders', []) || [];
-      const caNum = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
-      const pct = Math.min(100, Math.round((caNum / (c.objNum || 1000)) * 100));
-      return { ...c, caNum, ca: `${caNum.toLocaleString()} €`, pct };
-    });
-    setTreeNodes(data);
+    setTreeNodes(rawNodes);
   }, [refreshKey]);
 
-  // Fonction récursive améliorée pour afficher TOUT le réseau
-  const renderNodes = (parentId) => {
+  // Design compact des cartes
+  const Card = ({ node }) => (
+    <div style={{ 
+      background: 'white', border: '1px solid #D2B795', borderRadius: '8px', 
+      padding: '8px', margin: '4px', minWidth: '100px', textAlign: 'center',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)' 
+    }}>
+      <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{node.name}</div>
+      <div style={{ fontSize: '10px', color: '#8C6D4F' }}>{node.role}</div>
+    </div>
+  );
+
+  const renderTree = (parentId) => {
     const children = treeNodes.filter(n => n.parentId === parentId);
     if (children.length === 0) return null;
     return (
-      <div style={{ marginLeft: '20px', borderLeft: '2px solid #D2B795', paddingLeft: '10px' }}>
+      <div style={{ marginLeft: '15px', borderLeft: '1px solid #D2B795' }}>
         {children.map(child => (
-          <div key={child.id} style={{ marginTop: '10px' }}>
-            <div style={{ padding: '8px', background: 'white', borderRadius: '8px', border: '1px solid #E0D0C0', display: 'inline-block' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{child.name}</div>
-              <div style={{ fontSize: '10px', color: '#8C6D4F' }}>{child.role} • {child.ca}</div>
-            </div>
-            {renderNodes(child.id)}
+          <div key={child.id}>
+            <Card node={child} />
+            {renderTree(child.id)}
           </div>
         ))}
       </div>
@@ -63,28 +62,31 @@ export default function Reseau() {
   };
 
   return (
-    <div style={{ padding: '20px', background: '#FAF7F2', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+    <div style={{ padding: '20px', background: '#FAF7F2', minHeight: '100vh' }}>
+      <button onClick={injecterEquipeComplete} style={{ width: '100%', padding: '10px', background: '#4A3E3D', color: '#D2B795', marginBottom: '20px', borderRadius: '8px', border: 'none' }}>
+        ⚡ Recharger l'équipe
+      </button>
+      
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button onClick={() => setActiveTab('arbre')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: activeTab === 'arbre' ? '#4A3E3D' : '#D2B795', color: 'white' }}>🌳 Arbre</button>
-        <button onClick={() => setActiveTab('tableau')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: activeTab === 'tableau' ? '#4A3E3D' : '#D2B795', color: 'white' }}>📊 Tableau</button>
+        <button onClick={() => setActiveTab('arbre')} style={{ flex: 1, padding: '10px' }}>Arbre</button>
+        <button onClick={() => setActiveTab('tableau')} style={{ flex: 1, padding: '10px' }}>Tableau</button>
       </div>
 
-      <button onClick={injecterEquipeComplete} style={{ width: '100%', padding: '10px', background: '#4A3E3D', color: '#D2B795', border: 'none', borderRadius: '8px', marginBottom: '20px' }}>⚡ Synchroniser les données</button>
-
       {activeTab === 'arbre' ? (
-        <div>{treeNodes.filter(n => !n.parentId).map(root => (
-          <div key={root.id}>
-            <div style={{ padding: '10px', background: '#F5EFE8', borderRadius: '8px', display: 'inline-block', fontWeight: 'bold' }}>{root.name} ({root.role})</div>
-            {renderNodes(root.id)}
-          </div>
-        ))}</div>
-      ) : (
-        <div style={{ background: 'white', borderRadius: '8px', overflowX: 'auto' }}>
-          <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-            <thead><tr style={{ background: '#F5EFE8' }}><th style={{ padding: '8px' }}>Nom</th><th>Rôle</th><th>CA</th><th>Progression</th></tr></thead>
-            <tbody>{treeNodes.map(n => <tr key={n.id} style={{ borderBottom: '1px solid #eee' }}><td style={{ padding: '8px' }}>{n.name}</td><td>{n.role}</td><td>{n.ca}</td><td>{n.pct}%</td></tr>)}</tbody>
-          </table>
+        <div>
+          {treeNodes.filter(n => !n.parentId).map(root => (
+            <div key={root.id}>
+              <Card node={root} />
+              {renderTree(root.id)}
+            </div>
+          ))}
         </div>
+      ) : (
+        <table style={{ width: '100%', background: 'white' }}>
+          <tbody>
+            {treeNodes.map(n => <tr key={n.id}><td>{n.name}</td><td>{n.role}</td></tr>)}
+          </tbody>
+        </table>
       )}
     </div>
   );
