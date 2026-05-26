@@ -3,8 +3,13 @@ import React, { useState, useEffect } from 'react';
 export default function Reseau() {
   const [activeTab, setActiveTab] = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
+  const [treeRootId, setTreeRootId] = useState(null); // Stocke l'ID du membre focus pour l'arbre
 
-  // 🏢 Structure complète avec indicateurs commerciaux + Objectifs Personnels & Progressions
+  // États pour l'édition dans le tableau
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
+
+  // 🏢 Structure complète de base
   const defaultTree = {
     nodes: [
       { id: "kheira_b", name: "Kheira BELARIBI", role: "Manager", genre: "femme", parentId: null, ca: "12 500 €", caNum: 12500, objNum: 15000, objectif: "Atteindre 15 000 € de CA d'équipe", events: "Séminaire Annuel, Masterclass Or", fidelity: "Platine (1500 pts)", mdp: "Limitless*2026A", topClient: "Sarah Benali", bestSeller: "Parfum Prestige Luxury", meilleuresVentes: "Pack Élite & Soins Éclat" },
@@ -51,7 +56,7 @@ export default function Reseau() {
 
   const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
 
-  // 📈 Calculs automatiques en temps réel pour le Dashboard Global
+  // 📈 Totaux globaux du tableau de bord
   const totalCA = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.caNum) || 0), 0);
   const totalObjectifs = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.objNum) || 0), 0);
   const globalPerformance = totalObjectifs > 0 ? Math.min(100, Math.round((totalCA / totalObjectifs) * 100)) : 0;
@@ -64,29 +69,40 @@ export default function Reseau() {
     return role;
   };
 
-  // 📝 Mise à jour éditable du CA en temps réel
-  const handleUpdateCA = (id, newVolume) => {
-    const numericValue = parseFloat(newVolume) || 0;
+  // 🔄 Action de Réinitialisation complète du réseau
+  const handleResetTree = () => {
+    if (window.confirm("⚠️ Êtes-vous sûr de vouloir réinitialiser tout le réseau aux valeurs d'origine ? Toutes vos saisies locales seront effacées.")) {
+      setTree(defaultTree);
+      setTreeRootId(null);
+      setEditingId(null);
+    }
+  };
+
+  // ✏️ Lancement du mode édition sur une ligne
+  const startEditing = (member) => {
+    setEditingId(member.id);
+    setEditForm({ ...member });
+  };
+
+  // 💾 Enregistrement de la ligne modifiée
+  const saveRowEdits = () => {
+    const cNum = parseFloat(editForm.caNum) || 0;
+    const oNum = parseFloat(editForm.objNum) || 0;
+    
     const updatedNodes = tree.nodes.map(node => {
-      if (node.id === id) {
+      if (node.id === editingId) {
         return {
-          ...node,
-          caNum: numericValue,
-          ca: `${numericValue.toLocaleString()} €`
+          ...editForm,
+          caNum: cNum,
+          objNum: oNum,
+          ca: `${cNum.toLocaleString()} €`
         };
       }
       return node;
     });
-    setTree({ nodes: updatedNodes });
 
-    // Synchronisation instantanée du modal s'il est ouvert
-    if (selectedMember && selectedMember.id === id) {
-      setSelectedMember(prev => ({
-        ...prev,
-        caNum: numericValue,
-        ca: `${numericValue.toLocaleString()} €`
-      }));
-    }
+    setTree({ nodes: updatedNodes });
+    setEditingId(null);
   };
 
   const handleAddMember = () => {
@@ -144,6 +160,15 @@ export default function Reseau() {
     );
   };
 
+  // Trouver les nœuds de départ pour l'arbre d'accueil selon le focus actif
+  const visibleRoots = treeRootId 
+    ? tree.nodes.filter(n => n.id === treeRootId)
+    : tree.nodes.filter(n => !n.parentId);
+
+  // Déterminer le parent du niveau supérieur actuel pour l'affichage du bouton retour
+  const currentFocusedNode = treeRootId ? tree.nodes.find(n => n.id === treeRootId) : null;
+  const parentNodeOfFocused = currentFocusedNode ? tree.nodes.find(n => n.id === currentFocusedNode.parentId) : null;
+
   const pctProgress = selectedMember 
     ? Math.min(100, Math.round((selectedMember.caNum / (selectedMember.objNum || 1)) * 100)) 
     : 0;
@@ -179,11 +204,29 @@ export default function Reseau() {
         <button onClick={() => setActiveTab('gestion')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'gestion' ? '#D2B795' : 'white', color: activeTab === 'gestion' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>⚙️ Gestion</button>
       </div>
 
-      {/* 🌳 ONGLET "ARBRE" */}
+      {/* 🌳 ONGLET "ARBRE" (ACCUEIL) */}
       {activeTab === 'arbre' && (
-        <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '20px' }}>
-          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%', gap: '20px' }}>
-            {tree.nodes.filter(n => !n.parentId).map(root => renderTreeNodes(root))}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+          
+          {/* Bouton de retour au niveau supérieur si filtre actif */}
+          {treeRootId && (
+            <button 
+              onClick={() => setTreeRootId(currentFocusedNode.parentId)}
+              style={{
+                background: 'white', border: '1px solid #8C6D4F', color: '#8C6D4F',
+                padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
+              }}
+            >
+              ⬅️ Revenir au niveau supérieur ({parentNodeOfFocused ? parentNodeOfFocused.name : "Racine Totale"})
+            </button>
+          )}
+
+          <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '20px', textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%', gap: '20px' }}>
+              {visibleRoots.map(root => renderTreeNodes(root))}
+            </div>
           </div>
         </div>
       )}
@@ -229,7 +272,7 @@ export default function Reseau() {
             </div>
           </div>
 
-          {/* Grand Tableau Éditable Administration */}
+          {/* Grand Tableau Récapitulatif Administration */}
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left', minWidth: '950px' }}>
               <thead>
@@ -237,42 +280,75 @@ export default function Reseau() {
                   <th style={{ padding: '12px' }}>Conseiller(e)</th>
                   <th style={{ padding: '12px' }}>Rôle</th>
                   <th style={{ padding: '12px', color: '#8C6D4F' }}>🔑 Mot de Passe</th>
-                  <th style={{ padding: '12px' }}>Chiffre d'Affaires (€)</th>
+                  <th style={{ padding: '12px' }}>Chiffre d'Affaires</th>
                   <th style={{ padding: '12px' }}>Objectif Personnel</th>
                   <th style={{ padding: '12px' }}>Taux Réal.</th>
+                  <th style={{ padding: '12px', textCenter: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {tree.nodes.map(n => {
-                  const pct = Math.min(100, Math.round((n.caNum / (n.objNum || 1)) * 100));
+                  const isEditing = editingId === n.id;
+                  const currentForm = isEditing ? editForm : n;
+                  const pct = Math.min(100, Math.round((currentForm.caNum / (currentForm.objNum || 1)) * 100));
+
                   return (
-                    <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.15)' }}>
+                    <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.15)', background: isEditing ? '#FFFDF9' : 'none' }}>
                       <td style={{ padding: '12px', fontWeight: '600', color: '#4A3E3D' }}>
-                        {n.genre === 'homme' ? '👨 ' : '👩 '}{n.name}
-                      </td>
-                      <td style={{ padding: '12px' }}>{displayRole(n.role, n.genre)}</td>
-                      <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold', color: '#B39266' }}>
-                        {n.mdp || "Non défini"}
+                        {isEditing ? (
+                          <input style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D2B795', width: '140px' }} value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} />
+                        ) : (
+                          <>{n.genre === 'homme' ? '👨 ' : '👩 '}{n.name}</>
+                        )}
                       </td>
                       <td style={{ padding: '12px' }}>
-                        {/* Champ d'édition directe de CA */}
-                        <input 
-                          type="number"
-                          value={n.caNum}
-                          onChange={(e) => handleUpdateCA(n.id, e.target.value)}
-                          style={{
-                            width: '100px',
-                            padding: '6px 10px',
-                            borderRadius: '6px',
-                            border: '1px solid #D2B795',
-                            fontWeight: '600',
-                            color: '#2d7a4a',
-                            background: '#FAF7F2'
-                          }}
-                        />
+                        {isEditing ? (
+                          <select style={{ padding: '5px', borderRadius: '6px', border: '1px solid #D2B795' }} value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})}>
+                            <option value="Consultante">Consultante</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Marraine">Marraine</option>
+                          </select>
+                        ) : (
+                          displayRole(n.role, n.genre)
+                        )}
                       </td>
-                      <td style={{ padding: '12px', color: '#666', fontSize: '12px' }}>{n.objectif || "—"}</td>
+                      <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold', color: '#B39266' }}>
+                        {isEditing ? (
+                          <input style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D2B795', width: '120px' }} value={editForm.mdp} onChange={e => setEditForm({...editForm, mdp: e.target.value})} />
+                        ) : (
+                          n.mdp || "Non défini"
+                        )}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <input type="number" style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D2B795', width: '80px' }} value={editForm.caNum} onChange={e => setEditForm({...editForm, caNum: e.target.value})} /> €
+                          </div>
+                        ) : (
+                          <span style={{ color: '#2d7a4a', fontWeight: '600' }}>{n.ca || "0 €"}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <input style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D2B795', width: '150px' }} value={editForm.objectif} placeholder="Description" onChange={e => setEditForm({...editForm, objectif: e.target.value})} />
+                            <input type="number" style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D2B795', width: '80px' }} value={editForm.objNum} placeholder="Montant €" onChange={e => setEditForm({...editForm, objNum: e.target.value})} />
+                          </div>
+                        ) : (
+                          <span style={{ color: '#666', fontSize: '12px' }}>{n.objectif || "—"}</span>
+                        )}
+                      </td>
                       <td style={{ padding: '12px', fontWeight: '700', color: pct >= 80 ? '#2d7a4a' : '#8C6D4F' }}>{pct}%</td>
+                      <td style={{ padding: '12px' }}>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button onClick={saveRowEdits} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>💾</button>
+                            <button onClick={() => setEditingId(null)} style={{ background: '#777', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer' }}>❌</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => startEditing(n)} style={{ background: '#FAF5EE', border: '1px solid #D2B795', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', color: '#8C6D4F' }}>✏️ Modifier</button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -280,10 +356,24 @@ export default function Reseau() {
             </table>
           </div>
 
+          {/* Bouton Réinitialisation Globale */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+            <button 
+              onClick={handleResetTree}
+              style={{
+                background: 'white', color: '#b93c3c', border: '1px solid #b93c3c',
+                padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600',
+                transition: 'all 0.2s'
+              }}
+            >
+              ⚠️ Réinitialiser l'organisation d'origine
+            </button>
+          </div>
+
         </div>
       )}
 
-      {/* 👑 MODAL DE DÉTAIL ENRICHI */}
+      {/* 👑 MODAL DES PERFORMANCES (Avec Zoom Réseau) */}
       {selectedMember && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: 'white', border: '2px solid #D2B795', borderRadius: '16px', padding: '20px', width: '90%', maxWidth: '360px', position: 'relative', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
@@ -311,42 +401,42 @@ export default function Reseau() {
               </div>
             </div>
 
-            {/* Résumé enrichi demandé */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
-              
+            {/* Indicateurs clefs */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #2d7a4a' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>📊 Chiffre d'Affaires :</span>
                 <span style={{ color: '#2d7a4a', fontWeight: '700', fontSize: '14px' }}>{selectedMember.ca || "0 €"}</span>
               </div>
-
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>🏆 Fidélité :</span>
                 <span style={{ color: '#B39266', fontWeight: '700' }}>{selectedMember.fidelity || "Niveau Initial"}</span>
               </div>
-
               <div style={{ background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>💄 Best-seller produit :</span>
                 <div style={{ color: '#8C6D4F', fontWeight: '600', marginTop: '2px' }}>{selectedMember.bestSeller || "Non défini"}</div>
               </div>
-
               <div style={{ background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>📈 Meilleures ventes :</span>
                 <div style={{ color: '#2d7a4a', fontWeight: '600', marginTop: '2px' }}>{selectedMember.meilleuresVentes || "Non défini"}</div>
               </div>
-
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
                 <span style={{ color: '#666', fontWeight: '500' }}>👤 Top Client :</span>
                 <span style={{ color: '#4A3E3D', fontWeight: '600' }}>{selectedMember.topClient || "Non défini"}</span>
               </div>
-
-              <div style={{ background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px' }}>
-                <span style={{ color: '#666', fontWeight: '500' }}>📅 Événements :</span>
-                <div style={{ color: '#4A3E3D', fontWeight: '600', marginTop: '2px' }}>{selectedMember.events || "Aucun"}</div>
-              </div>
-
             </div>
 
-            <button onClick={() => setSelectedMember(null)} style={{ width: '100%', padding: '11px', background: '#4A3E3D', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', marginTop: '12px', cursor: 'pointer' }}>Fermer</button>
+            {/* Bouton Zoom Filtre (Nouvelle fonctionnalité d'accueil demandée) */}
+            <button 
+              onClick={() => {
+                setTreeRootId(selectedMember.id);
+                setSelectedMember(null);
+              }}
+              style={{ width: '100%', padding: '11px', background: '#D2B795', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', marginBottom: '6px' }}
+            >
+              🔍 Zoomer sur son réseau
+            </button>
+
+            <button onClick={() => setSelectedMember(null)} style={{ width: '100%', padding: '11px', background: '#4A3E3D', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Fermer</button>
           </div>
         </div>
       )}
