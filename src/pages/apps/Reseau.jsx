@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function Reseau() {
   const [activeTab, setActiveTab] = useState('arbre');
   
-  // 📁 Gestion de la base de données des membres directement ICI
-  const [tree, setTree] = useState({
-    nodes: [
-      // Vous pouvez ajouter un membre par défaut ici si vous le souhaitez, ex:
-      // { id: "1", name: "Marie Ouadi", role: "Manager", genre: "femme", parentId: null }
-    ]
+  // 📁 Chargement initial des données depuis le localStorage (ou tableau vide si premier démarrage)
+  const [tree, setTree] = useState(() => {
+    const savedData = localStorage.getItem('limitless_team_tree');
+    return savedData ? JSON.parse(savedData) : { nodes: [] };
   });
+
+  // 💾 Sauvegarde automatique dans le localStorage à chaque fois que la liste des membres change
+  useEffect(() => {
+    localStorage.setItem('limitless_team_tree', JSON.stringify(tree));
+  }, [tree]);
 
   // États locaux pour les filtres et l'édition
   const [search, setSearch] = useState('');
@@ -32,11 +35,9 @@ export default function Reseau() {
     return role;
   };
 
-  // ➕ FONCTION D'AJOUT CORRIGÉE (Autonome et Directe)
+  // ➕ FONCTION D'AJOUT
   const handleAddMember = (e) => {
-    if (e) {
-      e.preventDefault();
-    }
+    if (e) e.preventDefault();
 
     if (!newMember.name || !newMember.name.trim()) {
       alert("Veuillez saisir un nom ou un prénom.");
@@ -44,19 +45,17 @@ export default function Reseau() {
     }
 
     const newNode = {
-      id: Date.now().toString(), // Génère un ID unique
+      id: Date.now().toString(),
       name: newMember.name.trim(),
       role: newMember.role,
       genre: newMember.genre,
       parentId: newMember.parentId || null
     };
 
-    // Mise à jour directe de l'état local
     setTree({
       nodes: [...currentNodes, newNode]
     });
 
-    // Réinitialisation du champ texte
     setNewMember({ name: '', role: 'Consultante', genre: 'femme', parentId: '' });
   };
 
@@ -124,7 +123,7 @@ export default function Reseau() {
       gap: '20px',
       marginTop: '20px',
       position: 'relative',
-      flexDirection: isMarieOuadi ? 'column' : 'row',
+      flexDirection: isMarieMarieOuadi ? 'column' : 'row',
       alignItems: isMarieOuadi ? 'center' : 'flex-start'
     };
 
@@ -143,7 +142,7 @@ export default function Reseau() {
             {displayRole(node.role || 'Consultante', node.genre)}
           </div>
           <div style={{ fontWeight: '600', color: '#333', fontSize: '14px', marginBottom: '6px' }}>
-            {node.name}
+            {n => n.name}
           </div>
           <div style={{ fontSize: '11px', fontWeight: '500', color: '#D6AF37' }}>
             Actif
@@ -164,7 +163,7 @@ export default function Reseau() {
   return (
     <div style={{ padding: '10px', fontFamily: 'sans-serif' }}>
       
-      {/* 👑 BOUTONS DES SOUS-ONGLETS */}
+      {/* BOUTONS DES SOUS-ONGLETS */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', justifyContent: 'center' }}>
         <button 
           onClick={() => setActiveTab('arbre')}
@@ -188,7 +187,7 @@ export default function Reseau() {
         </button>
       </div>
 
-      {/* 🌳 CONTENU : ONGLET ARBRE */}
+      {/* CONTENU : ONGLET ARBRE */}
       {activeTab === 'arbre' && (
         <div style={{ width: '100%', overflowX: 'auto', padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
           {rootNode ? renderTreeNodes(rootNode) : (
@@ -199,11 +198,11 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* 📊 CONTENU : ONGLET TABLEAU (ADMIN) */}
+      {/* CONTENU : ONGLET TABLEAU (ADMIN) */}
       {activeTab === 'tableau' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           
-          {/* 🔥 FORMULAIRE D'AJOUT DE MEMBRE */}
+          {/* FORMULAIRE D'AJOUT DE MEMBRE */}
           <div style={{ background: '#FDFBF7', border: '1px solid #D2B795', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
             <h3 style={{ marginTop: 0, color: '#4A3E3D', marginBottom: '15px' }}>✨ Ajouter un nouveau membre à la Limitless Team</h3>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -260,7 +259,7 @@ export default function Reseau() {
             </div>
           </div>
 
-          {/* 🔍 BARRE DE FILTRES */}
+          {/* BARRE DE FILTRES */}
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
             <input 
               style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '1px solid #D2B795' }}
@@ -281,7 +280,7 @@ export default function Reseau() {
             </select>
           </div>
 
-          {/* 📊 TABLEAU */}
+          {/* TABLEAU */}
           <div style={{ overflowX: 'auto', background: 'white', borderRadius: '12px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
               <thead>
