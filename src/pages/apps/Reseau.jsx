@@ -1,31 +1,119 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { userStore } from '../../utils/storage';
+import { userStore, store } from '../../utils/storage';
 
 export default function Reseau() {
   const { getAllConsultants } = useAuth();
-  const { log } = useData(); // Pour tracer l'activité sur le hub
+  const { log } = useData(); 
   const [activeTab, setActiveTab] = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
   const [treeNodes, setTreeNodes] = useState([]);
 
-  // 1. Chargement et calcul dynamique des statistiques réelles de l'équipe
+  // 1. Génération et injection automatique de l'organisation de la Limitless Team
+  useEffect(() => {
+    const consultants Existants = store.get('consultants', []);
+
+    // Si aucun conseiller n'est créé (à part l'admin), on injecte toute l'équipe d'un coup
+    if (consultantsExistants.length === 0) {
+      const equipeInitiale = [
+        {
+          id: "marraine-marie",
+          firstName: "Marie",
+          lastName: "Limitless",
+          displayName: "Marie Limitless",
+          role: "marraine",
+          email: "marie@limitless.com",
+          password: "Marie#2026",
+          parentId: "admin-root",
+          genre: "femme",
+          locked: false,
+          createdAt: new Date().toISOString(),
+          objNum: 5000,
+          objectif: "Atteindre le statut Platine avec mon groupe"
+        },
+        {
+          id: "cons-nawel",
+          firstName: "Nawel",
+          lastName: "Chogan",
+          displayName: "Nawel Chogan",
+          role: "consultante",
+          email: "nawel@limitless.com",
+          password: "Nawel#2026",
+          parentId: "marraine-marie",
+          genre: "femme",
+          locked: false,
+          createdAt: new Date().toISOString(),
+          objNum: 1500,
+          objectif: "Valider 10 ventes de Parfums Prestige"
+        },
+        {
+          id: "cons-karim",
+          firstName: "Karim",
+          lastName: "Elite",
+          displayName: "Karim Elite",
+          role: "consultante",
+          email: "karim@limitless.com",
+          password: "Karim#2026",
+          parentId: "marraine-marie",
+          genre: "homme",
+          locked: false,
+          createdAt: new Date().toISOString(),
+          objNum: 2000,
+          objectif: "Développer mon portefeuille clients sur la gamme Homme"
+        },
+        {
+          id: "marraine-sarah",
+          firstName: "Sarah",
+          lastName: "Leader",
+          displayName: "Sarah Leader",
+          role: "marraine",
+          email: "sarah@limitless.com",
+          password: "Sarah#2026",
+          parentId: "admin-root",
+          genre: "femme",
+          locked: false,
+          createdAt: new Date().toISOString(),
+          objNum: 4000,
+          objectif: "Former 3 nouvelles consultantes ce mois-ci"
+        },
+        {
+          id: "cons-yasmine",
+          firstName: "Yasmine",
+          lastName: "Beauty",
+          displayName: "Yasmine Beauty",
+          role: "consultante",
+          email: "yasmine@limitless.com",
+          password: "Yasmine#2026",
+          parentId: "marraine-sarah",
+          genre: "femme",
+          locked: false,
+          createdAt: new Date().toISOString(),
+          objNum: 1200,
+          objectif: "Organiser 2 ateliers de démonstration vocale et visuelle"
+        }
+      ];
+
+      store.set('consultants', equipeInitiale);
+      log('Réseau', 'Initialisation automatique de toute la structure de la Limitless Team');
+    }
+  }, [log]);
+
+  // 2. Chargement et calcul dynamique des statistiques réelles de l'équipe
   useEffect(() => {
     const consultants = getAllConsultants();
 
-    // Construction de l'arbre en fusionnant le compte avec ses données localStorage locales
     const dynamicNodes = consultants.map(c => {
-      // Accès au store unique de chaque consultante via son ID
+      // Accès au store unique de chaque consultante via son ID ou prénom
       const userDb = userStore(c.id);
       
       // Récupération et calcul du CA réel à partir de ses commandes sauvegardées
       const orders = userDb?.get('orders', []) || [];
       const totalCA = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
 
-      // Récupération de ses cartes fidélité clients pour trouver son produit best-seller et top client
+      // Récupération de ses clients pour trouver son top client
       const clients = userDb?.get('clients', []) || [];
-      let topClientName = "Non défini";
+      let topClientName = "Aucun client";
       if (clients.length > 0) {
         const topC = [...clients].sort((a, b) => (b.totalSpent || 0) - (a.totalSpent || 0))[0];
         topClientName = `${topC.firstName} ${topC.lastName}`;
@@ -49,11 +137,11 @@ export default function Reseau() {
         name: c.displayName || `${c.firstName} ${c.lastName}`,
         role: c.role === 'marraine' ? 'Marraine' : (c.role === 'admin' ? 'Manager' : 'Consultante'),
         genre: c.genre || 'femme',
-        parentId: c.parentId || (c.role === 'admin' ? null : 'admin-root'), // Liaison automatique à la racine si pas de parrain
+        parentId: c.parentId || (c.role === 'admin' ? null : 'admin-root'),
         ca: `${totalCA.toLocaleString()} €`,
         caNum: totalCA,
-        objNum: parseFloat(c.objNum) || 1000, // Objectif saisi par elle-même dans son profil
-        objectif: c.objectif || "Fixer un objectif personnel", // Phrase d'objectif saisie
+        objNum: parseFloat(c.objNum) || 1000, 
+        objectif: c.objectif || "Fixer un objectif personnel", 
         events: eventTitles,
         fidelity: autoLevel,
         mdp: c.password || "Non défini",
@@ -63,7 +151,7 @@ export default function Reseau() {
       };
     });
 
-    // Ajout systématique du compte Administrateur au sommet si non inclus
+    // Ajout systématique du compte Administrateur au sommet
     const hasAdmin = dynamicNodes.some(n => n.id === 'admin-root');
     if (!hasAdmin) {
       dynamicNodes.unshift({
