@@ -1,106 +1,115 @@
 import React, { useState } from 'react';
-// ... gardez vos autres imports du haut ici (s'il y en a) ...
 
-// 🛠️ CORRECTION DES IMPORTS (Lignes 16 à 18 corrigées pour Vercel)
-import Reseau from './src/pages/apps/Reseau.jsx';
-import Catalogue from './src/pages/apps/Catalogue.jsx';
-import CoachVocal from './src/pages/apps/CoachVocal.jsx';
+// Si vous avez besoin d'importer TableauTab et ArbreTab depuis le même dossier (apps), utilisez "./"
+// Exemple (ajustez selon vos vrais fichiers s'ils sont dans le même dossier) :
+// import TableauTab from './TableauTab.jsx';
+// import ArbreTab from './ArbreTab.jsx';
 
-export default function App() {
-  // Vos états existants (ex: l'état de l'onglet actif, les données de l'arbre, etc.)
-  const [currentTab, setCurrentTab] = useState('reseau');
+export default function Reseau({ tree, saveTree, getCAByCur }) {
+  const [activeTab, setActiveTab] = useState('arbre');
 
-  // Exemple de structure de données si vous en avez besoin pour tester
-  const [tree, setTree] = useState({
-    nodes: [
-      { id: "1", name: "Marie Ouadi", role: "Manager", genre: "femme", parentId: null },
-      { id: "2", name: "Sarah", role: "Consultante", genre: "femme", parentId: "1" },
-      { id: "3", name: "Karim", role: "Consultante", genre: "homme", parentId: "1" }
-    ]
-  });
-
-  // Fonction de sauvegarde globale de l'arbre
-  const saveTree = (newTree) => {
-    setTree(newTree);
-    // Si vous utilisez localStorage : localStorage.setItem('limitless_tree', JSON.stringify(newTree));
+  // Rôles pour l'affichage selon le genre
+  const displayRole = (role, genre) => {
+    if (genre === 'homme') {
+      if (role === 'Consultante') return 'Consultant';
+      if (role === 'Marraine') return 'Parrain';
+    }
+    return role;
   };
 
-  // Fonction de calcul de CA factice pour éviter les bugs au rendu
-  const getCAByCur = (name) => {
-    return { eu: 0, da: 0 };
+  // Fonction récursive pour afficher l'arbre généalogique
+  const renderTreeNodes = (node) => {
+    if (!node) return null;
+
+    const enfants = tree.nodes.filter(n => n.parentId === node.id);
+    const isMarieOuadi = node.name.trim().toLowerCase() === "marie ouadi";
+
+    const childrenContainerStyle = {
+      display: 'flex',
+      justifyContent: 'center',
+      gap: '20px',
+      marginTop: '20px',
+      position: 'relative',
+      flexDirection: isMarieOuadi ? 'column' : 'row',
+      alignItems: isMarieOuadi ? 'center' : 'flex-start'
+    };
+
+    const { eu, da } = getCAByCur ? getCAByCur(node.name) : { eu: 0, da: 0 };
+
+    return (
+      <div key={node.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* CARTE MEMBRE */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #D2B795',
+          borderRadius: '12px',
+          padding: '12px 18px',
+          minWidth: '160px',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.03)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '10px', fontWeight: '700', marginBottom: '6px', color: node.genre === 'homme' ? '#3d6b9e' : '#4A3E3D' }}>
+            {displayRole(node.role || 'Consultante', node.genre)}
+          </div>
+          <div style={{ fontWeight: '600', color: '#333', fontSize: '14px', marginBottom: '6px' }}>
+            {node.name}
+          </div>
+          <div style={{ fontSize: '11px', fontWeight: '500' }}>
+            <span style={{ color: '#D6AF37', fontWeight: '700' }}>{eu.toFixed(0)}€</span>
+            <span style={{ margin: '0 4px', color: '#ccc' }}>|</span>
+            <span style={{ color: '#3d6b9e', fontWeight: '700' }}>{Math.round(da).toLocaleString('fr-FR')} DA</span>
+          </div>
+        </div>
+
+        {/* ENFANTS */}
+        {enfants.length > 0 && (
+          <div style={childrenContainerStyle}>
+            {enfants.map(enfant => renderTreeNodes(enfant))}
+          </div>
+        )}
+      </div>
+    );
   };
+
+  const rootNode = tree?.nodes?.find(n => !n.parentId);
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      backgroundColor: '#FAF6F0', 
-      fontFamily: 'sans-serif',
-      color: '#4A3E3D' 
-    }}>
-      {/* 👑 BARRE DE NAVIGATION APPS / LIMITLESS */}
-      <nav style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: '15px', 
-        padding: '20px', 
-        background: '#white', 
-        borderBottom: '1px solid #D2B795' 
-      }}>
+    <div style={{ padding: '10px' }}>
+      {/* SOUS-ONGLETS INTERNES A L'APP RESEAU */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
         <button 
-          onClick={() => setCurrentTab('reseau')}
+          onClick={() => setActiveTab('arbre')}
           style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
-            border: currentTab === 'reseau' ? '1px solid #D6AF37' : '1px solid #ccc',
-            background: currentTab === 'reseau' ? '#F5EFE8' : 'white',
-            fontWeight: '600',
-            cursor: 'pointer'
+            padding: '8px 16px', borderRadius: '20px', border: '1px solid #D2B795',
+            background: activeTab === 'arbre' ? '#D2B795' : 'white',
+            color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600'
           }}
         >
-          🌐 Mon Réseau
+          🌳 Arbre Visuel
         </button>
         <button 
-          onClick={() => setCurrentTab('catalogue')}
+          onClick={() => setActiveTab('tableau')}
           style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
-            border: currentTab === 'catalogue' ? '1px solid #D6AF37' : '1px solid #ccc',
-            background: currentTab === 'catalogue' ? '#F5EFE8' : 'white',
-            fontWeight: '600',
-            cursor: 'pointer'
+            padding: '8px 16px', borderRadius: '20px', border: '1px solid #D2B795',
+            background: activeTab === 'tableau' ? '#D2B795' : 'white',
+            color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600'
           }}
         >
-          📖 Catalogue
+          📊 Vue Tableau (Admin)
         </button>
-        <button 
-          onClick={() => setCurrentTab('coach')}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
-            border: currentTab === 'coach' ? '1px solid #D6AF37' : '1px solid #ccc',
-            background: currentTab === 'coach' ? '#F5EFE8' : 'white',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}
-        >
-          🎙️ Coach Vocal
-        </button>
-      </nav>
+      </div>
 
-      {/* 📲 ZONE D'AFFICHAGE DYNAMIQUE DES APPLICATIONS */}
-      <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-        {currentTab === 'reseau' && (
-          <Reseau tree={tree} saveTree={saveTree} getCAByCur={getCAByCur} />
-        )}
-        
-        {currentTab === 'catalogue' && (
-          <Catalogue />
-        )}
-        
-        {currentTab === 'coach' && (
-          <CoachVocal />
-        )}
-      </main>
+      {/* CONTENU DE L'ONGLET SÉLECTIONNÉ */}
+      {activeTab === 'arbre' ? (
+        <div style={{ width: '100%', overflowX: 'auto', padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
+          {rootNode ? renderTreeNodes(rootNode) : <p>Aucun membre détecté.</p>}
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+          {/* Le composant TableauTab peut être appelé directement ici s'il est importé */}
+          <p>Tableau de gestion prêt pour l'administration.</p>
+        </div>
+      )}
     </div>
   );
 }
