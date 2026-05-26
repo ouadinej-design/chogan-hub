@@ -1,3 +1,4 @@
+import { dbGet, dbSet, isEnabled } from '../lib/supabase';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { store } from '../utils/storage';
 
@@ -65,7 +66,9 @@ export function AuthProvider({ children }) {
     ) || null;
   };
 
-  const login = (firstName, lastName, password, role) => {
+  const login = async (firstName, lastName, password, role) => {
+    // Sync accounts from cloud before checking
+    await syncAccountsFromCloud();
     const u = findUser(firstName, lastName, role);
     if (!u) return { ok: false, error: 'Compte introuvable. Vérifiez votre prénom et nom.' };
     if (u.locked) return { ok: false, error: 'Compte verrouillé. Contactez votre administratrice.' };
