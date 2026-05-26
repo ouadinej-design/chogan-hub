@@ -6,75 +6,69 @@ import { userStore, store } from '../../utils/storage';
 export default function Reseau() {
   const { getAllConsultants } = useAuth();
   const { log } = useData(); 
-  const [activeTab, setActiveTab] = useState('arbre');
-  const [selectedMember, setSelectedMember] = useState(null);
   const [treeNodes, setTreeNodes] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const injecterEquipeComplete = () => {
-    const equipeInitiale = [
-      { id: "admin-kheira", firstName: "Kheira", lastName: "B", displayName: "Kheira B", role: "admin", parentId: null, genre: "femme", password: "Kheira#2026" },
-      // Marraine Marie
-      { id: "marie-m", firstName: "Marie", lastName: "L", displayName: "Marie", role: "marraine", parentId: "admin-kheira", genre: "femme", password: "Marie#2026" },
-      // Sous Kheira (Consultantes directes)
-      ...["Soumia", "Nawel", "Selma", "Sophia", "Baya", "Milène", "Sarah", "Nadia B", "Shaïma", "Mélissa", "Cassandra", "Meryem"].map(n => ({ id: `cons-${n}`, firstName: n, lastName: "", displayName: n, role: "consultante", parentId: "admin-kheira", genre: "femme", password: `${n}#2026` })),
-      { id: "karim-c", firstName: "Karim", lastName: "", displayName: "Karim", role: "consultante", parentId: "admin-kheira", genre: "homme", password: "Karim#2026" },
-      // Sous Marie (Marraines)
-      { id: "nadia-n", firstName: "Nadia", lastName: "N", displayName: "Nadia N", role: "marraine", parentId: "marie-m", genre: "femme", password: "Nadia#2026" },
-      { id: "isabelle", firstName: "Isabelle", lastName: "", displayName: "Isabelle", role: "marraine", parentId: "marie-m", genre: "femme", password: "Isabelle#2026" },
-      { id: "blandine", firstName: "Blandine", lastName: "", displayName: "Blandine", role: "marraine", parentId: "marie-m", genre: "femme", password: "Blandine#2026" },
-      // Sous Nadia N
-      { id: "tracy", firstName: "Tracy", lastName: "", displayName: "Tracy", role: "consultante", parentId: "nadia-n", genre: "femme", password: "Tracy#2026" },
-      { id: "yasmin", firstName: "Yasmin", lastName: "", displayName: "Yasmin", role: "consultante", parentId: "nadia-n", genre: "femme", password: "Yasmin#2026" },
-      // Sous Isabelle
-      { id: "anita", firstName: "Anita", lastName: "", displayName: "Anita", role: "consultante", parentId: "isabelle", genre: "femme", password: "Anita#2026" },
-      { id: "khayra", firstName: "Khayra", lastName: "", displayName: "Khayra", role: "consultante", parentId: "isabelle", genre: "femme", password: "Khayra#2026" },
-      // Sous Blandine
-      { id: "yasmina", firstName: "Yasmina", lastName: "", displayName: "Yasmina", role: "consultante", parentId: "blandine", genre: "femme", password: "Yasmina#2026" },
-      { id: "adam", firstName: "Adam", lastName: "", displayName: "Adam", role: "consultante", parentId: "blandine", genre: "homme", password: "Adam#2026" }
+    const equipe = [
+      { id: "admin-kheira", name: "Kheira B", role: "Manager", parentId: null },
+      // Niveau 1 : Marie + Consultantes directes
+      { id: "marie-m", name: "Marie", role: "Marraine", parentId: "admin-kheira" },
+      ...["Soumia", "Nawel", "Selma", "Sophia", "Baya", "Milène", "Sarah", "Nadia B", "Shaïma", "Mélissa", "Cassandra", "Meryem"].map(n => ({ id: `cons-${n}`, name: n, role: "Consultante", parentId: "admin-kheira" })),
+      { id: "karim-c", name: "Karim", role: "Consultante", parentId: "admin-kheira" },
+      // Niveau 2 : Sous Marie
+      { id: "nadia-n", name: "Nadia N", role: "Marraine", parentId: "marie-m" },
+      { id: "isabelle", name: "Isabelle", role: "Marraine", parentId: "marie-m" },
+      { id: "blandine", name: "Blandine", role: "Marraine", parentId: "marie-m" },
+      // Niveau 3
+      { id: "tracy", name: "Tracy", role: "Consultante", parentId: "nadia-n" },
+      { id: "yasmin", name: "Yasmin", role: "Consultante", parentId: "nadia-n" },
+      { id: "anita", name: "Anita", role: "Consultante", parentId: "isabelle" },
+      { id: "khayra", name: "Khayra", role: "Consultante", parentId: "isabelle" },
+      { id: "yasmina", name: "Yasmina", role: "Consultante", parentId: "blandine" },
+      { id: "adam", name: "Adam", role: "Consultante", parentId: "blandine" }
     ];
-
-    store.set('consultants', equipeInitiale);
-    log('Réseau', 'Equipe complète injectée');
-    setRefreshKey(old => old + 1);
-    alert("✨ Équipe Limitless déployée avec succès !");
+    store.set('consultants', equipe);
+    setRefreshKey(prev => prev + 1);
+    alert("Équipe injectée !");
   };
 
   useEffect(() => {
-    const consultants = getAllConsultants();
-    const dynamicNodes = consultants.map(c => {
-      const userDb = userStore(c.id);
-      const orders = userDb?.get('orders', []) || [];
-      const totalCA = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
-      return {
-        ...c,
-        name: c.displayName,
-        ca: `${totalCA.toLocaleString()} €`,
-        caNum: totalCA,
-        role: c.role.charAt(0).toUpperCase() + c.role.slice(1)
-      };
-    });
-    setTreeNodes(dynamicNodes);
-  }, [getAllConsultants, refreshKey]);
+    setTreeNodes(store.get('consultants', []));
+  }, [refreshKey]);
 
-  const renderTreeNodes = (node) => {
-    const enfants = treeNodes.filter(n => n.parentId === node.id);
+  const renderNodes = (parentId) => {
+    const children = treeNodes.filter(n => n.parentId === parentId);
+    if (children.length === 0) return null;
     return (
-      <div key={node.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div onClick={() => setSelectedMember(node)} style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '12px', padding: '10px', minWidth: '120px', textAlign: 'center', cursor: 'pointer', margin: '5px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>{node.name}</div>
-          <div style={{ fontSize: '9px' }}>{node.role}</div>
-        </div>
-        {enfants.length > 0 && <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>{enfants.map(e => renderTreeNodes(e))}</div>}
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', marginTop: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {children.map(child => (
+          <div key={child.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ padding: '8px', border: '1px solid #D2B795', borderRadius: '8px', background: 'white', minWidth: '90px', textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', fontWeight: 'bold' }}>{child.name}</div>
+              <div style={{ fontSize: '9px', color: '#8C6D4F' }}>{child.role}</div>
+            </div>
+            {renderNodes(child.id)}
+          </div>
+        ))}
       </div>
     );
   };
 
   return (
     <div style={{ padding: '20px', background: '#FAF7F2', minHeight: '100vh' }}>
-      <button onClick={injecterEquipeComplete} style={{ marginBottom: '20px', padding: '10px', background: '#4A3E3D', color: '#D2B795', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>⚡ Injecter mon organisation</button>
+      <button onClick={injecterEquipeComplete} style={{ width: '100%', padding: '12px', background: '#4A3E3D', color: '#D2B795', border: 'none', borderRadius: '8px', marginBottom: '20px' }}>
+        ⚡ Re-charger toute l'organisation
+      </button>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {treeNodes.filter(n => !n.parentId).map(root => renderTreeNodes(root))}
+        {treeNodes.filter(n => !n.parentId).map(root => (
+          <div key={root.id} style={{ textAlign: 'center' }}>
+            <div style={{ padding: '10px', border: '2px solid #4A3E3D', borderRadius: '8px', background: '#F5EFE8' }}>
+              <strong>{root.name}</strong><br/>{root.role}
+            </div>
+            {renderNodes(root.id)}
+          </div>
+        ))}
       </div>
     </div>
   );
