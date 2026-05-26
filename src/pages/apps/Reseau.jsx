@@ -1,143 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-// =========================================================================
-// 1. COMPOSANT PRINCIPAL (Gestionnaire de Navigation du Hub)
-// =========================================================================
-export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('hub'); // 'hub' ou 'reseau'
-  const [showAppMenu, setShowAppMenu] = useState(false);
-
-  return (
-    <div style={{ background: '#FAF7F2', minHeight: '100vh', fontFamily: 'sans-serif', color: '#4A3E3D' }}>
-      
-      {/* ÉCRAN 1 : CHOGAN HUB */}
-      {currentScreen === 'hub' && (
-        <ChoganHub onNavigate={(screen) => setCurrentScreen(screen)} showMenu={showAppMenu} setShowMenu={setShowAppMenu} />
-      )}
-
-      {/* ÉCRAN 2 : RÉSEAU (Avec retour fonctionnel) */}
-      {currentScreen === 'reseau' && (
-        <Reseau onBack={() => setCurrentScreen('hub')} />
-      )}
-    </div>
-  );
-}
-
-// =========================================================================
-// 2. ÉCRAN D'ACCUEIL : CHOGAN HUB (Conforme à votre capture)
-// =========================================================================
-function ChoganHub({ onNavigate, showMenu, setShowMenu }) {
-  return (
-    <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto', position: 'relative', minHeight: '100vh' }}>
-      
-      {/* Barre supérieure */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '28px', height: '28px', border: '1px solid #D2B795', transform: 'rotate(45deg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ transform: 'rotate(-45deg)', fontSize: '10px', fontWeight: 'bold', color: '#8C6D4F' }}>CH</span>
-          </div>
-          <span style={{ fontFamily: 'serif', letterSpacing: '2px', fontSize: '14px', fontWeight: 'bold' }}>CHOGAN HUB</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ background: '#F5EFE8', color: '#8C6D4F', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>👑 Admin</span>
-          <span style={{ fontSize: '16px', cursor: 'pointer' }}>🔄</span>
-        </div>
-      </div>
-
-      {/* Grand Titre */}
-      <h2 style={{ fontFamily: 'serif', fontSize: '26px', fontWeight: 'normal', marginBottom: '25px', letterSpacing: '1px' }}>
-        BONJOUR, <span style={{ fontWeight: 'bold' }}>ADMIN</span> 👑
-      </h2>
-
-      {/* Section Annonces */}
-      <div style={{ marginBottom: '25px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F', letterSpacing: '1px' }}>📢 ANNONCES</span>
-          <span style={{ fontSize: '18px', color: '#8C6D4F', cursor: 'pointer' }}>+</span>
-        </div>
-        
-        <div style={{ background: 'white', borderRadius: '16px', padding: '15px', marginBottom: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', position: 'relative' }}>
-          <span style={{ position: 'absolute', top: '12px', right: '15px', color: '#ccc', fontSize: '12px', cursor: 'pointer' }}>✕</span>
-          <p style={{ margin: '0 0 10px 0', fontSize: '14px', lineHeight: '1.4' }}>🌸 Bienvenue dans votre espace Chogan Hub ! Retrouvez tous vos outils ici.</p>
-          <span style={{ fontSize: '11px', color: '#A18A68' }}>26/05/2026 ✍️ Admin</span>
-        </div>
-
-        <div style={{ background: 'white', borderRadius: '16px', padding: '15px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', position: 'relative' }}>
-          <span style={{ position: 'absolute', top: '12px', right: '15px', color: '#ccc', fontSize: '12px', cursor: 'pointer' }}>✕</span>
-          <p style={{ margin: '0 0 10px 0', fontSize: '14px', lineHeight: '1.4' }}>✨ Nouvelle mise à jour — Wallet, Agenda et Coach Vocal sont maintenant intégrés !</p>
-          <span style={{ fontSize: '11px', color: '#A18A68' }}>26/05/2026 ✍️ Admin</span>
-        </div>
-      </div>
-
-      {/* Section Succès de l'équipe */}
-      <div style={{ marginBottom: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F', letterSpacing: '1px' }}>🏆 SUCCÈS DE L'ÉQUIPE</span>
-          <span style={{ fontSize: '18px', color: '#8C6D4F', cursor: 'pointer' }}>+</span>
-        </div>
-
-        <div style={{ background: 'white', borderRadius: '16px', padding: '15px', marginBottom: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '2px' }}>🌟 Amira B.</div>
-          <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>Première vente ✨</div>
-          <span style={{ fontSize: '11px', color: '#A18A68' }}>26/05/2026 ✍️ Admin</span>
-        </div>
-
-        <div style={{ background: 'white', borderRadius: '16px', padding: '15px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '2px' }}>🌟 Nour K.</div>
-          <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>Statut Or atteint 🥇</div>
-          <span style={{ fontSize: '11px', color: '#A18A68' }}>26/05/2026 ✍️ Admin</span>
-        </div>
-      </div>
-
-      {/* Bouton Flottant APPS */}
-      <button 
-        onClick={() => setShowMenu(!showMenu)}
-        style={{
-          position: 'fixed', bottom: '25px', right: '25px',
-          background: '#Bfa383', color: 'white', border: 'none',
-          borderRadius: '25px', padding: '12px 22px', fontSize: '13px',
-          fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-          boxShadow: '0 4px 15px rgba(191,163,131,0.4)', zIndex: 100,
-          webkitTapHighlightColor: 'transparent'
-        }}
-      >
-        ⠿ APPS
-      </button>
-
-      {/* Menu contextuel des applications */}
-      {showMenu && (
-        <div style={{
-          position: 'fixed', bottom: '80px', right: '25px',
-          background: 'white', border: '1px solid #D2B795', borderRadius: '14px',
-          padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 101, width: '180px'
-        }}>
-          <div 
-            onClick={() => { onNavigate('reseau'); setShowMenu(false); }}
-            style={{ padding: '12px', cursor: 'pointer', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: '600' }}
-            onMouseEnter={(e) => e.target.style.background = '#FAF7F2'}
-            onMouseLeave={(e) => e.target.style.background = 'none'}
-          >
-            👥 Réseau Team
-          </div>
-          <div style={{ padding: '12px', color: '#ccc', fontSize: '14px' }}>🛒 Commandes</div>
-          <div style={{ padding: '12px', color: '#ccc', fontSize: '14px' }}>💳 Wallet / Fidélité</div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// =========================================================================
-// 3. ÉCRAN : APPLICATION RÉSEAU (Totalement corrigé et sécurisé)
-// =========================================================================
-function Reseau({ onBack }) {
+export default function Reseau() {
   const [activeTab, setActiveTab] = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
   const [treeRootId, setTreeRootId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
-  // Base de données interne
+  // Base de données par défaut de la Limitless Team
   const defaultTree = {
     nodes: [
       { 
@@ -167,6 +37,7 @@ function Reseau({ onBack }) {
     ]
   };
 
+  // Persistance locale
   const [tree, setTree] = useState(() => {
     try {
       const localData = localStorage.getItem('limitless_team_tree_v5');
@@ -181,6 +52,7 @@ function Reseau({ onBack }) {
 
   const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
 
+  // Calculs globaux du tableau de bord
   const totalCA = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.caNum) || 0), 0);
   const totalObjectifs = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.objNum) || 0), 0);
   const globalPerformance = totalObjectifs > 0 ? Math.min(100, Math.round((totalCA / totalObjectifs) * 100)) : 0;
@@ -208,6 +80,32 @@ function Reseau({ onBack }) {
     });
     setTree({ nodes: updatedNodes });
     setEditingId(null);
+  };
+
+  // 🔥 NOUVELLE FONCTION : SUPPRIMER UN MEMBRE DE L'ÉQUIPE SÉCURISÉ
+  const handleDeleteMember = (id, name) => {
+    const confirmDelete = window.confirm(`Êtes-vous sûr de vouloir supprimer ${name} de l'équipe ?`);
+    if (confirmDelete) {
+      // Trouver le parent du membre qu'on supprime pour y rattacher ses enfants
+      const memberToDelete = tree.nodes.find(n => n.id === id);
+      const parentIdOfDeleted = memberToDelete ? memberToDelete.parentId : null;
+
+      const updatedNodes = tree.nodes
+        .filter(node => node.id !== id) // On enlève le membre
+        .map(node => {
+          // Si le membre supprimé était son parent, on le rattache au parent du dessus
+          if (node.parentId === id) {
+            return { ...node, parentId: parentIdOfDeleted };
+          }
+          return node;
+        });
+
+      setTree({ nodes: updatedNodes });
+      
+      // Si le membre supprimé était sélectionné dans la vue zoomée ou le modal, on nettoie
+      if (treeRootId === id) setTreeRootId(null);
+      if (selectedMember && selectedMember.id === id) setSelectedMember(null);
+    }
   };
 
   const handleAddMember = () => {
@@ -271,9 +169,9 @@ function Reseau({ onBack }) {
   const pctProgress = selectedMember ? Math.min(100, Math.round((selectedMember.caNum / (selectedMember.objNum || 1)) * 100)) : 0;
 
   return (
-    <div style={{ padding: '15px', minHeight: '100vh', background: '#FAF7F2' }}>
+    <div style={{ padding: '15px', minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif', color: '#4A3E3D' }}>
       
-      {/* 👑 EN-TÊTE PREMIUM LUXE CORRIGÉ DE MANIÈRE ABSOLUE */}
+      {/* 👑 EN-TÊTE SANS POPUP NI ENCADRÉ BLEU */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -282,9 +180,8 @@ function Reseau({ onBack }) {
         margin: '10px auto 25px auto',
         padding: '0 5px'
       }}>
-        {/* Bouton retour anti-bloc bleu style Commandes */}
         <button
-          onClick={onBack}
+          onClick={() => { /* Optionnel : redirection ou état parent */ }}
           style={{
             width: '42px',
             height: '42px',
@@ -298,11 +195,9 @@ function Reseau({ onBack }) {
             cursor: 'pointer',
             boxShadow: '0 3px 10px rgba(0,0,0,0.06)',
             padding: 0,
-            transition: 'transform 0.2s',
             webkitTapHighlightColor: 'transparent'
           }}
         >
-          {/* Flèche vectorielle pure */}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A3E3D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -370,7 +265,7 @@ function Reseau({ onBack }) {
         </div>
       )}
 
-      {/* GESTION TABLEAU */}
+      {/* GESTION TABLEAU (MIS À JOUR AVEC SUPPRESSION) */}
       {activeTab === 'gestion' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
           <div style={{ background: 'white', padding: '15px', borderRadius: '14px', border: '1px solid #D2B795' }}>
@@ -382,7 +277,7 @@ function Reseau({ onBack }) {
           </div>
 
           <div style={{ overflowX: 'auto', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '800px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '850px' }}>
               <thead>
                 <tr style={{ background: '#F5EFE8', color: '#4A3E3D' }}>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Conseiller(e)</th>
@@ -403,12 +298,15 @@ function Reseau({ onBack }) {
                       <td style={{ padding: '12px', color: '#2d7a4a', fontWeight: '600' }}>{isEditing ? <input type="number" value={editForm.caNum} onChange={e => setEditForm({...editForm, caNum: e.target.value})} /> : n.ca}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
                         {isEditing ? (
-                          <>
-                            <button onClick={saveRowEdits} style={{ marginRight: '5px' }}>💾</button>
-                            <button onClick={() => setEditingId(null)}>❌</button>
-                          </>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                            <button onClick={saveRowEdits} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>💾</button>
+                            <button onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>❌</button>
+                          </div>
                         ) : (
-                          <button onClick={() => startEditing(n)} style={{ background: 'white', border: '1px solid #D2B795', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>✏️ Modifier</button>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                            <button onClick={() => startEditing(n)} style={{ background: 'white', border: '1px solid #D2B795', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: '#4A3E3D' }}>✏️ Modifier</button>
+                            <button onClick={() => handleDeleteMember(n.id, n.name)} style={{ background: '#FFF0F0', border: '1px solid #FFA3A3', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: '#D32F2F' }}>🗑️ Supprimer</button>
+                          </div>
                         )}
                       </td>
                     </tr>
