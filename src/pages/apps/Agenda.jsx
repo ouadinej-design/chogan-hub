@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useCloudData } from '../../lib/useCloudData';
 import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
@@ -197,15 +198,21 @@ function AgendaIframe() {
 
 // ── ÉVÉNEMENTS ────────────────────────────────────────────────────
 function EvenementsTab() {
-  const { getFilteredEvents, user:evtUser } = useAuth();
-  const [evts, setEvts]     = useState(() => getFilteredEvents());
+  const { user:evtUser } = useAuth();
+  const [allEvts, setAllEvts_] = useCloudData('le_cevents', []);
+  const evts = allEvts.filter(e => {
+    if (!evtUser || evtUser.role === 'admin') return true;
+    const name = (evtUser.firstName||'').toLowerCase();
+    return !e.consultant || (e.consultant||'').toLowerCase().includes(name);
+  });
+  const setEvts = (v) => setAllEvts_(v);
   const [editId, setEditId] = useState(null);
   const [form, setForm]     = useState({ name:'', type:'Salon/Expo', date:new Date().toISOString().split('T')[0], email:'', tel:'' });
   const [filter, setFilter] = useState('perso');
   const [ok, setOk]         = useState('');
   const now = useMemo(() => { const d=new Date(); d.setHours(0,0,0,0); return d; }, []);
   const upd = k => e => setForm(p => ({ ...p, [k]:e.target.value }));
-  const save_ = e => { setEvts(e); localStorage.setItem('le_cevents', JSON.stringify(e)); };
+  const save_ = e => { setEvts(e); };
   const openEdit = ev => { setEditId(ev.id); setForm({ name:ev.n, type:ev.lbl, date:ev.d, email:ev.email||'', tel:ev.tel||'' }); };
   const save = () => {
     if (!form.name.trim()||!form.date) return;
