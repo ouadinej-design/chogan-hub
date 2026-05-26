@@ -14,7 +14,7 @@ export default function Reseau() {
     }
   });
 
-  // 🏢 Structure complète par défaut (si le localStorage est vide)
+  // 🏢 Structure complète par défaut de la Limitless Team
   const defaultTree = {
     nodes: [
       { id: "kheira_b", name: "Kheira B", role: "Manager", genre: "femme", parentId: null },
@@ -44,16 +44,16 @@ export default function Reseau() {
     ]
   };
 
-  // Si l'état initial était vide, on injecte l'organisation par défaut
+  // Sélection des données valides
   const finalTree = tree && tree.nodes && tree.nodes.length > 0 ? tree : defaultTree;
   const currentNodes = finalTree.nodes;
 
-  // 💾 Sauvegarde automatique
+  // 💾 Sauvegarde automatique dans le localStorage
   useEffect(() => {
     localStorage.setItem('limitless_team_tree', JSON.stringify(finalTree));
   }, [finalTree]);
 
-  // États locaux
+  // États locaux pour la recherche, filtres et édition
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('tous');
   const [editId, setEditId] = useState(null);
@@ -62,6 +62,7 @@ export default function Reseau() {
 
   const ROLES_LIST = ['Consultante', 'Manager', 'Marraine', 'VIP'];
 
+  // Accordage des titres selon le genre
   const displayRole = (role, genre) => {
     if (genre === 'homme') {
       if (role === 'Consultante') return 'Consultant';
@@ -70,7 +71,7 @@ export default function Reseau() {
     return role;
   };
 
-  // ➕ AJOUT
+  // ➕ FONCTION D'AJOUT
   const handleAddMember = (e) => {
     if (e) e.preventDefault();
     if (!newMember.name || !newMember.name.trim()) {
@@ -105,19 +106,3 @@ export default function Reseau() {
         parentId: editForm.parentId || null
       } : n)
     });
-    setEditId(null);
-  };
-
-  // 🗑️ SUPPRESSION
-  const handleDeleteRow = (id) => {
-    if (!window.confirm('Supprimer définitivement ce membre ?')) return;
-    setTree({
-      nodes: currentNodes
-        .filter(n => n.id !== id)
-        .map(n => n.parentId === id ? { ...n, parentId: null } : n)
-    });
-    if (editId === id) setEditId(null);
-  };
-
-  // Filtrage
-  const filteredNodes = currentNodes
