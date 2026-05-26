@@ -7,7 +7,7 @@ export default function Reseau() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
-  // Base de données par défaut de la Limitless Team
+  // Base de données initiale et complète de la Limitless Team
   const defaultTree = {
     nodes: [
       { 
@@ -50,7 +50,12 @@ export default function Reseau() {
     localStorage.setItem('limitless_team_tree_v5', JSON.stringify(tree));
   }, [tree]);
 
-  const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
+  // État initial complet du formulaire d'inscription
+  const [newMember, setNewMember] = useState({ 
+    name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', 
+    topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', 
+    caNum: '0', objNum: '1000' 
+  });
 
   // Calculs globaux du tableau de bord
   const totalCA = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.caNum) || 0), 0);
@@ -82,18 +87,15 @@ export default function Reseau() {
     setEditingId(null);
   };
 
-  // 🔥 NOUVELLE FONCTION : SUPPRIMER UN MEMBRE DE L'ÉQUIPE SÉCURISÉ
   const handleDeleteMember = (id, name) => {
     const confirmDelete = window.confirm(`Êtes-vous sûr de vouloir supprimer ${name} de l'équipe ?`);
     if (confirmDelete) {
-      // Trouver le parent du membre qu'on supprime pour y rattacher ses enfants
       const memberToDelete = tree.nodes.find(n => n.id === id);
       const parentIdOfDeleted = memberToDelete ? memberToDelete.parentId : null;
 
       const updatedNodes = tree.nodes
-        .filter(node => node.id !== id) // On enlève le membre
+        .filter(node => node.id !== id)
         .map(node => {
-          // Si le membre supprimé était son parent, on le rattache au parent du dessus
           if (node.parentId === id) {
             return { ...node, parentId: parentIdOfDeleted };
           }
@@ -102,7 +104,6 @@ export default function Reseau() {
 
       setTree({ nodes: updatedNodes });
       
-      // Si le membre supprimé était sélectionné dans la vue zoomée ou le modal, on nettoie
       if (treeRootId === id) setTreeRootId(null);
       if (selectedMember && selectedMember.id === id) setSelectedMember(null);
     }
@@ -126,11 +127,13 @@ export default function Reseau() {
       fidelity: "Initial (0 pts)",
       mdp: newMember.mdp.trim() || "Limitless#123",
       topClientsList: [{ name: newMember.topClient.trim() || "Aucun", date: "26 Mai 2026", details: "Direct" }],
-      eventsList: [{ name: "Intégration digitale", date: "05 Juin 2026", loc: "En ligne" }],
-      bestSellersList: [{ name: newMember.bestSeller.trim() || "Non défini", date: "25 Mai 2026", qty: "0 un." }],
-      meilleuresVentesList: [{ name: newMember.meilleuresVentes.trim() || "Non défini", date: "24 Mai 2026", total: "0 €" }]
+      eventsList: [{ name: "Intégration digitale", date: "06 Juin 2026", loc: "En ligne" }],
+      bestSellersList: [{ name: newMember.bestSeller.trim() || "Non défini", date: "26 Mai 2026", qty: "1 un." }],
+      meilleuresVentesList: [{ name: newMember.meilleuresVentes.trim() || "Non défini", date: "26 Mai 2026", total: `${cNum} €` }]
     };
+
     setTree({ nodes: [...tree.nodes, newNode] });
+    // Reset complet du formulaire
     setNewMember({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
   };
 
@@ -171,33 +174,16 @@ export default function Reseau() {
   return (
     <div style={{ padding: '15px', minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif', color: '#4A3E3D' }}>
       
-      {/* 👑 EN-TÊTE SANS POPUP NI ENCADRÉ BLEU */}
+      {/* 👑 EN-TÊTE ÉLÉGANT SANS RECTANGLE BLEU */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '18px',
-        maxWidth: '1000px',
-        margin: '10px auto 25px auto',
-        padding: '0 5px'
+        display: 'flex', alignItems: 'center', gap: '18px', maxWidth: '1000px',
+        margin: '10px auto 25px auto', padding: '0 5px'
       }}>
-        <button
-          onClick={() => { /* Optionnel : redirection ou état parent */ }}
-          style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            backgroundColor: '#ffffff',
-            border: 'none',
-            outline: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            boxShadow: '0 3px 10px rgba(0,0,0,0.06)',
-            padding: 0,
-            webkitTapHighlightColor: 'transparent'
-          }}
-        >
+        <button style={{
+          width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#ffffff',
+          border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 3px 10px rgba(0,0,0,0.06)'
+        }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A3E3D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -207,20 +193,15 @@ export default function Reseau() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '20px' }}>👥</span>
           <h1 style={{
-            fontSize: '20px',
-            fontWeight: '400',
-            textTransform: 'uppercase',
-            letterSpacing: '3px',
-            color: '#4A3E3D',
-            margin: 0,
-            fontFamily: 'serif'
+            fontSize: '20px', fontWeight: '400', textTransform: 'uppercase',
+            letterSpacing: '3px', color: '#4A3E3D', margin: 0, fontFamily: 'serif'
           }}>
             Réseau
           </h1>
         </div>
       </div>
 
-      {/* DASHBOARD */}
+      {/* DASHBOARD GLOBAL */}
       <div style={{ 
         maxWidth: '1000px', margin: '0 auto 20px auto', background: 'white', 
         border: '1px solid #D2B795', borderRadius: '14px', padding: '15px 25px', 
@@ -248,7 +229,7 @@ export default function Reseau() {
         <button onClick={() => setActiveTab('gestion')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'gestion' ? '#D2B795' : 'white', color: activeTab === 'gestion' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>⚙️ Gestion</button>
       </div>
 
-      {/* CONTENU ARBRE */}
+      {/* VUE ARBRE */}
       {activeTab === 'arbre' && (
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
           {treeRootId && (
@@ -265,17 +246,74 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* GESTION TABLEAU (MIS À JOUR AVEC SUPPRESSION) */}
+      {/* VUE GESTION & INSCRIPTION INITIALE RESTAURÉE */}
       {activeTab === 'gestion' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-          <div style={{ background: 'white', padding: '15px', borderRadius: '14px', border: '1px solid #D2B795' }}>
-            <h3 style={{ marginTop: 0, color: '#4A3E3D', textAlign: 'center', fontSize: '15px' }}>✨ Inscrire un nouveau conseiller</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <input style={{ padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0' }} placeholder="Nom & Prénom" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} />
-              <button onClick={handleAddMember} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Ajouter à l'organisation</button>
+          
+          {/* Formulaire complet d'inscription d'origine */}
+          <div style={{ background: 'white', padding: '25px', borderRadius: '14px', border: '1px solid #D2B795', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+            <h3 style={{ marginTop: 0, color: '#4A3E3D', marginBottom: '20px', fontSize: '16px', letterSpacing: '1px', textTransform: 'uppercase' }}>✨ FORMULAIRE D'INSCRIPTION COMPLET</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Nom & Prénom *</label>
+                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Jean Dupont" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Rôle</label>
+                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white' }} value={newMember.role} onChange={e => setNewMember({...newMember, role: e.target.value})}>
+                  <option value="Consultante">Consultante / Consultant</option>
+                  <option value="Marraine">Marraine / Parrain</option>
+                  <option value="Manager">Manager</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Genre</label>
+                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white' }} value={newMember.genre} onChange={e => setNewMember({...newMember, genre: e.target.value})}>
+                  <option value="femme">Femme</option>
+                  <option value="homme">Homme</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Rattaché à (Marraine/Supérieur)</label>
+                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white' }} value={newMember.parentId} onChange={e => setNewMember({...newMember, parentId: e.target.value})}>
+                  <option value="">Aucun (Racine)</option>
+                  {tree.nodes.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>🔑 Mot de passe</label>
+                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Limitless#2026" value={newMember.mdp} onChange={e => setNewMember({...newMember, mdp: e.target.value})} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Chiffre d'Affaires Initial (€)</label>
+                <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} value={newMember.caNum} onChange={e => setNewMember({...newMember, caNum: e.target.value})} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Objectif de CA (€)</label>
+                <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} value={newMember.objNum} onChange={e => setNewMember({...newMember, objNum: e.target.value})} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Phrase d'Objectif</label>
+                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Atteindre 3000€" value={newMember.objectif} onChange={e => setNewMember({...newMember, objectif: e.target.value})} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>👥 Premier Client Top</label>
+                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Alice Durand" value={newMember.topClient} onChange={e => setNewMember({...newMember, topClient: e.target.value})} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>💄 Premier Produit Best-Seller</label>
+                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Parfum Luxury" value={newMember.bestSeller} onChange={e => setNewMember({...newMember, bestSeller: e.target.value})} />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>🛍️ Description Meilleure Vente initiale</label>
+                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Pack Crèmes & Fragrances d'été" value={newMember.meilleuresVentes} onChange={e => setNewMember({...newMember, meilleuresVentes: e.target.value})} />
+              </div>
             </div>
+            <button onClick={handleAddMember} style={{ width: '100%', background: '#2d7a4a', color: 'white', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', marginTop: '20px', letterSpacing: '1px' }}>AJOUTER AU RÉSEAU LIMITLESS</button>
           </div>
 
+          {/* TABLEAU GESTION AVEC CONFIGURATION INITIALE + SUPPRESSION */}
           <div style={{ overflowX: 'auto', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '850px' }}>
               <thead>
@@ -318,30 +356,108 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* DETAILS DU MEMBRE MODAL */}
+      {/* 💳 RESTAURÉ : DÉTAILS COMPLETS DU MEMBRE DANS LA CARTE MODALE */}
       {selectedMember && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '10px' }}>
-          <div style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '16px', padding: '20px', width: '100%', maxWidth: '400px', position: 'relative' }}>
-            <button onClick={() => setSelectedMember(null)} style={{ position: 'absolute', top: '12px', right: '15px', background: 'none', border: 'none', fontSize: '16px', cursor: 'pointer' }}>✕</button>
-            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-              <h3>{selectedMember.name}</h3>
-              <span style={{ background: '#F5EFE8', color: '#8C6D4F', padding: '3px 10px', borderRadius: '10px', fontSize: '11px' }}>{displayRole(selectedMember.role, selectedMember.genre)}</span>
+          <div style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '16px', padding: '25px', width: '100%', maxWidth: '440px', position: 'relative', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
+            <button onClick={() => setSelectedMember(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#4A3E3D' }}>✕</button>
+            
+            {/* Header Profil */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#4A3E3D', fontFamily: 'serif', letterSpacing: '1px' }}>{selectedMember.name}</h2>
+              <span style={{ background: '#F5EFE8', color: '#8C6D4F', padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                {displayRole(selectedMember.role, selectedMember.genre)}
+              </span>
             </div>
-            <div style={{ background: '#FAF5EE', padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold' }}>🎯 Objectif : {pctProgress}% Réalisé</div>
-              <div style={{ width: '100%', height: '6px', background: '#E6DCD0', borderRadius: '3px', marginTop: '6px', overflow: 'hidden' }}>
-                <div style={{ width: `${pctProgress}%`, height: '100%', background: '#8C6D4F' }}></div>
+
+            {/* Barre d'objectif */}
+            <div style={{ background: '#FAF5EE', padding: '12px 15px', borderRadius: '10px', marginBottom: '15px', border: '1px solid rgba(210,183,149,0.2)' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A3E3D', display: 'flex', justifyContent: 'space-between' }}>
+                <span>🎯 Objectif : {selectedMember.objectif}</span>
+                <span style={{ color: '#8C6D4F' }}>{pctProgress}%</span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: '#E6DCD0', borderRadius: '4px', marginTop: '8px', overflow: 'hidden' }}>
+                <div style={{ width: `${pctProgress}%`, height: '100%', background: 'linear-gradient(90deg, #D2B795, #8C6D4F)' }}></div>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
-              <span>💰 Chiffre d'Affaires:</span><strong>{selectedMember.ca}</strong>
+
+            {/* Informations de base */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
+                <span style={{ color: '#8C6D4F' }}>💰 Chiffre d'Affaires :</span><strong style={{ color: '#2d7a4a' }}>{selectedMember.ca}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
+                <span style={{ color: '#8C6D4F' }}>💎 Statut Fidélité :</span><strong>{selectedMember.fidelity || "Initial"}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
+                <span style={{ color: '#8C6D4F' }}>🔑 Mot de passe :</span><span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{selectedMember.mdp}</span>
+              </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
-              <span>💄 Best-Seller:</span><strong>{selectedMember.bestSellersList?.[0]?.name || "Aucun"}</strong>
+
+            {/* ⭐ RESTAURÉ : BLOC HISTORIQUE / TOP 5 DES VENTES */}
+            <div style={{ marginTop: '15px', textAlign: 'left' }}>
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>🛍️ TOP VENTES & COMMANDES</span>
+              {selectedMember.meilleuresVentesList && selectedMember.meilleuresVentesList.length > 0 ? (
+                selectedMember.meilleuresVentesList.map((mv, idx) => (
+                  <div key={idx} style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontWeight: '600' }}>{mv.name}</span>
+                    <span style={{ color: '#2d7a4a', fontWeight: '700' }}>{mv.total}</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ fontSize: '12px', color: '#999', italic: 'true' }}>Aucune vente enregistrée</div>
+              )}
             </div>
-            <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button onClick={() => { setTreeRootId(selectedMember.id); setSelectedMember(null); }} style={{ width: '100%', padding: '10px', background: '#D2B795', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>Zoomer sur son réseau</button>
-              <button onClick={() => setSelectedMember(null)} style={{ width: '100%', padding: '10px', background: '#4A3E3D', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Fermer</button>
+
+            {/* 💄 RESTAURÉ : BLOC PRODUITS BEST-SELLERS */}
+            <div style={{ marginTop: '15px', textAlign: 'left' }}>
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>💄 PRODUITS PHARES (BEST-SELLERS)</span>
+              {selectedMember.bestSellersList && selectedMember.bestSellersList.length > 0 ? (
+                selectedMember.bestSellersList.map((bs, idx) => (
+                  <div key={idx} style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span>{bs.name}</span>
+                    <span style={{ fontWeight: 'bold', color: '#8C6D4F' }}>{bs.qty || "1 un."}</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ fontSize: '12px', color: '#999' }}>Non défini</div>
+              )}
+            </div>
+
+            {/* 👥 RESTAURÉ : TOP CLIENTS & CLUBS */}
+            <div style={{ marginTop: '15px', textAlign: 'left' }}>
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>👥 FIIDÉLITÉ CLIENTS & POINTS</span>
+              {selectedMember.topClientsList && selectedMember.topClientsList.length > 0 ? (
+                selectedMember.topClientsList.map((c, idx) => (
+                  <div key={idx} style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontWeight: '500' }}>{c.name}</span>
+                    <span style={{ color: '#8C6D4F', fontWeight: 'bold' }}>{c.details}</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ fontSize: '12px', color: '#999' }}>Aucun client favori configuré</div>
+              )}
+            </div>
+
+            {/* 📅 RESTAURÉ : ÉVÉNEMENTS / AGENDAS DE FORMATION */}
+            <div style={{ marginTop: '15px', textAlign: 'left', marginBottom: '20px' }}>
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>📅 FORMATIONS & SÉMINAIRES</span>
+              {selectedMember.eventsList && selectedMember.eventsList.length > 0 ? (
+                selectedMember.eventsList.map((ev, idx) => (
+                  <div key={idx} style={{ background: '#FAF8F5', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', borderLeft: '3px solid #D2B795', marginBottom: '4px' }}>
+                    <div style={{ fontWeight: '600' }}>{ev.name}</div>
+                    <div style={{ color: '#777', fontSize: '11px', marginTop: '2px' }}>{ev.date} — {ev.loc}</div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ fontSize: '12px', color: '#999' }}>Aucun événement au programme</div>
+              )}
+            </div>
+
+            {/* Actions du bas de carte */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button onClick={() => { setTreeRootId(selectedMember.id); setSelectedMember(null); }} style={{ width: '100%', padding: '11px', background: '#D2B795', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', letterSpacing: '0.5px' }}>Zoomer sur son réseau</button>
+              <button onClick={() => setSelectedMember(null)} style={{ width: '100%', padding: '11px', background: '#4A3E3D', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Fermer</button>
             </div>
           </div>
         </div>
