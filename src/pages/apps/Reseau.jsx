@@ -4,7 +4,7 @@ export default function Reseau() {
   const [activeTab, setActiveTab] = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
 
-  // 🏢 Structure complète initiale avec indicateurs commerciaux
+  // 🏢 Structure complète avec indicateurs commerciaux + Objectifs Personnels & Progressions
   const defaultTree = {
     nodes: [
       { id: "kheira_b", name: "Kheira BELARIBI", role: "Manager", genre: "femme", parentId: null, ca: "12 500 €", caNum: 12500, objNum: 15000, objectif: "Atteindre 15 000 € de CA d'équipe", events: "Séminaire Annuel, Masterclass Or", fidelity: "Platine (1500 pts)", mdp: "Limitless*2026A", topClient: "Sarah Benali", bestSeller: "Parfum Prestige Luxury", meilleuresVentes: "Pack Élite & Soins Éclat" },
@@ -51,10 +51,10 @@ export default function Reseau() {
 
   const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
 
-  // 📈 Calculs automatiques pour le Dashboard de Pilotage
-  const totalCA = tree.nodes.reduce((sum, node) => sum + (node.caNum || 0), 0);
-  const totalObj = tree.nodes.reduce((sum, node) => sum + (node.objNum || 0), 0);
-  const globalPerformance = totalObj > 0 ? Math.min(100, Math.round((totalCA / totalObj) * 100)) : 0;
+  // 📈 Calculs automatiques en temps réel pour le Dashboard Global
+  const totalCA = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.caNum) || 0), 0);
+  const totalObjectifs = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.objNum) || 0), 0);
+  const globalPerformance = totalObjectifs > 0 ? Math.min(100, Math.round((totalCA / totalObjectifs) * 100)) : 0;
 
   const displayRole = (role, genre) => {
     if (genre === 'homme') {
@@ -64,7 +64,7 @@ export default function Reseau() {
     return role;
   };
 
-  // 📝 Gestion des corrections du CA en temps réel
+  // 📝 Mise à jour éditable du CA en temps réel
   const handleUpdateCA = (id, newVolume) => {
     const numericValue = parseFloat(newVolume) || 0;
     const updatedNodes = tree.nodes.map(node => {
@@ -79,7 +79,7 @@ export default function Reseau() {
     });
     setTree({ nodes: updatedNodes });
 
-    // Si le membre actuellement ouvert dans le modal est celui modifié, on met à jour la vue du modal
+    // Synchronisation instantanée du modal s'il est ouvert
     if (selectedMember && selectedMember.id === id) {
       setSelectedMember(prev => ({
         ...prev,
@@ -126,8 +126,7 @@ export default function Reseau() {
           style={{
             background: 'white', border: '1px solid #D2B795', borderRadius: '12px',
             padding: '12px', minWidth: '140px', textAlign: 'center', cursor: 'pointer',
-            boxShadow: '0 4px 10px rgba(210,183,149,0.15)', margin: '5px',
-            transition: 'transform 0.2s'
+            boxShadow: '0 4px 10px rgba(210,183,149,0.15)', margin: '5px'
           }}
         >
           <div style={{ fontSize: '10px', fontWeight: '700', color: node.genre === 'homme' ? '#3d6b9e' : '#8C6D4F', textTransform: 'uppercase' }}>
@@ -152,36 +151,35 @@ export default function Reseau() {
   return (
     <div style={{ padding: '15px', fontFamily: 'sans-serif', background: '#FAF7F2', minHeight: '100vh' }}>
       
-      {/* 👑 DASHBOARD DE PILOTAGE GLOBALE */}
+      {/* 👑 DASHBOARD DE PILOTAGE HAUT DE PAGE */}
       <div style={{ 
         maxWidth: '1000px', margin: '0 auto 20px auto', background: 'white', 
-        border: '1px solid #D2B795', borderRadius: '14px', padding: '15px 20px', 
-        display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexWrap: 'wrap', gap: '15px',
+        border: '1px solid #D2B795', borderRadius: '14px', padding: '15px 25px', 
+        display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexWrap: 'wrap', gap: '20px',
         boxShadow: '0 4px 15px rgba(210,183,149,0.1)' 
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '12px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📈 Chiffre d'Affaires Équipe</div>
+          <div style={{ fontSize: '11px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📈 Chiffre d'Affaires Global</div>
           <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7a4a', marginTop: '4px' }}>{totalCA.toLocaleString()} €</div>
         </div>
-        <div style={{ height: '30px', width: '1px', background: '#E6DCD0', display: 'none', sm: 'block' }}></div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '12px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🎯 Performance Globale</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+          <div style={{ fontSize: '11px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🎯 Performance Équipe</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#4A3E3D' }}>{globalPerformance}%</div>
-            <div style={{ width: '100px', height: '8px', background: '#E6DCD0', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: '120px', height: '8px', background: '#E6DCD0', borderRadius: '4px', overflow: 'hidden' }}>
               <div style={{ width: `${globalPerformance}%`, height: '100%', background: 'linear-gradient(90deg, #D2B795, #8C6D4F)' }}></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 👑 BOUTONS ONGLETS */}
+      {/* 👑 NAVIGATION PAR ONGLETS */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
         <button onClick={() => setActiveTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'arbre' ? '#D2B795' : 'white', color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre</button>
         <button onClick={() => setActiveTab('gestion')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'gestion' ? '#D2B795' : 'white', color: activeTab === 'gestion' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>⚙️ Gestion</button>
       </div>
 
-      {/* 🌳 VUE ARBRE */}
+      {/* 🌳 ONGLET "ARBRE" */}
       {activeTab === 'arbre' && (
         <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '20px' }}>
           <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%', gap: '20px' }}>
@@ -190,7 +188,7 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* ⚙️ VUE GESTION & ÉDITION EDITABLE */}
+      {/* ⚙️ ONGLET "GESTION" */}
       {activeTab === 'gestion' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
           
@@ -231,7 +229,7 @@ export default function Reseau() {
             </div>
           </div>
 
-          {/* Grand Tableau Récapitulatif avec Édition Intégrée */}
+          {/* Grand Tableau Éditable Administration */}
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left', minWidth: '950px' }}>
               <thead>
@@ -257,7 +255,7 @@ export default function Reseau() {
                         {n.mdp || "Non défini"}
                       </td>
                       <td style={{ padding: '12px' }}>
-                        {/* Champ d'édition directe du CA */}
+                        {/* Champ d'édition directe de CA */}
                         <input 
                           type="number"
                           value={n.caNum}
@@ -285,7 +283,7 @@ export default function Reseau() {
         </div>
       )}
 
-      {/* 👑 FENÊTRE MODALE DES PERFORMANCES ENRICHIE */}
+      {/* 👑 MODAL DE DÉTAIL ENRICHI */}
       {selectedMember && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: 'white', border: '2px solid #D2B795', borderRadius: '16px', padding: '20px', width: '90%', maxWidth: '360px', position: 'relative', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
@@ -299,7 +297,7 @@ export default function Reseau() {
               </span>
             </div>
 
-            {/* JAUGE DE PROGRESSION D'OBJECTIF */}
+            {/* Jauge d'Objectif Personnel */}
             <div style={{ background: '#FAF5EE', padding: '12px', borderRadius: '10px', border: '1px solid rgba(210,183,149,0.4)', marginBottom: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#4A3E3D', fontWeight: '700', marginBottom: '4px' }}>
                 <span>🎯 Objectif Personnel :</span>
@@ -313,7 +311,7 @@ export default function Reseau() {
               </div>
             </div>
 
-            {/* 📊 RÉSUMÉ COMPLET COMPTOIR (CA, FIDÉLITÉ, BEST-SELLER) */}
+            {/* Résumé enrichi demandé */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FDFBF9', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #2d7a4a' }}>
