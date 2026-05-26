@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useCloudData } from '../../lib/useCloudData';
+import { dbSet, dbGet, isEnabled } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Reseau() {
@@ -115,22 +116,32 @@ export default function Reseau() {
     topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000'
   });
 
-  // Créer un compte Chogan Hub pour le nouveau membre
-  const createAccount = (name, role, mdp) => {
+  // Créer un compte Chogan Hub pour le nouveau membre (local + cloud)
+  const createAccount = async (name, role, mdp) => {
     const parts     = name.trim().split(' ');
     const firstName = parts[0] || name;
     const lastName  = parts.slice(1).join(' ') || '';
-    const hubRole   = role === 'Consultante' ? 'consultante' : role === 'Marraine' || role === 'Parrain' ? 'marraine' : 'marraine';
+    const hubRole   = role === 'Consultante' ? 'consultante' : 'marraine';
     const id        = `user_${Date.now()}`;
     try {
-      const list = JSON.parse(localStorage.getItem('consultants') || '[]');
-      // Vérifier si le compte existe déjà
-      const exists = list.some(u => u.firstName.toLowerCase() === firstName.toLowerCase() && u.lastName.toLowerCase() === lastName.toLowerCase());
+      // Lire la liste actuelle depuis Supabase si dispo, sinon localStorage
+      let list = [];
+      if (isEnabled) {
+        const cloud = await dbGet('consultants');
+        list = Array.isArray(cloud) ? cloud : JSON.parse(localStorage.getItem('consultants') || '[]');
+      } else {
+        list = JSON.parse(localStorage.getItem('consultants') || '[]');
+      }
+      const exists = list.some(u =>
+        u.firstName.toLowerCase() === firstName.toLowerCase() &&
+        u.lastName.toLowerCase()  === lastName.toLowerCase()
+      );
       if (!exists) {
         list.push({ id, firstName, lastName, displayName:`${firstName} ${lastName}`.trim(), role:hubRole, password:mdp||'Chogan#123', locked:false });
         localStorage.setItem('consultants', JSON.stringify(list));
+        if (isEnabled) await dbSet('consultants', list);
       }
-    } catch {}
+    } catch(e) { console.error('createAccount error', e); }
   };
 
   const handleAddMember = () => {
