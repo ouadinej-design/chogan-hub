@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
@@ -9,95 +10,103 @@ export default function Reseau() {
   const [activeTab, setActiveTab] = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
   const [treeNodes, setTreeNodes] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0); // Pour forcer la mise à jour visuelle
 
-  // 1. Génération et injection automatique de l'organisation de la Limitless Team
-  useEffect(() => {
+  // Fonction manuelle pour injecter TOUTE l'équipe d'un coup sans doublons
+  const injecterEquipeComplete = () => {
     const consultantsExistants = store.get('consultants', []);
+    
+    const equipeInitiale = [
+      {
+        id: "marraine-marie",
+        firstName: "Marie",
+        lastName: "Limitless",
+        displayName: "Marie Limitless",
+        role: "marraine",
+        email: "marie@limitless.com",
+        password: "Marie#2026",
+        parentId: "admin-root",
+        genre: "femme",
+        locked: false,
+        createdAt: new Date().toISOString(),
+        objNum: 5000,
+        objectif: "Atteindre le statut Platine avec mon groupe"
+      },
+      {
+        id: "cons-nawel",
+        firstName: "Nawel",
+        lastName: "Chogan",
+        displayName: "Nawel Chogan",
+        role: "consultante",
+        email: "nawel@limitless.com",
+        password: "Nawel#2026",
+        parentId: "marraine-marie",
+        genre: "femme",
+        locked: false,
+        createdAt: new Date().toISOString(),
+        objNum: 1500,
+        objectif: "Valider 10 ventes de Parfums Prestige"
+      },
+      {
+        id: "cons-karim",
+        firstName: "Karim",
+        lastName: "Elite",
+        displayName: "Karim Elite",
+        role: "consultante",
+        email: "karim@limitless.com",
+        password: "Karim#2026",
+        parentId: "marraine-marie",
+        genre: "homme",
+        locked: false,
+        createdAt: new Date().toISOString(),
+        objNum: 2000,
+        objectif: "Développer mon portefeuille clients sur la gamme Homme"
+      },
+      {
+        id: "marraine-sarah",
+        firstName: "Sarah",
+        lastName: "Leader",
+        displayName: "Sarah Leader",
+        role: "marraine",
+        email: "sarah@limitless.com",
+        password: "Sarah#2026",
+        parentId: "admin-root",
+        genre: "femme",
+        locked: false,
+        createdAt: new Date().toISOString(),
+        objNum: 4000,
+        objectif: "Former 3 nouvelles consultantes ce mois-ci"
+      },
+      {
+        id: "cons-yasmine",
+        firstName: "Yasmine",
+        lastName: "Beauty",
+        displayName: "Yasmine Beauty",
+        role: "consultante",
+        email: "yasmine@limitless.com",
+        password: "Yasmine#2026",
+        parentId: "marraine-sarah",
+        genre: "femme",
+        locked: false,
+        createdAt: new Date().toISOString(),
+        objNum: 1200,
+        objectif: "Organiser 2 ateliers de démonstration vocale et visuelle"
+      }
+    ];
 
-    // Si aucun conseiller n'est créé (à part l'admin), on injecte toute l'équipe d'un coup
-    if (consultantsExistants.length === 0) {
-      const equipeInitiale = [
-        {
-          id: "marraine-marie",
-          firstName: "Marie",
-          lastName: "Limitless",
-          displayName: "Marie Limitless",
-          role: "marraine",
-          email: "marie@limitless.com",
-          password: "Marie#2026",
-          parentId: "admin-root",
-          genre: "femme",
-          locked: false,
-          createdAt: new Date().toISOString(),
-          objNum: 5000,
-          objectif: "Atteindre le statut Platine avec mon groupe"
-        },
-        {
-          id: "cons-nawel",
-          firstName: "Nawel",
-          lastName: "Chogan",
-          displayName: "Nawel Chogan",
-          role: "consultante",
-          email: "nawel@limitless.com",
-          password: "Nawel#2026",
-          parentId: "marraine-marie",
-          genre: "femme",
-          locked: false,
-          createdAt: new Date().toISOString(),
-          objNum: 1500,
-          objectif: "Valider 10 ventes de Parfums Prestige"
-        },
-        {
-          id: "cons-karim",
-          firstName: "Karim",
-          lastName: "Elite",
-          displayName: "Karim Elite",
-          role: "consultante",
-          email: "karim@limitless.com",
-          password: "Karim#2026",
-          parentId: "marraine-marie",
-          genre: "homme",
-          locked: false,
-          createdAt: new Date().toISOString(),
-          objNum: 2000,
-          objectif: "Développer mon portefeuille clients sur la gamme Homme"
-        },
-        {
-          id: "marraine-sarah",
-          firstName: "Sarah",
-          lastName: "Leader",
-          displayName: "Sarah Leader",
-          role: "marraine",
-          email: "sarah@limitless.com",
-          password: "Sarah#2026",
-          parentId: "admin-root",
-          genre: "femme",
-          locked: false,
-          createdAt: new Date().toISOString(),
-          objNum: 4000,
-          objectif: "Former 3 nouvelles consultantes ce mois-ci"
-        },
-        {
-          id: "cons-yasmine",
-          firstName: "Yasmine",
-          lastName: "Beauty",
-          displayName: "Yasmine Beauty",
-          role: "consultante",
-          email: "yasmine@limitless.com",
-          password: "Yasmine#2026",
-          parentId: "marraine-sarah",
-          genre: "femme",
-          locked: false,
-          createdAt: new Date().toISOString(),
-          objNum: 1200,
-          objectif: "Organiser 2 ateliers de démonstration vocale et visuelle"
-        }
-      ];
+    // Filtrer pour ne pas ajouter des personnes qui ont déjà le même ID
+    const nouvelleListe = [...consultantsExistants];
+    equipeInitiale.forEach(membre => {
+      if (!nouvelleListe.some(c => c.id === membre.id)) {
+        nouvelleListe.push(membre);
+      }
+    });
 
-      store.set('consultants', equipeInitiale);
-      log('Réseau', 'Initialisation automatique de toute la structure de la Limitless Team');
-    }
-  }, [log]);
+    store.set('consultants', nouvelleListe);
+    log('Réseau', 'Injection manuelle forcée de la structure de la Limitless Team');
+    setRefreshKey(old => old + 1); // Relance le calcul immédiatement
+    alert("✨ L'équipe complète a été injectée avec succès !");
+  };
 
   // 2. Chargement et calcul dynamique des statistiques réelles de l'équipe
   useEffect(() => {
@@ -136,7 +145,7 @@ export default function Reseau() {
         ca: `${totalCA.toLocaleString()} €`,
         caNum: totalCA,
         objNum: parseFloat(c.objNum) || 1000, 
-        objectif: c.objectif || "Fixer un objective personnel", 
+        objectif: c.objectif || "Fixer un objectif personnel", 
         events: eventTitles,
         fidelity: autoLevel,
         mdp: c.password || "Non défini",
@@ -168,7 +177,7 @@ export default function Reseau() {
     }
 
     setTreeNodes(dynamicNodes);
-  }, [getAllConsultants]);
+  }, [getAllConsultants, refreshKey]);
 
   const displayRole = (role, genre) => {
     if (genre === 'homme') {
@@ -217,9 +226,20 @@ export default function Reseau() {
   return (
     <div style={{ padding: '15px', fontFamily: 'sans-serif', background: '#FAF7F2', minHeight: '100vh' }}>
       
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
-        <button onClick={() => setActiveTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'arbre' ? '#D2B795' : 'white', color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre Généalogique</button>
-        <button onClick={() => setActiveTab('tableau')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'tableau' ? '#D2B795' : 'white', color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>📊 Vue Globale & Mots de passe</button>
+      {/* 👑 BOUTONS ONGLETS */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => setActiveTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'arbre' ? '#D2B795' : 'white', color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre Généalogique</button>
+          <button onClick={() => setActiveTab('tableau')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'tableau' ? '#D2B795' : 'white', color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>📊 Vue Globale & Mots de passe</button>
+        </div>
+        
+        {/* 🚀 BOUTON DE SYNCHRONISATION INITIALE REQUIS */}
+        <button 
+          onClick={injecterEquipeComplete} 
+          style={{ background: '#4A3E3D', color: '#D2B795', border: '1px solid #D2B795', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}
+        >
+          ⚡ Générer / Forcer l'Équipe Limitless
+        </button>
       </div>
 
       {activeTab === 'arbre' && (
