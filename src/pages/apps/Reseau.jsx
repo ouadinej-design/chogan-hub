@@ -15,6 +15,29 @@ export default function Reseau() {
   const [sales]             = useCloudData('le_sales', []);
   const [events]            = useCloudData('le_cevents', []);
 
+  // Synchroniser les comptes existants du réseau au chargement
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
+    try {
+      const list = JSON.parse(localStorage.getItem('consultants') || '[]');
+      const existingNames = list.map(u => u.firstName.toLowerCase());
+      let updated = false;
+      tree.nodes.forEach(n => {
+        const parts = n.name.trim().split(' ');
+        const fn = (parts[0]||'').toLowerCase();
+        if (fn && !existingNames.includes(fn) && n.mdp) {
+          const firstName = parts[0];
+          const lastName  = parts.slice(1).join(' ') || '';
+          const hubRole   = n.role==='Consultante'?'consultante':'marraine';
+          list.push({ id:`user_${Date.now()}_${fn}`, firstName, lastName, displayName:`${firstName} ${lastName}`.trim(), role:hubRole, password:n.mdp, locked:false });
+          existingNames.push(fn);
+          updated = true;
+        }
+      });
+      if (updated) localStorage.setItem('consultants', JSON.stringify(list));
+    } catch {}
+  }, [tree.nodes.length]);
+
   // Auto-refresh via useCloudData + storage events
   useEffect(() => {
     const onStorage = () => setLastRefresh(Date.now());
@@ -92,9 +115,29 @@ export default function Reseau() {
     topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000'
   });
 
+  // Créer un compte Chogan Hub pour le nouveau membre
+  const createAccount = (name, role, mdp) => {
+    const parts     = name.trim().split(' ');
+    const firstName = parts[0] || name;
+    const lastName  = parts.slice(1).join(' ') || '';
+    const hubRole   = role === 'Consultante' ? 'consultante' : role === 'Marraine' || role === 'Parrain' ? 'marraine' : 'marraine';
+    const id        = `user_${Date.now()}`;
+    try {
+      const list = JSON.parse(localStorage.getItem('consultants') || '[]');
+      // Vérifier si le compte existe déjà
+      const exists = list.some(u => u.firstName.toLowerCase() === firstName.toLowerCase() && u.lastName.toLowerCase() === lastName.toLowerCase());
+      if (!exists) {
+        list.push({ id, firstName, lastName, displayName:`${firstName} ${lastName}`.trim(), role:hubRole, password:mdp||'Chogan#123', locked:false });
+        localStorage.setItem('consultants', JSON.stringify(list));
+      }
+    } catch {}
+  };
+
   const handleAddMember = () => {
     if (!newMember.name.trim()) return;
     const cNum = parseFloat(newMember.caNum) || 0, oNum = parseFloat(newMember.objNum) || 1000;
+    // Créer le compte de connexion automatiquement
+    createAccount(newMember.name, newMember.role, newMember.mdp);
     persistTree({ nodes: [...tree.nodes, {
       id: Date.now().toString(), name: newMember.name.trim(), role: newMember.role,
       genre: newMember.genre, parentId: newMember.parentId || null,
