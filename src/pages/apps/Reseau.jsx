@@ -3,13 +3,61 @@ import React, { useState, useEffect } from 'react';
 export default function Reseau() {
   const [activeTab, setActiveTab] = useState('arbre');
   
-  // 📁 Chargement initial des données depuis le localStorage (ou tableau vide si premier démarrage)
+  // 🏢 Structure complète de la Limitless Team intégrée directement par défaut
+  const defaultTree = {
+    nodes: [
+      // Échelon 1 : La Racine
+      { id: "kheira_b", name: "Kheira B", role: "Manager", genre: "femme", parentId: null },
+
+      // Échelon 2 : Marie (rattachée à Kheira B)
+      { id: "marie", name: "Marie", role: "Marraine", genre: "femme", parentId: "kheira_b" },
+
+      // Échelon 3 : Les Consultantes rattachées directement à Marie
+      { id: "soumia", name: "Soumia", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "nawel", name: "Nawel", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "selma", name: "Selma", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "sophia", name: "Sophia", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "baya", name: "Baya", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "milene", name: "Milène", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "sarah", name: "Sarah", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "nadia_b", name: "Nadia B", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "shaima", name: "Shaïma", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "melissa", name: "Mélissa", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "cassandra", name: "Cassandra", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "meryem", name: "Meryem", role: "Consultante", genre: "femme", parentId: "marie" },
+      { id: "karim", name: "Karim", role: "Consultante", genre: "homme", parentId: "marie" },
+
+      // Échelon 3 : Les sous-marraines rattachées à Marie
+      { id: "nadia_n", name: "Nadia N", role: "Marraine", genre: "femme", parentId: "marie" },
+      { id: "isabelle", name: "Isabelle", role: "Marraine", genre: "femme", parentId: "marie" },
+      { id: "blandine", name: "Blandine", role: "Marraine", genre: "femme", parentId: "marie" },
+
+      // Échelon 4 : Filleuls de Nadia N
+      { id: "tracy", name: "Tracy", role: "Consultante", genre: "femme", parentId: "nadia_n" },
+      { id: "yasmin", name: "Yasmin", role: "Consultante", genre: "femme", parentId: "nadia_n" },
+
+      // Échelon 4 : Filleuls d'Isabelle
+      { id: "anita", name: "Anita", role: "Consultante", genre: "femme", parentId: "isabelle" },
+      { id: "khayra", name: "Khayra", role: "Consultante", genre: "femme", parentId: "isabelle" },
+
+      // Échelon 4 : Filleuls de Blandine
+      { id: "yasmina", name: "Yasmina", role: "Consultante", genre: "femme", parentId: "blandine" },
+      { id: "adam", name: "Adam", role: "Consultante", genre: "homme", parentId: "blandine" }
+    ]
+  };
+
+  // 📁 Chargement initial (prend le localStorage s'il existe déjà, sinon met l'organisation par défaut)
   const [tree, setTree] = useState(() => {
-    const savedData = localStorage.getItem('limitless_team_tree');
-    return savedData ? JSON.parse(savedData) : { nodes: [] };
+    try {
+      const savedData = localStorage.getItem('limitless_team_tree');
+      return savedData ? JSON.parse(savedData) : defaultTree;
+    } catch (error) {
+      console.error("Erreur de lecture du localStorage", error);
+      return defaultTree;
+    }
   });
 
-  // 💾 Sauvegarde automatique dans le localStorage à chaque fois que la liste des membres change
+  // 💾 Sauvegarde automatique dans le localStorage
   useEffect(() => {
     localStorage.setItem('limitless_team_tree', JSON.stringify(tree));
   }, [tree]);
@@ -100,7 +148,7 @@ export default function Reseau() {
     if (editId === id) setEditId(null);
   };
 
-  // Filtrage et recherche pour le tableau
+  // Filtrage et recherche
   const filteredNodes = currentNodes
     .filter(n => {
       const matchesSearch = n.name.toLowerCase().includes(search.toLowerCase());
@@ -115,7 +163,6 @@ export default function Reseau() {
     if (!node) return null;
 
     const enfants = currentNodes.filter(n => n.parentId === node.id);
-    const isMarieOuadi = node.name.trim().toLowerCase() === "marie ouadi";
 
     const childrenContainerStyle = {
       display: 'flex',
@@ -123,8 +170,8 @@ export default function Reseau() {
       gap: '20px',
       marginTop: '20px',
       position: 'relative',
-      flexDirection: isMarieMarieOuadi ? 'column' : 'row',
-      alignItems: isMarieOuadi ? 'center' : 'flex-start'
+      flexDirection: 'row',
+      alignItems: 'flex-start'
     };
 
     return (
@@ -134,7 +181,7 @@ export default function Reseau() {
           border: '1px solid #D2B795',
           borderRadius: '12px',
           padding: '12px 18px',
-          minWidth: '160px',
+          minWidth: '150px',
           boxShadow: '0 4px 10px rgba(0,0,0,0.03)',
           textAlign: 'center'
         }}>
@@ -142,10 +189,10 @@ export default function Reseau() {
             {displayRole(node.role || 'Consultante', node.genre)}
           </div>
           <div style={{ fontWeight: '600', color: '#333', fontSize: '14px', marginBottom: '6px' }}>
-            {n => n.name}
+            {node.name}
           </div>
-          <div style={{ fontSize: '11px', fontWeight: '500', color: '#D6AF37' }}>
-            Actif
+          <div style={{ fontSize: '11px', fontWeight: '500', color: '#2d7a4a' }}>
+            🟢 Actif
           </div>
         </div>
 
@@ -158,12 +205,12 @@ export default function Reseau() {
     );
   };
 
-  const rootNode = currentNodes.find(n => !n.parentId);
+  const rootNodes = currentNodes.filter(n => !n.parentId);
 
   return (
     <div style={{ padding: '10px', fontFamily: 'sans-serif' }}>
       
-      {/* BOUTONS DES SOUS-ONGLETS */}
+      {/* 👑 BOUTONS DES ONGLETS */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', justifyContent: 'center' }}>
         <button 
           onClick={() => setActiveTab('arbre')}
@@ -187,22 +234,22 @@ export default function Reseau() {
         </button>
       </div>
 
-      {/* CONTENU : ONGLET ARBRE */}
+      {/* 🌳 ONGLET ARBRE */}
       {activeTab === 'arbre' && (
-        <div style={{ width: '100%', overflowX: 'auto', padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
-          {rootNode ? renderTreeNodes(rootNode) : (
-            <p style={{ color: '#666', fontStyle: 'italic' }}>
-              Aucun membre détecté. Allez dans l'onglet "Vue Tableau (Admin)" pour ajouter le premier membre racine.
-            </p>
+        <div style={{ width: '100%', overflowX: 'auto', padding: '20px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}>
+          {rootNodes.length > 0 ? (
+            rootNodes.map(root => renderTreeNodes(root))
+          ) : (
+            <p style={{ color: '#666', fontStyle: 'italic' }}>Aucun membre détecté.</p>
           )}
         </div>
       )}
 
-      {/* CONTENU : ONGLET TABLEAU (ADMIN) */}
+      {/* 📊 ONGLET TABLEAU */}
       {activeTab === 'tableau' && (
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           
-          {/* FORMULAIRE D'AJOUT DE MEMBRE */}
+          {/* FORMULAIRE */}
           <div style={{ background: '#FDFBF7', border: '1px solid #D2B795', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
             <h3 style={{ marginTop: 0, color: '#4A3E3D', marginBottom: '15px' }}>✨ Ajouter un nouveau membre à la Limitless Team</h3>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -235,7 +282,7 @@ export default function Reseau() {
                   value={newMember.role}
                   onChange={e => setNewMember(p => ({ ...p, role: e.target.value }))}
                 >
-                  {ROLES_LIST.map(r => <option key={r} value={r}>{r === 'Consultante' ? 'Consultante / Consultant' : r === 'Marraine' ? 'Marraine / Parrain' : r}</option>)}
+                  {ROLES_LIST.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
 
@@ -259,27 +306,6 @@ export default function Reseau() {
             </div>
           </div>
 
-          {/* BARRE DE FILTRES */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-            <input 
-              style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '1px solid #D2B795' }}
-              placeholder="🔍 Rechercher dans le tableau..." 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-            />
-            <select
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #D2B795', background: 'white' }}
-              value={filterRole}
-              onChange={e => setFilterRole(e.target.value)}
-            >
-              <option value="tous">👑 Tous les rôles</option>
-              <option value="Consultante">Consultantes / Consultants</option>
-              <option value="Marraine">Marraines / Parrains</option>
-              <option value="Manager">Managers</option>
-              <option value="VIP">VIP</option>
-            </select>
-          </div>
-
           {/* TABLEAU */}
           <div style={{ overflowX: 'auto', background: 'white', borderRadius: '12px', border: '1px solid #D2B795' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
@@ -293,68 +319,29 @@ export default function Reseau() {
                 </tr>
               </thead>
               <tbody>
-                {filteredNodes.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#999' }}>Aucun membre enregistré pour le moment.</td>
-                  </tr>
-                ) : (
-                  filteredNodes.map(n => {
-                    const isEditing = editId === n.id;
-                    const currentParent = currentNodes.find(p => p.id === n.parentId);
+                {filteredNodes.map(n => {
+                  const isEditing = editId === n.id;
+                  const currentParent = currentNodes.find(p => p.id === n.parentId);
 
-                    return (
-                      <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.2)', background: isEditing ? 'rgba(214,175,55,0.04)' : 'transparent' }}>
-                        
-                        <td style={{ padding: '12px 10px', fontWeight: '600' }}>
-                          {isEditing ? (
-                            <input style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37', width: '100%' }} value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
-                          ) : n.name}
-                        </td>
-
-                        <td style={{ padding: '12px 10px' }}>
-                          {isEditing ? (
-                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.genre} onChange={e => setEditForm(p => ({ ...p, genre: e.target.value }))}>
-                              <option value="femme">👩 Femme</option>
-                              <option value="homme">👨 Homme</option>
-                            </select>
-                          ) : (n.genre === 'homme' ? '👨 Homme' : '👩 Femme')}
-                        </td>
-
-                        <td style={{ padding: '12px 10px' }}>
-                          {isEditing ? (
-                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.role} onChange={e => setEditForm(p => ({ ...p, role: e.target.value }))}>
-                              {ROLES_LIST.map(r => <option key={r} value={r}>{r}</option>)}
-                            </select>
-                          ) : displayRole(n.role, n.genre)}
-                        </td>
-
-                        <td style={{ padding: '12px 10px', color: '#666' }}>
-                          {isEditing ? (
-                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.parentId} onChange={e => setEditForm(p => ({ ...p, parentId: e.target.value }))}>
-                              <option value="">— Aucun —</option>
-                              {currentNodes.filter(cand => cand.id !== n.id).map(cand => <option key={cand.id} value={cand.id}>{cand.name}</option>)}
-                            </select>
-                          ) : (currentParent ? currentParent.name : 'Aucun')}
-                        </td>
-
-                        <td style={{ padding: '12px 10px', textAlign: 'center' }}>
-                          {isEditing ? (
-                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                              <button onClick={handleSaveRow} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>💾</button>
-                              <button onClick={() => setEditId(null)} style={{ background: '#ccc', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
-                            </div>
-                          ) : (
-                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                              <button onClick={() => startEdit(n)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
-                              <button onClick={() => handleDeleteRow(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
-                            </div>
-                          )}
-                        </td>
-
-                      </tr>
-                    );
-                  })
-                )}
+                  return (
+                    <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.2)' }}>
+                      <td style={{ padding: '12px 10px', fontWeight: '600' }}>{isEditing ? <input style={{ padding: '6px' }} value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} /> : n.name}</td>
+                      <td style={{ padding: '12px 10px' }}>{n.genre === 'homme' ? '👨 Homme' : '👩 Femme'}</td>
+                      <td style={{ padding: '12px 10px' }}>{displayRole(n.role, n.genre)}</td>
+                      <td style={{ padding: '12px 10px' }}>{currentParent ? currentParent.name : 'Aucun'}</td>
+                      <td style={{ padding: '12px 10px', textAlign: 'center' }}>
+                        {isEditing ? (
+                          <button onClick={handleSaveRow}>💾</button>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            <button onClick={() => startEdit(n)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
+                            <button onClick={() => handleDeleteRow(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
