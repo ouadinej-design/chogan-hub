@@ -1,65 +1,106 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Reseau() {
-  const [activeTab, setActiveTab] = useState('arbre');
+export default function ChoganApp() {
+  // Navigation principale : 'hub' | 'commandes' | 'reseau'
+  const [currentView, setCurrentView] = useState('hub');
+  const [activeSubTab, setActiveSubTab] = useState('arbre'); // Pour le réseau : 'arbre' | 'gestion'
+  const [activeOrderTab, setActiveOrderTab] = useState('bon_commande'); // Pour commandes : 'bon_commande' | 'ventes'
+  
   const [selectedMember, setSelectedMember] = useState(null);
   const [treeRootId, setTreeRootId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
-  // Base de données initiale et complète de la Limitless Team
+  // 1. BASE DE DONNÉES INITIALE DES MEMBRES
   const defaultTree = {
     nodes: [
-      { 
-        id: "kheira_b", name: "Kheira BELARIBI", role: "Manager", genre: "femme", parentId: null, ca: "12 500 €", caNum: 12500, objNum: 15000, objectif: "Atteindre 15 000 € de CA d'équipe", fidelity: "Platine (1500 pts)", mdp: "Limitless*2026A",
-        topClientsList: [
-          { name: "Sarah Benali", date: "24 Mai 2026", details: "+450 pts" },
-          { name: "Amel K.", date: "18 Mai 2026", details: "+300 pts" }
-        ],
-        eventsList: [{ name: "Séminaire Annuel Limitless", date: "15 Juin 2026", loc: "Paris" }],
-        bestSellersList: [{ name: "Parfum Prestige Luxury", date: "25 Mai 2026", qty: "18 un." }],
-        meilleuresVentesList: [{ name: "Pack Élite & Soins Éclat", date: "24 Mai 2026", total: "2 450 €" }]
-      },
-      { 
-        id: "marie", name: "Marie OUADI", role: "Marraine", genre: "femme", parentId: "kheira_b", ca: "8 400 €", caNum: 8400, objNum: 10000, objectif: "Atteindre 10 000 € de CA perso", fidelity: "Or (900 pts)", mdp: "Limitless*2026B",
-        topClientsList: [{ name: "Amine Mansouri", date: "25 Mai 2026", details: "+250 pts" }],
-        eventsList: [{ name: "Masterclass Or & Excellence", date: "18 Juin 2026", loc: "Marseille" }],
-        bestSellersList: [{ name: "Sérum Anti-Âge Ultime", date: "23 Mai 2026", qty: "15 un." }],
-        meilleuresVentesList: [{ name: "Gamme Corps & Fragrances", date: "22 Mai 2026", total: "1 650 €" }]
-      },
-      { 
-        id: "soumia", name: "Soumia", role: "Consultante", genre: "femme", parentId: "marie", ca: "2 100 €", caNum: 2100, objNum: 3000, objectif: "Atteindre 3 000 € de CA", fidelity: "Argent (320 pts)", mdp: "Soumia#Lmtl",
-        topClientsList: [{ name: "Léa Roussel", date: "26 Mai 2026", details: "+95 pts" }],
-        eventsList: [{ name: "Atelier Initial & Catalogue", date: "12 Juin 2026", loc: "En ligne" }],
-        bestSellersList: [{ name: "Huile Sèche Scintillante", date: "24 Mai 2026", qty: "9 un." }],
-        meilleuresVentesList: [{ name: "Duos Maquillage Été", date: "24 Mai 2026", total: "450 €" }]
-      }
+      { id: "kheira_b", name: "Kheira BELARIBI", role: "Manager", genre: "femme", parentId: null, baseCa: 12500, objectif: "Atteindre 15 000 € de CA d'équipe", objNum: 15000, fidelity: "Platine (1500 pts)", mdp: "Limitless*2026A" },
+      { id: "marie", name: "Marie OUADI", role: "Marraine", genre: "femme", parentId: "kheira_b", baseCa: 8400, objectif: "Atteindre 10 000 € de CA perso", objNum: 10000, fidelity: "Or (900 pts)", mdp: "Limitless*2026B" },
+      { id: "soumia", name: "Soumia", role: "Consultante", genre: "femme", parentId: "marie", baseCa: 2100, objectif: "Atteindre 3 000 € de CA", objNum: 3000, fidelity: "Argent (320 pts)", mdp: "Soumia#Lmtl" },
+      { id: "nej", name: "Nej", role: "Consultante", genre: "homme", parentId: "marie", baseCa: 0, objectif: "Atteindre niveau diamant", objNum: 5000, fidelity: "Initial (0 pts)", mdp: "Adim81#" }
     ]
   };
 
-  // Persistance locale
+  // 2. BASE DE DONNÉES INITIALE DES VENTES (Associer au nom exact du conseiller)
+  const defaultSales = [
+    { id: "sale_1", client: "Test", total: 88, date: "26 Mai 2026", consultant: "Nej", products: [{ name: "N°004 The One 70ml", qty: 1, price: 35 }, { name: "N°003 Fahrenheit 30ml", qty: 1, price: 18 }, { name: "N°007 J'Adore 70ml", qty: 1, price: 35 }] },
+    { id: "sale_2", client: "Farid", total: 35, date: "26 Mai 2026", consultant: "Nej", products: [{ name: "N°001 One Million 70ml", qty: 1, price: 35 }] }
+  ];
+
+  // Chargement LocalStorage
   const [tree, setTree] = useState(() => {
-    try {
-      const localData = localStorage.getItem('limitless_team_tree_v5');
-      if (localData) return JSON.parse(localData);
-    } catch (e) {}
-    return defaultTree;
+    const local = localStorage.getItem('chogan_tree_connected');
+    return local ? JSON.parse(local) : defaultTree;
+  });
+
+  const [sales, setSales] = useState(() => {
+    const local = localStorage.getItem('chogan_sales_connected');
+    return local ? JSON.parse(local) : defaultSales;
   });
 
   useEffect(() => {
-    localStorage.setItem('limitless_team_tree_v5', JSON.stringify(tree));
+    localStorage.setItem('chogan_tree_connected', JSON.stringify(tree));
   }, [tree]);
 
-  // État initial complet du formulaire d'inscription
+  useEffect(() => {
+    localStorage.setItem('chogan_sales_connected', JSON.stringify(sales));
+  }, [sales]);
+
+  // Formulaire d'inscription de l'équipe
   const [newMember, setNewMember] = useState({ 
-    name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', 
-    topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', 
-    caNum: '0', objNum: '1000' 
+    name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', objectif: '', objNum: '1000' 
   });
 
-  // Calculs globaux du tableau de bord
-  const totalCA = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.caNum) || 0), 0);
-  const totalObjectifs = tree.nodes.reduce((sum, node) => sum + (parseFloat(node.objNum) || 0), 0);
+  // Formulaire de simulation de vente rapide
+  const [quickSale, setQuickSale] = useState({ client: '', total: '', consultant: 'Nej', product: '' });
+
+  // 🔄 FONCTION DE CONNEXION : Calculer dynamiquement les stats d'un membre à partir des ventes
+  const getComputedMemberData = (node) => {
+    const memberSales = sales.filter(s => s.consultant.toLowerCase().trim() === node.name.toLowerCase().trim());
+    
+    // CA Total = CA de base configuré à l'inscription + somme des ventes réelles
+    const salesTotal = memberSales.reduce((sum, s) => sum + s.total, 0);
+    const dynamicCaNum = node.baseCa + salesTotal;
+
+    // Trouver le meilleur produit (Best-seller)
+    const productCounts = {};
+    let topProduct = "Non défini";
+    let topQty = 0;
+
+    memberSales.forEach(s => {
+      s.products?.forEach(p => {
+        productCounts[p.name] = (productCounts[p.name] || 0) + p.qty;
+        if (productCounts[p.name] > topQty) {
+          topQty = productCounts[p.name];
+          topProduct = p.name;
+        }
+      });
+    });
+
+    // Trouver le dernier ou meilleur client
+    const lastClient = memberSales.length > 0 ? memberSales[memberSales.length - 1].client : "Aucun";
+
+    // Préparer la liste des meilleures ventes formatée pour la carte
+    const topVentesList = memberSales.map(s => ({
+      name: `Commande - Client ${s.client}`,
+      total: `${s.total} €`
+    }));
+
+    return {
+      ...node,
+      caNum: dynamicCaNum,
+      ca: `${dynamicCaNum.toLocaleString()} €`,
+      bestSeller: topProduct,
+      bestSellerQty: topQty > 0 ? `${topQty} un.` : "1 un.",
+      topClient: lastClient,
+      meilleuresVentesList: topVentesList.length > 0 ? topVentesList : [{ name: "Non défini", total: "0 €" }]
+    };
+  };
+
+  // Calculs collectifs de la team
+  const computedNodes = tree.nodes.map(node => getComputedMemberData(node));
+  const totalCA = computedNodes.reduce((sum, node) => sum + node.caNum, 0);
+  const totalObjectifs = computedNodes.reduce((sum, node) => sum + (parseFloat(node.objNum) || 0), 0);
   const globalPerformance = totalObjectifs > 0 ? Math.min(100, Math.round((totalCA / totalObjectifs) * 100)) : 0;
 
   const displayRole = (role, genre) => {
@@ -70,77 +111,50 @@ export default function Reseau() {
     return role;
   };
 
-  const startEditing = (member) => {
-    setEditingId(member.id);
-    setEditForm({ ...member });
-  };
-
-  const saveRowEdits = () => {
-    const updatedNodes = tree.nodes.map(node => {
-      if (node.id === editingId) {
-        const cNum = parseFloat(editForm.caNum) || 0;
-        return { ...editForm, caNum: cNum, ca: `${cNum.toLocaleString()} €` };
-      }
-      return node;
-    });
-    setTree({ nodes: updatedNodes });
-    setEditingId(null);
-  };
-
+  // Actions de gestion
   const handleDeleteMember = (id, name) => {
-    const confirmDelete = window.confirm(`Êtes-vous sûr de vouloir supprimer ${name} de l'équipe ?`);
-    if (confirmDelete) {
-      const memberToDelete = tree.nodes.find(n => n.id === id);
-      const parentIdOfDeleted = memberToDelete ? memberToDelete.parentId : null;
-
-      const updatedNodes = tree.nodes
-        .filter(node => node.id !== id)
-        .map(node => {
-          if (node.parentId === id) {
-            return { ...node, parentId: parentIdOfDeleted };
-          }
-          return node;
-        });
-
-      setTree({ nodes: updatedNodes });
-      
-      if (treeRootId === id) setTreeRootId(null);
-      if (selectedMember && selectedMember.id === id) setSelectedMember(null);
+    if (window.confirm(`Supprimer ${name} de l'équipe ?`)) {
+      const parentId = tree.nodes.find(n => n.id === id)?.parentId || null;
+      setTree({
+        nodes: tree.nodes.filter(n => n.id !== id).map(n => n.parentId === id ? { ...n, parentId } : n)
+      });
     }
   };
 
   const handleAddMember = () => {
     if (!newMember.name.trim()) return;
-    const cNum = parseFloat(newMember.caNum) || 0;
-    const oNum = parseFloat(newMember.objNum) || 1000;
-
     const newNode = {
       id: Date.now().toString(),
       name: newMember.name.trim(),
       role: newMember.role,
       genre: newMember.genre,
       parentId: newMember.parentId || null,
-      ca: `${cNum.toLocaleString()} €`, 
-      caNum: cNum,
-      objNum: oNum,
-      objectif: newMember.objectif.trim() || "Fixer un objectif",
+      baseCa: 0,
+      objNum: parseFloat(newMember.objNum) || 1000,
+      id_objectif: newMember.objectif || "Fixer un objectif",
       fidelity: "Initial (0 pts)",
-      mdp: newMember.mdp.trim() || "Limitless#123",
-      topClientsList: [{ name: newMember.topClient.trim() || "Aucun", date: "26 Mai 2026", details: "Direct" }],
-      eventsList: [{ name: "Intégration digitale", date: "06 Juin 2026", loc: "En ligne" }],
-      bestSellersList: [{ name: newMember.bestSeller.trim() || "Non défini", date: "26 Mai 2026", qty: "1 un." }],
-      meilleuresVentesList: [{ name: newMember.meilleuresVentes.trim() || "Non défini", date: "26 Mai 2026", total: `${cNum} €` }]
+      mdp: newMember.mdp || "Limitless#123"
     };
-
     setTree({ nodes: [...tree.nodes, newNode] });
-    // Reset complet du formulaire
-    setNewMember({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
+    setNewMember({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', objectif: '', objNum: '1000' });
+  };
+
+  const handleAddSale = () => {
+    if (!quickSale.client.trim() || !quickSale.total) return;
+    const newS = {
+      id: Date.now().toString(),
+      client: quickSale.client.trim(),
+      total: parseFloat(quickSale.total),
+      date: "26 Mai 2026",
+      consultant: quickSale.consultant,
+      products: [{ name: quickSale.product || "Parfum Sélection", qty: 1, price: parseFloat(quickSale.total) }]
+    };
+    setSales([...sales, newS]);
+    setQuickSale({ client: '', total: '', consultant: 'Nej', product: '' });
   };
 
   const renderTreeNodes = (node) => {
-    if (!node) return null;
-    const enfants = tree.nodes.filter(n => n.parentId === node.id);
-
+    const enfants = computedNodes.filter(n => n.parentId === node.id);
     return (
       <div key={node.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div 
@@ -148,14 +162,14 @@ export default function Reseau() {
           style={{
             background: 'white', border: '1px solid #D2B795', borderRadius: '12px',
             padding: '12px', minWidth: '140px', textAlign: 'center', cursor: 'pointer',
-            boxShadow: '0 4px 10px rgba(210,183,149,0.15)', margin: '5px'
+            boxShadow: '0 4px 10px rgba(210,183,149,0.08)', margin: '5px'
           }}
         >
           <div style={{ fontSize: '10px', fontWeight: '700', color: node.genre === 'homme' ? '#3d6b9e' : '#8C6D4F', textTransform: 'uppercase' }}>
             {displayRole(node.role, node.genre)}
           </div>
           <div style={{ fontWeight: '600', color: '#4A3E3D', fontSize: '14px', margin: '4px 0' }}>{node.name}</div>
-          <div style={{ fontSize: '11px', color: '#2d7a4a' }}>🟢 Actif</div>
+          <div style={{ fontSize: '11px', color: '#2d7a4a' }}>🟢 {node.ca}</div>
         </div>
         {enfants.length > 0 && (
           <div style={{ display: 'flex', gap: '15px', marginTop: '15px' }}>
@@ -166,302 +180,263 @@ export default function Reseau() {
     );
   };
 
-  const visibleRoots = treeRootId ? tree.nodes.filter(n => n.id === treeRootId) : tree.nodes.filter(n => !n.parentId);
-  const currentFocusedNode = treeRootId ? tree.nodes.find(n => n.id === treeRootId) : null;
-  const parentNodeOfFocused = currentFocusedNode ? tree.nodes.find(n => n.id === currentFocusedNode.parentId) : null;
-  const pctProgress = selectedMember ? Math.min(100, Math.round((selectedMember.caNum / (selectedMember.objNum || 1)) * 100)) : 0;
-
   return (
-    <div style={{ padding: '15px', minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif', color: '#4A3E3D' }}>
+    <div style={{ background: '#FAF7F2', minHeight: '100vh', fontFamily: 'sans-serif', color: '#4A3E3D' }}>
       
-      {/* 👑 EN-TÊTE ÉLÉGANT SANS RECTANGLE BLEU */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '18px', maxWidth: '1000px',
-        margin: '10px auto 25px auto', padding: '0 5px'
-      }}>
-        <button style={{
-          width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#ffffff',
-          border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', boxShadow: '0 3px 10px rgba(0,0,0,0.06)'
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A3E3D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-        </button>
+      {/* 1. ÉCRAN CHOGAN HUB */}
+      {currentView === 'hub' && (
+        <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+            <span style={{ fontSize: '16px', letterSpacing: '2px', fontFamily: 'serif', fontWeight: 'bold' }}>CHOGAN HUB</span>
+            <span style={{ background: '#F5EFE8', color: '#8C6D4F', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>👑 Admin</span>
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '20px' }}>👥</span>
-          <h1 style={{
-            fontSize: '20px', fontWeight: '400', textTransform: 'uppercase',
-            letterSpacing: '3px', color: '#4A3E3D', margin: 0, fontFamily: 'serif'
-          }}>
-            Réseau
-          </h1>
-        </div>
-      </div>
-
-      {/* DASHBOARD GLOBAL */}
-      <div style={{ 
-        maxWidth: '1000px', margin: '0 auto 20px auto', background: 'white', 
-        border: '1px solid #D2B795', borderRadius: '14px', padding: '15px 25px', 
-        display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexWrap: 'wrap', gap: '20px',
-        boxShadow: '0 4px 15px rgba(210,183,149,0.1)' 
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '11px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase' }}>📈 Chiffre d'Affaires Global</div>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7a4a', marginTop: '4px' }}>{totalCA.toLocaleString()} €</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '11px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase' }}>🎯 Performance Équipe</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#4A3E3D' }}>{globalPerformance}%</div>
-            <div style={{ width: '120px', height: '8px', background: '#E6DCD0', borderRadius: '4px', overflow: 'hidden' }}>
-              <div style={{ width: `${globalPerformance}%`, height: '100%', background: 'linear-gradient(90deg, #D2B795, #8C6D4F)' }}></div>
+          <h2 style={{ fontFamily: 'serif', fontWeight: 'normal', fontSize: '24px', marginBottom: '25px' }}>BONJOUR, <span style={{ fontWeight: 'bold' }}>ADMIN 👑</span></h2>
+          
+          <div style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '16px', padding: '20px', marginBottom: '25px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#8C6D4F', fontSize: '12px', letterSpacing: '1px' }}>📢 ANNONCES</h4>
+            <div style={{ fontSize: '14px', borderBottom: '1px solid #FAF7F2', paddingBottom: '10px', marginBottom: '10px' }}>
+              🌸 Bienvenue dans votre espace Chogan Hub ! Connecté en temps réel.
             </div>
+            <div style={{ fontSize: '14px', color: '#777' }}>✨ Les ventes s'actualisent désormais directement sur l'arbre généalogique.</div>
+          </div>
+
+          {/* MENUS ACCÈS RAPIDE */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '30px' }}>
+            <button onClick={() => setCurrentView('commandes')} style={{ background: 'white', border: '1px solid #D2B795', padding: '16px', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: '600' }}>🛒 Gestion des Commandes & Ventes</span>
+              <span style={{ color: '#8C6D4F' }}>➔</span>
+            </button>
+            <button onClick={() => setCurrentView('reseau')} style={{ background: 'white', border: '1px solid #D2B795', padding: '16px', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: '600' }}>👥 Suivi du Réseau (Limitless Team)</span>
+              <span style={{ color: '#2d7a4a', fontWeight: 'bold' }}>{totalCA.toLocaleString()} € CA ➔</span>
+            </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* ONGLETS */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
-        <button onClick={() => setActiveTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'arbre' ? '#D2B795' : 'white', color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre</button>
-        <button onClick={() => setActiveTab('gestion')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'gestion' ? '#D2B795' : 'white', color: activeTab === 'gestion' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>⚙️ Gestion</button>
-      </div>
+      {/* 2. ÉCRAN COMMANDES & VENTES */}
+      {currentView === 'commandes' && (
+        <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+          <button onClick={() => setCurrentView('hub')} style={{ background: 'white', border: 'none', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', marginBottom: '20px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>⬅ Hub</button>
+          
+          <h2 style={{ fontFamily: 'serif', letterSpacing: '2px', textTransform: 'uppercase', fontSize: '20px', marginBottom: '20px' }}>🛒 Commandes</h2>
+          
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #E6DCD0' }}>
+            <button onClick={() => setActiveOrderTab('bon_commande')} style={{ padding: '10px', background: 'none', border: 'none', borderBottom: activeOrderTab === 'bon_commande' ? '2px solid #8C6D4F' : 'none', fontWeight: 'bold', cursor: 'pointer' }}>📋 Enregistrer une vente</button>
+            <button onClick={() => setActiveOrderTab('ventes')} style={{ padding: '10px', background: 'none', border: 'none', borderBottom: activeOrderTab === 'ventes' ? '2px solid #8C6D4F' : 'none', fontWeight: 'bold', cursor: 'pointer' }}>💰 Historique ({sales.length})</button>
+          </div>
 
-      {/* VUE ARBRE */}
-      {activeTab === 'arbre' && (
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-          {treeRootId && (
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '5px' }}>
-              <button onClick={() => setTreeRootId(null)} style={{ background: '#4A3E3D', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', cursor: 'pointer' }}>🏠 Racine</button>
-              <button onClick={() => setTreeRootId(currentFocusedNode.parentId)} style={{ background: 'white', border: '1px solid #8C6D4F', color: '#8C6D4F', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', cursor: 'pointer' }}>⬅️ Remonter ({parentNodeOfFocused ? parentNodeOfFocused.name : "Racine"})</button>
+          {activeOrderTab === 'bon_commande' && (
+            <div style={{ background: 'white', padding: '20px', borderRadius: '14px', border: '1px solid #D2B795' }}>
+              <h3 style={{ margin: '0 0 15px 0', fontSize: '15px', color: '#8C6D4F' }}>🛍️ Nouvelle vente directe</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Nom de la Cliente :</label>
+                  <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px' }} placeholder="Ex: Farid" value={quickSale.client} onChange={e => setQuickSale({...quickSale, client: e.target.value})} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Produit vendu :</label>
+                  <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px' }} placeholder="Ex: N°001 One Million 70ml" value={quickSale.product} onChange={e => setQuickSale({...quickSale, product: e.target.value})} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Montant total (€) :</label>
+                  <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px' }} placeholder="Ex: 35" value={quickSale.total} onChange={e => setQuickSale({...quickSale, total: e.target.value})} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#2d7a4a' }}>🔗 ASSOCIER AU CONSEILLER (RÉSEAU) :</label>
+                  <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white', fontWeight: 'bold' }} value={quickSale.consultant} onChange={e => setQuickSale({...quickSale, consultant: e.target.value})}>
+                    {tree.nodes.map(n => <option key={n.id} value={n.name}>{n.name}</option>)}
+                  </select>
+                </div>
+                <button onClick={handleAddSale} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', marginTop: '10px' }}>Valider et synchroniser la vente</button>
+              </div>
             </div>
           )}
-          <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '20px', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%', gap: '20px' }}>
-              {visibleRoots.map(root => renderTreeNodes(root))}
+
+          {activeOrderTab === 'ventes' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {sales.map(s => (
+                <div key={s.id} style={{ background: 'white', border: '1px solid #D2B795', padding: '15px', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <strong>Client : {s.client}</strong>
+                    <span style={{ color: '#2d7a4a', fontWeight: 'bold' }}>{s.total} €</span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#777' }}>
+                    {s.products?.map((p, i) => <div key={i}>📦 {p.name} (x{p.qty})</div>)}
+                  </div>
+                  <div style={{ marginTop: '10px', fontSize: '12px', background: '#FAF5EE', padding: '6px 10px', borderRadius: '6px', display: 'inline-block', color: '#8C6D4F', fontWeight: 'bold' }}>
+                    👤 Vente rattachée à : {s.consultant}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       )}
 
-      {/* VUE GESTION & INSCRIPTION INITIALE RESTAURÉE */}
-      {activeTab === 'gestion' && (
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-          
-          {/* Formulaire complet d'inscription d'origine */}
-          <div style={{ background: 'white', padding: '25px', borderRadius: '14px', border: '1px solid #D2B795', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-            <h3 style={{ marginTop: 0, color: '#4A3E3D', marginBottom: '20px', fontSize: '16px', letterSpacing: '1px', textTransform: 'uppercase' }}>✨ FORMULAIRE D'INSCRIPTION COMPLET</h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Nom & Prénom *</label>
-                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Jean Dupont" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} />
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Rôle</label>
-                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white' }} value={newMember.role} onChange={e => setNewMember({...newMember, role: e.target.value})}>
-                  <option value="Consultante">Consultante / Consultant</option>
-                  <option value="Marraine">Marraine / Parrain</option>
-                  <option value="Manager">Manager</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Genre</label>
-                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white' }} value={newMember.genre} onChange={e => setNewMember({...newMember, genre: e.target.value})}>
-                  <option value="femme">Femme</option>
-                  <option value="homme">Homme</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Rattaché à (Marraine/Supérieur)</label>
-                <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white' }} value={newMember.parentId} onChange={e => setNewMember({...newMember, parentId: e.target.value})}>
-                  <option value="">Aucun (Racine)</option>
-                  {tree.nodes.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>🔑 Mot de passe</label>
-                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Limitless#2026" value={newMember.mdp} onChange={e => setNewMember({...newMember, mdp: e.target.value})} />
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Chiffre d'Affaires Initial (€)</label>
-                <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} value={newMember.caNum} onChange={e => setNewMember({...newMember, caNum: e.target.value})} />
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Objectif de CA (€)</label>
-                <input type="number" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} value={newMember.objNum} onChange={e => setNewMember({...newMember, objNum: e.target.value})} />
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Phrase d'Objectif</label>
-                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Atteindre 3000€" value={newMember.objectif} onChange={e => setNewMember({...newMember, objectif: e.target.value})} />
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>👥 Premier Client Top</label>
-                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Alice Durand" value={newMember.topClient} onChange={e => setNewMember({...newMember, topClient: e.target.value})} />
-              </div>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>💄 Premier Produit Best-Seller</label>
-                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Parfum Luxury" value={newMember.bestSeller} onChange={e => setNewMember({...newMember, bestSeller: e.target.value})} />
-              </div>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>🛍️ Description Meilleure Vente initiale</label>
-                <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Pack Crèmes & Fragrances d'été" value={newMember.meilleuresVentes} onChange={e => setNewMember({...newMember, meilleuresVentes: e.target.value})} />
+      {/* 3. ÉCRAN SUIVI DU RÉSEAU CONNECTÉ */}
+      {currentView === 'reseau' && (
+        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
+          <button onClick={() => setCurrentView('hub')} style={{ background: 'white', border: 'none', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', marginBottom: '20px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>⬅ Hub</button>
+
+          {/* TABLEAU DE BORD DU RÉSEAU */}
+          <div style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '14px', padding: '15px 25px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '25px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase' }}>📈 Chiffre d'Affaires Global Réseau</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7a4a', marginTop: '4px' }}>{totalCA.toLocaleString()} €</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', color: '#8C6D4F', fontWeight: '700', textTransform: 'uppercase' }}>🎯 Performance Équipe</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#4A3E3D' }}>{globalPerformance}%</div>
+                <div style={{ width: '120px', height: '8px', background: '#E6DCD0', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${globalPerformance}%`, height: '100%', background: 'linear-gradient(90deg, #D2B795, #8C6D4F)' }}></div>
+                </div>
               </div>
             </div>
-            <button onClick={handleAddMember} style={{ width: '100%', background: '#2d7a4a', color: 'white', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', marginTop: '20px', letterSpacing: '1px' }}>AJOUTER AU RÉSEAU LIMITLESS</button>
           </div>
 
-          {/* TABLEAU GESTION AVEC CONFIGURATION INITIALE + SUPPRESSION */}
-          <div style={{ overflowX: 'auto', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '850px' }}>
-              <thead>
-                <tr style={{ background: '#F5EFE8', color: '#4A3E3D' }}>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Conseiller(e)</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Rôle</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>🔑 Mot de passe</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Chiffre d'Affaires</th>
-                  <th style={{ padding: '12px', textAlign: 'center' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tree.nodes.map(n => {
-                  const isEditing = editingId === n.id;
-                  return (
-                    <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.15)' }}>
-                      <td style={{ padding: '12px', fontWeight: '600' }}>{isEditing ? <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} /> : n.name}</td>
-                      <td style={{ padding: '12px' }}>{displayRole(n.role, n.genre)}</td>
-                      <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 'bold', color: '#B39266' }}>{isEditing ? <input value={editForm.mdp} onChange={e => setEditForm({...editForm, mdp: e.target.value})} /> : n.mdp}</td>
-                      <td style={{ padding: '12px', color: '#2d7a4a', fontWeight: '600' }}>{isEditing ? <input type="number" value={editForm.caNum} onChange={e => setEditForm({...editForm, caNum: e.target.value})} /> : n.ca}</td>
-                      <td style={{ padding: '12px', textAlign: 'center' }}>
-                        {isEditing ? (
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                            <button onClick={saveRowEdits} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>💾</button>
-                            <button onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>❌</button>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                            <button onClick={() => startEditing(n)} style={{ background: 'white', border: '1px solid #D2B795', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: '#4A3E3D' }}>✏️ Modifier</button>
-                            <button onClick={() => handleDeleteMember(n.id, n.name)} style={{ background: '#FFF0F0', border: '1px solid #FFA3A3', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', color: '#D32F2F' }}>🗑️ Supprimer</button>
-                          </div>
-                        )}
-                      </td>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
+            <button onClick={() => setActiveSubTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeSubTab === 'arbre' ? '#D2B795' : 'white', color: activeSubTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre</button>
+            <button onClick={() => setActiveSubTab('gestion')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeSubTab === 'gestion' ? '#D2B795' : 'white', color: activeSubTab === 'gestion' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>⚙️ Gestion / Inscriptions</button>
+          </div>
+
+          {activeSubTab === 'arbre' && (
+            <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '20px', textAlign: 'center' }}>
+              <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%', gap: '20px' }}>
+                {computedNodes.filter(n => !n.parentId).map(root => renderTreeNodes(root))}
+              </div>
+            </div>
+          )}
+
+          {activeSubTab === 'gestion' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+              {/* Formulaire complet */}
+              <div style={{ background: 'white', padding: '25px', borderRadius: '14px', border: '1px solid #D2B795' }}>
+                <h3 style={{ marginTop: 0, color: '#4A3E3D', marginBottom: '20px', fontSize: '15px', textTransform: 'uppercase' }}>✨ FORMULAIRE D'INSCRIPTION</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Nom & Prénom *</label>
+                    <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} placeholder="Ex: Nej" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>Rattaché à (Marraine)</label>
+                    <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', background: 'white' }} value={newMember.parentId} onChange={e => setNewMember({...newMember, parentId: e.target.value})}>
+                      <option value="">Aucun (Racine)</option>
+                      {tree.nodes.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#8C6D4F' }}>🔑 Mot de passe</label>
+                    <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E6DCD0', marginTop: '4px', boxSizing: 'border-box' }} value={newMember.mdp} onChange={e => setNewMember({...newMember, mdp: e.target.value})} />
+                  </div>
+                </div>
+                <button onClick={handleAddMember} style={{ width: '100%', background: '#2d7a4a', color: 'white', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', marginTop: '20px' }}>AJOUTER AU RÉSEAU</button>
+              </div>
+
+              {/* Tableau de l'équipe */}
+              <div style={{ overflowX: 'auto', background: 'white', borderRadius: '14px', border: '1px solid #D2B795' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ background: '#F5EFE8', color: '#4A3E3D' }}>
+                      <th style={{ padding: '12px', textAlign: 'left' }}>Conseiller(e)</th>
+                      <th style={{ padding: '12px', textAlign: 'left' }}>Rôle</th>
+                      <th style={{ padding: '12px', textAlign: 'left' }}>Chiffre d'Affaires Connecté</th>
+                      <th style={{ padding: '12px', textAlign: 'center' }}>Actions</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    {computedNodes.map(n => (
+                      <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.15)' }}>
+                        <td style={{ padding: '12px', fontWeight: '600' }}>{n.name}</td>
+                        <td style={{ padding: '12px' }}>{displayRole(n.role, n.genre)}</td>
+                        <td style={{ padding: '12px', color: '#2d7a4a', fontWeight: '700' }}>{n.ca}</td>
+                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <button onClick={() => handleDeleteMember(n.id, n.name)} style={{ background: '#FFF0F0', border: '1px solid #FFA3A3', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', color: '#D32F2F' }}>🗑️ Supprimer</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* 💳 RESTAURÉ : DÉTAILS COMPLETS DU MEMBRE DANS LA CARTE MODALE */}
-      {selectedMember && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '10px' }}>
-          <div style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '16px', padding: '25px', width: '100%', maxWidth: '440px', position: 'relative', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
-            <button onClick={() => setSelectedMember(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#4A3E3D' }}>✕</button>
-            
-            {/* Header Profil */}
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#4A3E3D', fontFamily: 'serif', letterSpacing: '1px' }}>{selectedMember.name}</h2>
-              <span style={{ background: '#F5EFE8', color: '#8C6D4F', padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                {displayRole(selectedMember.role, selectedMember.genre)}
-              </span>
-            </div>
+      {/* 💳 MODAL : DETAILED PROFILE CARD (AUTOMATIQUEMENT CONNECTÉE ET REMPLIE) */}
+      {selectedMember && (() => {
+        const liveData = computedNodes.find(n => n.id === selectedMember.id) || selectedMember;
+        const pctProgress = Math.min(100, Math.round((liveData.caNum / (liveData.objNum || 1)) * 100));
+        
+        return (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '10px' }}>
+            <div style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '16px', padding: '25px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
+              <button onClick={() => setSelectedMember(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+              
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <h2 style={{ margin: '0 0 5px 0', fontSize: '20px', fontFamily: 'serif' }}>{liveData.name}</h2>
+                <span style={{ background: '#F5EFE8', color: '#8C6D4F', padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                  {displayRole(liveData.role, liveData.genre)}
+                </span>
+              </div>
 
-            {/* Barre d'objectif */}
-            <div style={{ background: '#FAF5EE', padding: '12px 15px', borderRadius: '10px', marginBottom: '15px', border: '1px solid rgba(210,183,149,0.2)' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A3E3D', display: 'flex', justifyContent: 'space-between' }}>
-                <span>🎯 Objectif : {selectedMember.objectif}</span>
-                <span style={{ color: '#8C6D4F' }}>{pctProgress}%</span>
+              <div style={{ background: '#FAF5EE', padding: '12px 15px', borderRadius: '10px', marginBottom: '15px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>🎯 Objectif : {liveData.objectif || "Non défini"}</span>
+                  <span>{pctProgress}%</span>
+                </div>
+                <div style={{ width: '100%', height: '8px', background: '#E6DCD0', borderRadius: '4px', marginTop: '8px', overflow: 'hidden' }}>
+                  <div style={{ width: `${pctProgress}%`, height: '100%', background: 'linear-gradient(90deg, #D2B795, #8C6D4F)' }}></div>
+                </div>
               </div>
-              <div style={{ width: '100%', height: '8px', background: '#E6DCD0', borderRadius: '4px', marginTop: '8px', overflow: 'hidden' }}>
-                <div style={{ width: `${pctProgress}%`, height: '100%', background: 'linear-gradient(90deg, #D2B795, #8C6D4F)' }}></div>
-              </div>
-            </div>
 
-            {/* Informations de base */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
-                <span style={{ color: '#8C6D4F' }}>💰 Chiffre d'Affaires :</span><strong style={{ color: '#2d7a4a' }}>{selectedMember.ca}</strong>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
+                  <span style={{ color: '#8C6D4F' }}>💰 Chiffre d'Affaires :</span><strong style={{ color: '#2d7a4a' }}>{liveData.ca}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
+                  <span style={{ color: '#8C6D4F' }}>💎 Statut Fidélité :</span><strong>{liveData.fidelity || "Initial (0 pts)"}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
+                  <span style={{ color: '#8C6D4F' }}>🔑 Mot de passe :</span><span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{liveData.mdp}</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
-                <span style={{ color: '#8C6D4F' }}>💎 Statut Fidélité :</span><strong>{selectedMember.fidelity || "Initial"}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0EAE1' }}>
-                <span style={{ color: '#8C6D4F' }}>🔑 Mot de passe :</span><span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{selectedMember.mdp}</span>
-              </div>
-            </div>
 
-            {/* ⭐ RESTAURÉ : BLOC HISTORIQUE / TOP 5 DES VENTES */}
-            <div style={{ marginTop: '15px', textAlign: 'left' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>🛍️ TOP VENTES & COMMANDES</span>
-              {selectedMember.meilleuresVentesList && selectedMember.meilleuresVentesList.length > 0 ? (
-                selectedMember.meilleuresVentesList.map((mv, idx) => (
+              {/* HISTORIQUE DU TOP DES VENTES */}
+              <div style={{ marginTop: '15px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>🛍️ TOP VENTES & COMMANDES (EN DIRECT)</span>
+                {liveData.meilleuresVentesList.map((mv, idx) => (
                   <div key={idx} style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span style={{ fontWeight: '600' }}>{mv.name}</span>
                     <span style={{ color: '#2d7a4a', fontWeight: '700' }}>{mv.total}</span>
                   </div>
-                ))
-              ) : (
-                <div style={{ fontSize: '12px', color: '#999', italic: 'true' }}>Aucune vente enregistrée</div>
-              )}
-            </div>
+                ))}
+              </div>
 
-            {/* 💄 RESTAURÉ : BLOC PRODUITS BEST-SELLERS */}
-            <div style={{ marginTop: '15px', textAlign: 'left' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>💄 PRODUITS PHARES (BEST-SELLERS)</span>
-              {selectedMember.bestSellersList && selectedMember.bestSellersList.length > 0 ? (
-                selectedMember.bestSellersList.map((bs, idx) => (
-                  <div key={idx} style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span>{bs.name}</span>
-                    <span style={{ fontWeight: 'bold', color: '#8C6D4F' }}>{bs.qty || "1 un."}</span>
-                  </div>
-                ))
-              ) : (
-                <div style={{ fontSize: '12px', color: '#999' }}>Non défini</div>
-              )}
-            </div>
+              {/* PRODUIT BEST-SELLER */}
+              <div style={{ marginTop: '15px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>💄 PRODUIT PHARE (BEST-SELLER)</span>
+                <div style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{liveData.bestSeller || "Non défini"}</span>
+                  <span style={{ fontWeight: 'bold', color: '#8C6D4F' }}>{liveData.bestSellerQty || "0 un."}</span>
+                </div>
+              </div>
 
-            {/* 👥 RESTAURÉ : TOP CLIENTS & CLUBS */}
-            <div style={{ marginTop: '15px', textAlign: 'left' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>👥 FIIDÉLITÉ CLIENTS & POINTS</span>
-              {selectedMember.topClientsList && selectedMember.topClientsList.length > 0 ? (
-                selectedMember.topClientsList.map((c, idx) => (
-                  <div key={idx} style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: '500' }}>{c.name}</span>
-                    <span style={{ color: '#8C6D4F', fontWeight: 'bold' }}>{c.details}</span>
-                  </div>
-                ))
-              ) : (
-                <div style={{ fontSize: '12px', color: '#999' }}>Aucun client favori configuré</div>
-              )}
-            </div>
+              {/* FIIDÉLITÉ CLIENTS */}
+              <div style={{ marginTop: '15px', marginBottom: '20px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>👥 DERNIER CLIENT FAVORIS</span>
+                <div style={{ background: '#FDFBF7', border: '1px solid #F0EAE1', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
+                  {liveData.topClient || "Aucun client"}
+                </div>
+              </div>
 
-            {/* 📅 RESTAURÉ : ÉVÉNEMENTS / AGENDAS DE FORMATION */}
-            <div style={{ marginTop: '15px', textAlign: 'left', marginBottom: '20px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#8C6D4F', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>📅 FORMATIONS & SÉMINAIRES</span>
-              {selectedMember.eventsList && selectedMember.eventsList.length > 0 ? (
-                selectedMember.eventsList.map((ev, idx) => (
-                  <div key={idx} style={{ background: '#FAF8F5', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', borderLeft: '3px solid #D2B795', marginBottom: '4px' }}>
-                    <div style={{ fontWeight: '600' }}>{ev.name}</div>
-                    <div style={{ color: '#777', fontSize: '11px', marginTop: '2px' }}>{ev.date} — {ev.loc}</div>
-                  </div>
-                ))
-              ) : (
-                <div style={{ fontSize: '12px', color: '#999' }}>Aucun événement au programme</div>
-              )}
-            </div>
-
-            {/* Actions du bas de carte */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button onClick={() => { setTreeRootId(selectedMember.id); setSelectedMember(null); }} style={{ width: '100%', padding: '11px', background: '#D2B795', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', letterSpacing: '0.5px' }}>Zoomer sur son réseau</button>
               <button onClick={() => setSelectedMember(null)} style={{ width: '100%', padding: '11px', background: '#4A3E3D', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Fermer</button>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );
