@@ -483,7 +483,7 @@ function AgendaClientsTab() {
         ? { ...s, email: editForm.email||s.email, tel: editForm.tel||s.tel }
         : s
       );
-      localStorage.setItem('le_sales', JSON.stringify(updated));
+      setAllSales(updated);
       setRawSales(updated);
       setEditClient(null);
     };
@@ -587,7 +587,7 @@ function AgendaClientsTab() {
                   <button style={S.resetBtn} onClick={() => {
                     if (!window.confirm(`Réinitialiser toutes les ventes de ${c.name} ?`)) return;
                     const updated = rawSales.filter(s => s.client !== c.name);
-                    localStorage.setItem('le_sales', JSON.stringify(updated));
+                    setAllSales(updated);
                     setRawSales(updated);
                   }}>🗑</button>
                 </div>
