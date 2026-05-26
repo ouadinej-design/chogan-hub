@@ -328,6 +328,38 @@ export default function Reseau() {
               </tbody>
             </table>
           </div>
+
+          {/* Zone de réinitialisation */}
+          <div style={{ background:'white', padding:'20px', borderRadius:'14px', border:'2px solid #FFA3A3' }}>
+            <h3 style={{ marginTop:0, color:'#D32F2F', fontSize:'14px', letterSpacing:'1px', textTransform:'uppercase', marginBottom:16 }}>⚠️ RÉINITIALISATION DES DONNÉES</h3>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {[
+                { label:'🗑️ Effacer toutes les ventes (CA)', key:'le_sales', color:'#D32F2F', confirm:'Supprimer TOUTES les ventes ? Cette action est irréversible.' },
+                { label:'🗑️ Effacer tous les événements', key:'le_cevents', color:'#D32F2F', confirm:'Supprimer TOUS les événements ?' },
+                { label:'🗑️ Effacer tous les clients', key:'le_clients', color:'#D32F2F', confirm:'Supprimer TOUS les clients ?' },
+                { label:'🗑️ Réinitialiser le réseau (arbre)', key:'limitless_team_tree_v5', color:'#D32F2F', confirm:"Réinitialiser l'arbre réseau ? Tous les membres seront supprimés." },
+                { label:'🔴 TOUT RÉINITIALISER', key:'ALL', color:'#7f0000', confirm:'Supprimer TOUTES les données (ventes, événements, clients, réseau) ? Action IRRÉVERSIBLE.' },
+              ].map(({ label, key, color, confirm }) => (
+                <button key={key} onClick={() => {
+                  if (!window.confirm(confirm)) return;
+                  if (key === 'ALL') {
+                    ['le_sales','le_cevents','le_clients','limitless_team_tree_v5','le_tree'].forEach(k => localStorage.removeItem(k));
+                    setTree({ nodes: [] });
+                    setSales([]);
+                    setEvents([]);
+                  } else {
+                    localStorage.removeItem(key);
+                    if (key === 'le_sales') setSales([]);
+                    if (key === 'le_cevents') setEvents([]);
+                    if (key === 'limitless_team_tree_v5' || key === 'le_tree') setTree({ nodes: [] });
+                  }
+                  alert('✅ Réinitialisation effectuée.');
+                }} style={{ width:'100%', padding:'12px', background: key==='ALL'?'#7f0000':'#FFF0F0', color:color, border:`1px solid ${color}40`, borderRadius:'8px', fontWeight:'700', cursor:'pointer', fontSize:13, letterSpacing:'0.5px', fontFamily:'sans-serif' }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
