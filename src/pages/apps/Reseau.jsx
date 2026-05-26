@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { userStore } from '../../utils/storage'; 
 
-// --- Composant Jauge Circulaire ---
 const Gauge = ({ percentage }) => {
   const radius = 30;
   const circumference = 2 * Math.PI * radius;
@@ -15,7 +14,6 @@ const Gauge = ({ percentage }) => {
   );
 };
 
-// --- Composant Badge de performance ---
 const PerformanceBadge = ({ ca, obj }) => {
   const pct = Math.round((ca / (obj || 1)) * 100);
   if (pct >= 100) return <span style={{ background: '#d4edda', color: '#155724', padding: '2px 8px', borderRadius: '10px', fontSize: '9px', fontWeight: 'bold' }}>🔥 TOP</span>;
@@ -59,85 +57,105 @@ export default function Reseau() {
   const [tree, setTree] = useState(() => {
     try {
       const localData = localStorage.getItem('limitless_team_tree_v4');
-      return localData ? JSON.parse(localData) : defaultTree;
-    } catch (e) { return defaultTree; }
+      if (localData) return JSON.parse(localData);
+    } catch (e) {}
+    return defaultTree;
   });
 
-  useEffect(() => { localStorage.setItem('limitless_team_tree_v4', JSON.stringify(tree)); }, [tree]);
+  useEffect(() => {
+    localStorage.setItem('limitless_team_tree_v4', JSON.stringify(tree));
+  }, [tree]);
 
-  const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', caNum: '0', objNum: '1000', objectif: '', topClient: '', bestSeller: '', meilleuresVentes: '' });
+  const [newMember, setNewMember] = useState({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
+
+  const totalCA = tree.nodes.reduce((sum, n) => sum + (n.caNum || 0), 0);
+  const totalObjectif = tree.nodes.reduce((sum, n) => sum + (n.objNum || 0), 0);
+  const avgPerformance = totalObjectif > 0 ? Math.round((totalCA / totalObjectif) * 100) : 0;
+  const activeMembers = tree.nodes.length;
 
   const handleAddMember = () => {
     if (!newMember.name.trim()) return;
+    const cNum = parseFloat(newMember.caNum) || 0;
+    const oNum = parseFloat(newMember.objNum) || 1000;
     const newNode = {
-      ...newMember,
       id: Date.now().toString(),
-      ca: `${newMember.caNum} €`,
-      caNum: parseFloat(newMember.caNum) || 0,
-      objNum: parseFloat(newMember.objNum) || 1000
+      name: newMember.name.trim(),
+      role: newMember.role,
+      genre: newMember.genre,
+      parentId: newMember.parentId || null,
+      ca: `${cNum.toLocaleString()} €`, 
+      caNum: cNum,
+      objNum: oNum,
+      objectif: newMember.objectif.trim() || "Fixer un objectif",
+      events: "Aucun", 
+      fidelity: "Initial (0 pts)",
+      mdp: newMember.mdp.trim() || "Limitless#123",
+      topClient: newMember.topClient.trim() || "Non défini",
+      bestSeller: newMember.bestSeller.trim() || "Non défini",
+      meilleuresVentes: newMember.meilleuresVentes.trim() || "Non défini"
     };
     setTree({ nodes: [...tree.nodes, newNode] });
-    setNewMember({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', caNum: '0', objNum: '1000', objectif: '', topClient: '', bestSeller: '', meilleuresVentes: '' });
+    setNewMember({ name: '', role: 'Consultante', genre: 'femme', parentId: '', mdp: '', topClient: '', bestSeller: '', meilleuresVentes: '', objectif: '', caNum: '0', objNum: '1000' });
   };
 
   const renderTreeNodes = (node) => {
+    if (!node) return null;
     const enfants = tree.nodes.filter(n => n.parentId === node.id);
     return (
       <div key={node.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div onClick={() => setSelectedMember(node)} style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '12px', padding: '10px', minWidth: '140px', textAlign: 'center', cursor: 'pointer', margin: '5px' }}>
-          <div style={{ fontSize: '9px', fontWeight: 'bold', color: '#8C6D4F' }}>{node.role.toUpperCase()}</div>
-          <div style={{ fontWeight: '600', fontSize: '13px' }}>{node.name}</div>
+        <div onClick={() => setSelectedMember(node)} style={{ background: 'white', border: '1px solid #D2B795', borderRadius: '12px', padding: '12px', minWidth: '140px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(210,183,149,0.15)', margin: '5px' }}>
+          <div style={{ fontSize: '10px', fontWeight: '700', color: node.genre === 'homme' ? '#3d6b9e' : '#8C6D4F', textTransform: 'uppercase' }}>{node.role}</div>
+          <div style={{ fontWeight: '600', color: '#4A3E3D', fontSize: '14px', margin: '4px 0' }}>{node.name}</div>
           <PerformanceBadge ca={node.caNum} obj={node.objNum} />
         </div>
-        {enfants.length > 0 && <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>{enfants.map(e => renderTreeNodes(e))}</div>}
+        {enfants.length > 0 && <div style={{ display: 'flex', gap: '15px', marginTop: '15px' }}>{enfants.map(enfant => renderTreeNodes(enfant))}</div>}
       </div>
     );
   };
 
-  const totalCA = tree.nodes.reduce((sum, n) => sum + (n.caNum || 0), 0);
-  const totalObj = tree.nodes.reduce((sum, n) => sum + (n.objNum || 0), 0);
-  const avgPerf = totalObj > 0 ? Math.round((totalCA / totalObj) * 100) : 0;
-
   return (
-    <div style={{ padding: '20px', background: '#FAF7F2', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginBottom: '25px' }}>
+    <div style={{ padding: '15px', fontFamily: 'sans-serif', background: '#FAF7F2', minHeight: '100vh' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '25px' }}>
         <div style={{ background: '#fff', padding: '15px', borderRadius: '14px', border: '1px solid #D2B795', textAlign: 'center' }}>
-          <div style={{ fontSize: '12px', color: '#8C6D4F', fontWeight: 'bold' }}>CA TOTAL</div>
-          <div style={{ fontSize: '20px', fontWeight: '800', color: '#2d7a4a' }}>{totalCA.toLocaleString()} €</div>
+          <div style={{ fontSize: '12px', color: '#8C6D4F', fontWeight: 'bold' }}>CA TOTAL ÉQUIPE</div>
+          <div style={{ fontSize: '24px', fontWeight: '800', color: '#2d7a4a', marginTop: '10px' }}>{totalCA.toLocaleString()} €</div>
         </div>
         <div style={{ background: '#fff', padding: '15px', borderRadius: '14px', border: '1px solid #D2B795', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ fontSize: '12px', color: '#8C6D4F', fontWeight: 'bold' }}>PERF.</div>
-          <Gauge percentage={avgPerf} />
+          <div style={{ fontSize: '12px', color: '#8C6D4F', fontWeight: 'bold' }}>PERFORMANCE</div>
+          <Gauge percentage={avgPerformance} />
         </div>
         <div style={{ background: '#fff', padding: '15px', borderRadius: '14px', border: '1px solid #D2B795', textAlign: 'center' }}>
           <div style={{ fontSize: '12px', color: '#8C6D4F', fontWeight: 'bold' }}>MEMBRES</div>
-          <div style={{ fontSize: '20px', fontWeight: '800', color: '#4A3E3D', marginTop: '10px' }}>{tree.nodes.length}</div>
+          <div style={{ fontSize: '24px', fontWeight: '800', color: '#4A3E3D', marginTop: '10px' }}>{activeMembers}</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button onClick={() => setActiveTab('arbre')} style={{ padding: '8px 16px', borderRadius: '20px', background: activeTab === 'arbre' ? '#D2B795' : 'white' }}>Arbre</button>
-        <button onClick={() => setActiveTab('tableau')} style={{ padding: '8px 16px', borderRadius: '20px', background: activeTab === 'tableau' ? '#D2B795' : 'white' }}>Gestion</button>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
+        <button onClick={() => setActiveTab('arbre')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'arbre' ? '#D2B795' : 'white', color: activeTab === 'arbre' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>🌳 Arbre</button>
+        <button onClick={() => setActiveTab('tableau')} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795', background: activeTab === 'tableau' ? '#D2B795' : 'white', color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600' }}>📊 Gestion</button>
       </div>
 
       {activeTab === 'arbre' ? (
-        <div style={{ overflowX: 'auto' }}>{tree.nodes.filter(n => !n.parentId).map(root => renderTreeNodes(root))}</div>
+        <div style={{ width: '100%', overflowX: 'auto' }}>
+          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', minWidth: '100%' }}>
+            {tree.nodes.filter(n => !n.parentId).map(root => renderTreeNodes(root))}
+          </div>
+        </div>
       ) : (
         <div style={{ background: 'white', padding: '20px', borderRadius: '14px', border: '1px solid #D2B795' }}>
-          <h3>Ajouter un membre</h3>
-          <input placeholder="Nom" onChange={e => setNewMember({...newMember, name: e.target.value})} style={{ display: 'block', marginBottom: '10px', width: '100%', padding: '8px' }} />
-          <button onClick={handleAddMember} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '10px', width: '100%' }}>Ajouter</button>
+           <h3>Ajouter un membre</h3>
+           <input placeholder="Nom" onChange={e => setNewMember({...newMember, name: e.target.value})} style={{ width: '100%', padding: '10px', marginBottom: '10px' }} />
+           <button onClick={handleAddMember} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '10px', width: '100%' }}>Valider</button>
         </div>
       )}
 
       {selectedMember && (
-        <div style={{ position: 'fixed', top:0, left:0, width:'100%', height:'100%', background: 'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: '20px', borderRadius: '16px', width: '320px' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+          <div style={{ background: 'white', padding: '20px', borderRadius: '16px', width: '300px' }}>
             <h3>{selectedMember.name}</h3>
-            <p><strong>CA :</strong> {selectedMember.ca}</p>
-            <p><strong>Objectif :</strong> {selectedMember.objectif}</p>
-            <p><strong>Fidélité :</strong> {selectedMember.fidelity}</p>
-            <p><strong>Top Client :</strong> {selectedMember.topClient}</p>
+            <p>CA : {selectedMember.ca}</p>
+            <p>Objectif : {selectedMember.objectif}</p>
+            <p>Top Client : {selectedMember.topClient}</p>
             <button onClick={() => setSelectedMember(null)}>Fermer</button>
           </div>
         </div>
