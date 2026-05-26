@@ -224,4 +224,204 @@ export default function Reseau() {
         </button>
         <button 
           onClick={() => setActiveTab('tableau')}
+          style={{
+            padding: '10px 20px', borderRadius: '20px', border: '1px solid #D2B795',
+            background: activeTab === 'tableau' ? '#D2B795' : 'white',
+            color: activeTab === 'tableau' ? 'white' : '#4A3E3D', cursor: 'pointer', fontWeight: '600'
+          }}
+        >
+          📊 Vue Tableau (Admin)
+        </button>
+      </div>
+
+      {/* 🌳 CONTENU : ONGLET ARBRE (Scroll horizontal tactile forcé) */}
+      {activeTab === 'arbre' && (
+        <div style={{ 
+          width: '100%', 
+          overflowX: 'auto', 
+          WebkitOverflowScrolling: 'touch', 
+          padding: '20px 0', 
+          display: 'block' 
+        }}>
+          <div style={{ 
+            minWidth: '3200px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            gap: '30px' 
+          }}>
+            {rootNodes.length > 0 ? (
+              rootNodes.map(root => renderTreeNodes(root))
+            ) : (
+              <p style={{ color: '#666', fontStyle: 'italic' }}>Aucun membre détecté.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 📊 CONTENU : ONGLET TABLEAU (ADMIN - RESTAURÉ COMPLET) */}
+      {activeTab === 'tableau' && (
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           
+          {/* FORMULAIRE D'AJOUT */}
+          <div style={{ background: '#FDFBF7', border: '1px solid #D2B795', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
+            <h3 style={{ marginTop: 0, color: '#4A3E3D', marginBottom: '15px' }}>✨ Ajouter un nouveau membre à la Limitless Team</h3>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div style={{ flex: 2, minWidth: '180px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Nom / Prénom</label>
+                <input 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
+                  placeholder="Ex: KHEIRA A..."
+                  value={newMember.name}
+                  onChange={e => setNewMember(p => ({ ...p, name: e.target.value }))}
+                />
+              </div>
+
+              <div style={{ flex: 1, minWidth: '110px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Genre</label>
+                <select 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', background: 'white' }}
+                  value={newMember.genre}
+                  onChange={e => setNewMember(p => ({ ...p, genre: e.target.value }))}
+                >
+                  <option value="femme">👩 Femme</option>
+                  <option value="homme">👨 Homme</option>
+                </select>
+              </div>
+
+              <div style={{ flex: 1, minWidth: '130px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Statut</label>
+                <select 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', background: 'white' }}
+                  value={newMember.role}
+                  onChange={e => setNewMember(p => ({ ...p, role: e.target.value }))}
+                >
+                  {ROLES_LIST.map(r => <option key={r} value={r}>{r === 'Consultante' ? 'Consultante / Consultant' : r === 'Marraine' ? 'Marraine / Parrain' : r}</option>)}
+                </select>
+              </div>
+
+              <div style={{ flex: 1.5, minWidth: '160px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Rattacher à (Parrain)</label>
+                <select 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', background: 'white' }}
+                  value={newMember.parentId}
+                  onChange={e => setNewMember(p => ({ ...p, parentId: e.target.value }))}
+                >
+                  <option value="">— Aucun (Membre Racine) —</option>
+                  {currentNodes.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <button type="button" onClick={handleAddMember} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+                ➕ Ajouter
+              </button>
+            </div>
+          </div>
+
+          {/* BARRE DE RECHERCHE ET FILTRES */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+            <input 
+              style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '1px solid #D2B795' }}
+              placeholder="🔍 Rechercher dans le tableau..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+            />
+            <select
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #D2B795', background: 'white' }}
+              value={filterRole}
+              onChange={e => setFilterRole(e.target.value)}
+            >
+              <option value="tous">👑 Tous les rôles</option>
+              <option value="Consultante">Consultantes / Consultants</option>
+              <option value="Marraine">Marraines / Parrains</option>
+              <option value="Manager">Managers</option>
+              <option value="VIP">VIP</option>
+            </select>
+          </div>
+
+          {/* TABLEAU COMPLET */}
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: 'white', borderRadius: '12px', border: '1px solid #D2B795' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: '#F5EFE8', color: '#4A3E3D' }}>
+                  <th style={{ padding: '12px 10px' }}>Membre</th>
+                  <th style={{ padding: '12px 10px' }}>Genre</th>
+                  <th style={{ padding: '12px 10px' }}>Rôle</th>
+                  <th style={{ padding: '12px 10px' }}>Parrain / Marraine</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredNodes.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#999' }}>Aucun membre trouvé.</td>
+                  </tr>
+                ) : (
+                  filteredNodes.map(n => {
+                    const isEditing = editId === n.id;
+                    const currentParent = currentNodes.find(p => p.id === n.parentId);
+
+                    return (
+                      <tr key={n.id} style={{ borderBottom: '1px solid rgba(210,183,149,0.2)', background: isEditing ? 'rgba(214,175,55,0.04)' : 'transparent' }}>
+                        
+                        <td style={{ padding: '12px 10px', fontWeight: '600' }}>
+                          {isEditing ? (
+                            <input style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37', width: '100%' }} value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
+                          ) : n.name}
+                        </td>
+
+                        <td style={{ padding: '12px 10px' }}>
+                          {isEditing ? (
+                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.genre} onChange={e => setEditForm(p => ({ ...p, genre: e.target.value }))}>
+                              <option value="femme">👩 Femme</option>
+                              <option value="homme">👨 Homme</option>
+                            </select>
+                          ) : (n.genre === 'homme' ? '👨 Homme' : '👩 Femme')}
+                        </td>
+
+                        <td style={{ padding: '12px 10px' }}>
+                          {isEditing ? (
+                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.role} onChange={e => setEditForm(p => ({ ...p, role: e.target.value }))}>
+                              {ROLES_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                          ) : displayRole(n.role, n.genre)}
+                        </td>
+
+                        <td style={{ padding: '12px 10px', color: '#666' }}>
+                          {isEditing ? (
+                            <select style={{ padding: '6px', borderRadius: '6px', border: '1px solid #D6AF37' }} value={editForm.parentId} onChange={e => setEditForm(p => ({ ...p, parentId: e.target.value }))}>
+                              <option value="">— Aucun —</option>
+                              {currentNodes.filter(cand => cand.id !== n.id).map(cand => <option key={cand.id} value={cand.id}>{cand.name}</option>)}
+                            </select>
+                          ) : (currentParent ? currentParent.name : 'Aucun')}
+                        </td>
+
+                        <td style={{ padding: '12px 10px', textAlign: 'center' }}>
+                          {isEditing ? (
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                              <button onClick={handleSaveRow} style={{ background: '#2d7a4a', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>💾</button>
+                              <button onClick={() => setEditId(null)} style={{ background: '#ccc', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                              <button onClick={() => startEdit(n)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
+                              <button onClick={() => handleDeleteRow(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
+                            </div>
+                          )}
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
