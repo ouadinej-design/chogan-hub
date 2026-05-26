@@ -1,93 +1,106 @@
-import React from 'react';
+import React, { useState } from 'react';
+// ... gardez vos autres imports du haut ici (s'il y en a) ...
 
-function ArbreTab({ tree, getCAByCur }) {
-  // Trouver le membre racine (qui n'a pas de parentId)
-  const rootNode = tree.nodes.find(n => !n.parentId);
+// 🛠️ CORRECTION DES IMPORTS (Lignes 16 à 18 corrigées pour Vercel)
+import Reseau from './src/pages/apps/Reseau.jsx';
+import Catalogue from './src/pages/apps/Catalogue.jsx';
+import CoachVocal from './src/pages/apps/CoachVocal.jsx';
 
-  // Fonction récursive pour construire l'arbre
-  const renderNode = (node) => {
-    if (!node) return null;
+export default function App() {
+  // Vos états existants (ex: l'état de l'onglet actif, les données de l'arbre, etc.)
+  const [currentTab, setCurrentTab] = useState('reseau');
 
-    // Trouver tous les filleuls directs de ce membre
-    const enfants = tree.nodes.filter(n => n.parentId === node.id);
-    
-    // Vérifier si ce membre est Marie Ouadi
-    const isMarieOuadi = node.name.trim().toLowerCase() === "marie ouadi";
+  // Exemple de structure de données si vous en avez besoin pour tester
+  const [tree, setTree] = useState({
+    nodes: [
+      { id: "1", name: "Marie Ouadi", role: "Manager", genre: "femme", parentId: null },
+      { id: "2", name: "Sarah", role: "Consultante", genre: "femme", parentId: "1" },
+      { id: "3", name: "Karim", role: "Consultante", genre: "homme", parentId: "1" }
+    ]
+  });
 
-    // Si ce n'est pas Marie Ouadi, on aligne les enfants horizontalement (flexDirection: 'row')
-    // Si c'est Marie Ouadi, on garde une structure verticale classique (flexDirection: 'column')
-    const childrenContainerStyle = {
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '20px',
-      marginTop: '20px',
-      position: 'relative',
-      flexDirection: isMarieOuadi ? 'column' : 'row', 
-      alignItems: isMarieOuadi ? 'center' : 'flex-start'
-    };
+  // Fonction de sauvegarde globale de l'arbre
+  const saveTree = (newTree) => {
+    setTree(newTree);
+    // Si vous utilisez localStorage : localStorage.setItem('limitless_tree', JSON.stringify(newTree));
+  };
 
-    // Calcul du rôle affiché selon le genre
-    const displayRole = (role, genre) => {
-      if (genre === 'homme') {
-        if (role === 'Consultante') return 'Consultant';
-        if (role === 'Marraine') return 'Parrain';
-      }
-      return role;
-    };
-
-    const { eu, da } = getCAByCur(node.name);
-
-    return (
-      <div key={node.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        
-        {/* CARD DU MEMBRE */}
-        <div style={{
-          background: 'white',
-          border: '1px solid var(--or-border)',
-          borderRadius: '12px',
-          padding: '12px 18px',
-          minWidth: '160px',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.03)',
-          textAlign: 'center',
-          position: 'relative'
-        }}>
-          {/* Badge Rôle */}
-          <div style={{ 
-            fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px',
-            color: node.genre === 'homme' ? '#3d6b9e' : 'var(--taupe)',
-            letterSpacing: '0.5px'
-          }}>
-            {displayRole(node.role || 'Consultante', node.genre)}
-          </div>
-          
-          {/* Nom */}
-          <div style={{ fontWeight: '600', color: '#333', fontSize: '14px', marginBottom: '6px' }}>
-            {node.name}
-          </div>
-
-          {/* Chiffre d'affaires */}
-          <div style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
-            <span style={{ color: 'var(--or-deep)', fontWeight: '700' }}>{eu.toFixed(0)}€</span>
-            <span style={{ margin: '0 4px' }}>|</span>
-            <span style={{ color: '#3d6b9e', fontWeight: '700' }}>{Math.round(da).toLocaleString('fr-FR')} DA</span>
-          </div>
-        </div>
-
-        {/* AFFICHAGE DES FILLEULS (Enfants) */}
-        {enfants.length > 0 && (
-          <div style={childrenContainerStyle}>
-            {enfants.map(enfant => renderNode(enfant))}
-          </div>
-        )}
-      </div>
-    );
+  // Fonction de calcul de CA factice pour éviter les bugs au rendu
+  const getCAByCur = (name) => {
+    return { eu: 0, da: 0 };
   };
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', padding: '30px 10px', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {rootNode ? renderNode(rootNode) : <p style={{ color: 'var(--text-muted)' }}>Aucun membre dans l'arbre.</p>}
-      </div>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#FAF6F0', 
+      fontFamily: 'sans-serif',
+      color: '#4A3E3D' 
+    }}>
+      {/* 👑 BARRE DE NAVIGATION APPS / LIMITLESS */}
+      <nav style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: '15px', 
+        padding: '20px', 
+        background: '#white', 
+        borderBottom: '1px solid #D2B795' 
+      }}>
+        <button 
+          onClick={() => setCurrentTab('reseau')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: currentTab === 'reseau' ? '1px solid #D6AF37' : '1px solid #ccc',
+            background: currentTab === 'reseau' ? '#F5EFE8' : 'white',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          🌐 Mon Réseau
+        </button>
+        <button 
+          onClick={() => setCurrentTab('catalogue')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: currentTab === 'catalogue' ? '1px solid #D6AF37' : '1px solid #ccc',
+            background: currentTab === 'catalogue' ? '#F5EFE8' : 'white',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          📖 Catalogue
+        </button>
+        <button 
+          onClick={() => setCurrentTab('coach')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: currentTab === 'coach' ? '1px solid #D6AF37' : '1px solid #ccc',
+            background: currentTab === 'coach' ? '#F5EFE8' : 'white',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          🎙️ Coach Vocal
+        </button>
+      </nav>
+
+      {/* 📲 ZONE D'AFFICHAGE DYNAMIQUE DES APPLICATIONS */}
+      <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        {currentTab === 'reseau' && (
+          <Reseau tree={tree} saveTree={saveTree} getCAByCur={getCAByCur} />
+        )}
+        
+        {currentTab === 'catalogue' && (
+          <Catalogue />
+        )}
+        
+        {currentTab === 'coach' && (
+          <CoachVocal />
+        )}
+      </main>
     </div>
   );
 }
