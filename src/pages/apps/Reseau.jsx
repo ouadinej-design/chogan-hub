@@ -94,7 +94,7 @@ export default function Reseau() {
           {da > 0 && <p style={{ fontSize:9, color:'#3d6b9e', fontWeight:800 }}>{Math.round(da).toLocaleString('fr-FR')} DA</p>}
           {eu===0 && da===0 && <p style={{ fontSize:8, color:'var(--text-dim)' }}>—</p>}
         </div>
-        {ca>0 && <p style={{ fontSize:8, color:'var(--or-deep)', fontWeight:700, marginTop:4 }}>{ca.toFixed(0)} DA</p>}
+
         {sel && (
           <div style={{ display:'flex', gap:4, marginTop:8 }}>
             <button onClick={e=>{e.stopPropagation();openEdit(node);}} style={S.actBtn}>✏️</button>
