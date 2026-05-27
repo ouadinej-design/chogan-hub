@@ -116,7 +116,21 @@ export function AuthProvider({ children }) {
       locked:      false,
       createdAt:   new Date().toISOString(),
     };
-    store.set('consultants', [...list, newUser]);
+    const newList = [...list, newUser];
+    store.set('consultants', newList);
+    // Sauvegarder dans Supabase pour accès multi-appareils
+    const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
+    const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
+    fetch(`${SB_URL}/rest/v1/app_data?on_conflict=key`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ key: 'consultants', value: newList })
+    }).catch(() => {});
     return { ok: true, user: newUser };
   };
 
