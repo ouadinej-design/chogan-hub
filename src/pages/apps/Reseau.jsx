@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useCloudData } from '../../lib/useCloudData';
+import { cloudLoad } from '../../lib/cloudSync';
 import { dbSet, dbGet, isEnabled } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
@@ -38,6 +39,16 @@ export default function Reseau() {
       if (updated) localStorage.setItem('consultants', JSON.stringify(list));
     } catch {}
   }, [tree.nodes.length]);
+
+  // Charger les ventes depuis Supabase au montage
+  useEffect(() => {
+    cloudLoad('le_sales', []).then(data => {
+      if (data) localStorage.setItem('le_sales', JSON.stringify(data));
+    });
+    cloudLoad('le_cevents', []).then(data => {
+      if (data) localStorage.setItem('le_cevents', JSON.stringify(data));
+    });
+  }, []);
 
   // Auto-refresh via useCloudData + storage events
   useEffect(() => {
