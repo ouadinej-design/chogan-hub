@@ -9,7 +9,7 @@ export default function Login() {
   const [form, setForm] = useState({ firstName: '', lastName: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, syncAccountsFromCloud } = useAuth();
   const navigate = useNavigate();
 
   const handleRoleSelect = (role) => {
@@ -25,10 +25,12 @@ export default function Login() {
     if (selectedRole !== 'admin' && !form.lastName.trim()) { setError('Entrez votre nom.'); return; }
     if (!form.password) { setError('Entrez votre mot de passe.'); return; }
     setLoading(true);
-    const result = await login(form.firstName, form.lastName, form.password, selectedRole);
+    // Sync Supabase accounts first
+    try { if (syncAccountsFromCloud) await syncAccountsFromCloud(); } catch {}
+    const result = login(form.firstName, form.lastName, form.password, selectedRole);
     setLoading(false);
     if (result && result.ok) navigate('/');
-    else setError((result && result.error) || 'Erreur de connexion.');
+    else setError((result && result.error) || 'Compte introuvable.');
   };
 
   const roleInfo = selectedRole ? ROLES[selectedRole] : null;
