@@ -131,7 +131,7 @@ function BonCommandeTab() {
         date, note, consultant,
         createdAt: new Date().toISOString(),
       };
-      localStorage.setItem('le_sales', JSON.stringify([sale, ...existing]));
+      cloudSave('le_sales', [sale, ...existing]);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch(e) { console.warn(e); }
@@ -281,7 +281,7 @@ function VentesTab() {
   const [editing, setEditing] = useState(null); // sale being edited
   const [form, setForm]     = useState({});
 
-  const save = (updated) => { localStorage.setItem('le_sales', JSON.stringify(updated)); setSales(updated); };
+  const save = (updated) => { cloudSave('le_sales', updated); setSales(updated); };
   const refresh = () => { setSales(getFilteredSales()); };
 
   const deleteSale = (id) => { if (!window.confirm('Supprimer cette vente ?')) return; save(sales.filter(s=>s.id!==id)); };
