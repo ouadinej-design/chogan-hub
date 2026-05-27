@@ -3,6 +3,21 @@ import { PERFUMES } from '../../utils/choganData';
 import { useData } from '../../context/DataContext';
 import AppLayout from '../../components/AppLayout';
 
+// ── Cloud sync (localStorage + Supabase) ─────────────────────────
+const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
+const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
+function cloudSave(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  try {
+    fetch(`${SB_URL}/rest/v1/app_data?on_conflict=key`, {
+      method: 'POST',
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value })
+    }).catch(() => {});
+  } catch {}
+}
+
+
 const TABS = [
   { id:'bon',     label:'📋 Bon de commande' },
   { id:'ventes',  label:'💰 Ventes' },
