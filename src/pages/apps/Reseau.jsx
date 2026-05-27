@@ -14,8 +14,13 @@ export default function Reseau() {
   const [lastRefresh, setLastRefresh]       = useState(Date.now());
 
   const [tree, setTree_]    = useCloudData('limitless_team_tree_v5', {nodes:[]});
-  const [sales]             = useCloudData('le_sales', []);
-  const [events]            = useCloudData('le_cevents', []);
+  // Lire les ventes et événements directement depuis localStorage (refresh auto)
+  const sales  = React.useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('le_sales')  || '[]'); } catch { return []; }
+  }, [lastRefresh]);
+  const events = React.useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('le_cevents') || '[]'); } catch { return []; }
+  }, [lastRefresh]);
 
   // Synchroniser les comptes existants du réseau au chargement
   useEffect(() => {
