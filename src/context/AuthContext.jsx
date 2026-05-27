@@ -66,8 +66,7 @@ export function AuthProvider({ children }) {
     ) || null;
   };
 
-  const login = async (firstName, lastName, password, role) => {
-    await syncAccountsFromCloud();
+  const login = (firstName, lastName, password, role) => {
     const u = findUser(firstName, lastName, role);
     if (!u) return { ok: false, error: 'Compte introuvable. Vérifiez votre prénom et nom.' };
     if (u.locked) return { ok: false, error: 'Compte verrouillé. Contactez votre administratrice.' };
