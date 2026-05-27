@@ -10,12 +10,14 @@ async function fetchAndMergeAccounts() {
   try {
     const res = await fetch(
       `${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`,
-      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
+      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' } }
     );
-    if (!res.ok) return;
+    console.log('Supabase fetch status:', res.status);
+    if (!res.ok) { console.warn('Supabase error:', res.status, await res.text()); return; }
     const data = await res.json();
+    console.log('Supabase data:', JSON.stringify(data).substring(0, 200));
     const cloud = data?.[0]?.value;
-    if (!Array.isArray(cloud) || cloud.length === 0) return;
+    if (!Array.isArray(cloud) || cloud.length === 0) { console.warn('No accounts in cloud'); return; }
     const local  = JSON.parse(localStorage.getItem('consultants') || '[]');
     const merged = [...local];
     cloud.forEach(cu => {
@@ -26,7 +28,7 @@ async function fetchAndMergeAccounts() {
       if (!exists) merged.push(cu);
     });
     localStorage.setItem('consultants', JSON.stringify(merged));
-    console.log('✓ Comptes Supabase chargés:', merged.length);
+    console.log('✓ Comptes chargés:', merged.map(u => u.firstName).join(', '));
   } catch (e) {
     console.warn('Supabase fetch error:', e.message);
   }
