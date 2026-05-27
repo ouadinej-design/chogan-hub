@@ -25,11 +25,10 @@ export default function Login() {
     if (selectedRole !== 'admin' && !form.lastName.trim()) { setError('Entrez votre nom.'); return; }
     if (!form.password) { setError('Entrez votre mot de passe.'); return; }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 400));
-    const result = login(form.firstName, form.lastName, form.password, selectedRole);
+    const result = await login(form.firstName, form.lastName, form.password, selectedRole);
     setLoading(false);
-    if (result.ok) navigate('/');
-    else setError(result.error);
+    if (result && result.ok) navigate('/');
+    else setError((result && result.error) || 'Erreur de connexion.');
   };
 
   const roleInfo = selectedRole ? ROLES[selectedRole] : null;
