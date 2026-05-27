@@ -1,7 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, ROLES } from '../context/AuthContext';
 import Logo from '../components/Logo';
+
+const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
+const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
+
+async function fetchAndMergeAccounts() {
+  try {
+    const res = await fetch(
+      `${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`,
+      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    const cloud = data?.[0]?.value;
+    if (!Array.isArray(cloud) || cloud.length === 0) return;
+    const local  = JSON.parse(localStorage.getItem('consultants') || '[]');
+    const merged = [...local];
+    cloud.forEach(cu => {
+      const exists = merged.some(lu =>
+        (lu.firstName || '').toLowerCase() === (cu.firstName || '').toLowerCase() &&
+        (lu.lastName  || '').toLowerCase() === (cu.lastName  || '').toLowerCase()
+      );
+      if (!exists) merged.push(cu);
+    });
+    localStorage.setItem('consultants', JSON.stringify(merged));
+    console.log('✓ Comptes Supabase chargés:', merged.length);
+  } catch (e) {
+    console.warn('Supabase fetch error:', e.message);
+  }
+}
 
 export default function Login() {
   const [step, setStep] = useState('role');
@@ -11,6 +40,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Charger les comptes Supabase dès que la page de login s'affiche
+  useEffect(() => { fetchAndMergeAccounts(); }, []);
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
