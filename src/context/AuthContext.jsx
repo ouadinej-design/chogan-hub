@@ -1,4 +1,3 @@
-import { dbGet, dbSet, isEnabled } from '../lib/supabase';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { store } from '../utils/storage';
 
@@ -214,7 +213,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, loading, login, logout, changePassword,
       createConsultant, resetPassword, toggleLock, deleteConsultant,
-      getAllConsultants, canAccess, ROLES, getFilteredSales, getFilteredEvents, syncAccountsFromCloud,
+      getAllConsultants, canAccess, ROLES, getFilteredSales, getFilteredEvents,
     }}>
       {!loading && children}
     </AuthContext.Provider>
