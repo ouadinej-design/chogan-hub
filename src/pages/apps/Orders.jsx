@@ -113,28 +113,44 @@ function BonCommandeTab() {
   const totalDisplay = cur==='DA' ? Math.round(totalEur*tauxN) : totalEur;
   const fmtAmt = (eur) => cur==='DA' ? Math.round(eur*tauxN).toLocaleString('fr-FR')+' DA' : eur.toFixed(2)+'€';
 
+  const [saveError, setSaveError] = useState('');
+
   const saveToAgenda = () => {
-    if (!client.trim()) { alert('Entrez le nom de la cliente.'); return; }
+    setSaveError('');
+    if (!client.trim()) { setSaveError('⚠️ Entrez le nom de la cliente.'); return; }
+    if (!amt || parseFloat(amt) <= 0) { setSaveError('⚠️ Entrez un montant valide.'); return; }
     try {
-      const existing = JSON.parse(localStorage.getItem('le_sales')||'[]');
-      const tauxSave = parseFloat(taux)||245;
-      const items = cart.map(c => ({ prod:`N°${c.ref} ${c.name} ${c.size}`, qty:c.qty, cat, amt:cur==='DA'?Math.round(c.price*c.qty*tauxSave):parseFloat((c.price*c.qty).toFixed(2)), currency:cur }));
+      const rawDate = date || new Date().toISOString().split('T')[0];
+      const existing = JSON.parse(localStorage.getItem('le_sales') || '[]');
+      const tauxSave = parseFloat(taux) || 245;
+      const cartItems = cart.map(c => ({
+        prod: `N°${c.ref} ${c.name} ${c.size}`, qty: c.qty, cat,
+        amt: cur === 'DA' ? Math.round(c.price * c.qty * tauxSave) : parseFloat((c.price * c.qty).toFixed(2)),
+        currency: cur
+      }));
       const sale = {
         id: `BC-${Date.now()}`,
-        client, email, tel,
-        items,
-        product: prod,
-        qty: String(cart.reduce((s,c)=>s+c.qty,0)),
-        amount: parseFloat(amt)||0,
-        currency: cur,
-        category: cat,
-        date, note, consultant,
+        client: client.trim(), email: email.trim(), tel: tel.trim(),
+        items: cartItems,
+        product: prod || cartItems.map(i => i.prod).join(', '),
+        qty: String(cart.reduce((s, c) => s + c.qty, 0)),
+        amount: parseFloat(amt) || 0,
+        amt: parseFloat(amt) || 0,
+        currency: cur, cur: cur,
+        category: cat, cat: cat,
+        date: rawDate, note: note || '',
+        consultant: consultant || defaultConsultant,
         createdAt: new Date().toISOString(),
       };
-      cloudSave('le_sales', [sale, ...existing]);
+      const updated = [sale, ...existing];
+      cloudSave('le_sales', updated);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch(e) { console.warn(e); }
+      setCart([]); setProd(''); setAmt(''); setClient(''); setEmail(''); setTel(''); setNote('');
+      setTimeout(() => setSaved(false), 4000);
+    } catch (e) {
+      setSaveError('❌ Erreur : ' + e.message);
+      console.error('saveToAgenda error:', e);
+    }
   };
 
   const exportBC = () => {
@@ -155,7 +171,8 @@ function BonCommandeTab() {
   if (showForm) return (
     <div style={S.pad}>
       <button style={S.back} onClick={() => setShowForm(false)}>← Retour catalogue</button>
-      {saved && <div style={S.ok}>✅ Vente enregistrée dans l'Agenda !</div>}
+      {saveError && <div style={{ background:'rgba(192,57,43,0.1)', border:'1px solid rgba(192,57,43,0.3)', borderRadius:10, padding:'10px 14px', color:'var(--red)', fontSize:13, fontWeight:600, marginBottom:10 }}>{saveError}</div>}
+      {saved && <div style={S.ok}>✅ Vente enregistrée avec succès !</div>}
 
       <div style={S.fiche}>
         <p style={S.ficheTitle}>✦ Nouvelle transaction</p>
