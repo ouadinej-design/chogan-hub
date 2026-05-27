@@ -9,7 +9,7 @@ export default function Login() {
   const [form, setForm] = useState({ firstName: '', lastName: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, syncAccountsFromCloud } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleRoleSelect = (role) => {
@@ -25,8 +25,28 @@ export default function Login() {
     if (selectedRole !== 'admin' && !form.lastName.trim()) { setError('Entrez votre nom.'); return; }
     if (!form.password) { setError('Entrez votre mot de passe.'); return; }
     setLoading(true);
-    // Sync Supabase accounts first
-    try { if (syncAccountsFromCloud) await syncAccountsFromCloud(); } catch {}
+    // Try to fetch account from Supabase if not in localStorage
+    try {
+      const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
+      const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
+      const res = await fetch(`${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`, {
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data[0] && Array.isArray(data[0].value)) {
+          const existing = JSON.parse(localStorage.getItem('consultants') || '[]');
+          const cloud = data[0].value;
+          const merged = [...existing];
+          cloud.forEach(cu => {
+            if (!merged.some(lu => lu.firstName?.toLowerCase() === cu.firstName?.toLowerCase() && lu.lastName?.toLowerCase() === cu.lastName?.toLowerCase())) {
+              merged.push(cu);
+            }
+          });
+          localStorage.setItem('consultants', JSON.stringify(merged));
+        }
+      }
+    } catch {}
     const result = login(form.firstName, form.lastName, form.password, selectedRole);
     setLoading(false);
     if (result && result.ok) navigate('/');
