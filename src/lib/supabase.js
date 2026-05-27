@@ -1,45 +1,52 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL  || '';
-const SUPABASE_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL  || '';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-export const supabase = SUPABASE_URL && SUPABASE_KEY
-  ? createClient(SUPABASE_URL, SUPABASE_KEY)
-  : null;
+// Safe initialization - never crash the app
+let _supabase = null;
+let _enabled  = false;
 
-export const isEnabled = !!(SUPABASE_URL && SUPABASE_KEY);
+try {
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    _enabled  = true;
+  }
+} catch (e) {
+  console.warn('Supabase init failed:', e?.message);
+}
 
-// ── Lire une clé ──────────────────────────────────────────────────
+export const supabase  = _supabase;
+export const isEnabled = _enabled;
+
 export async function dbGet(key) {
-  if (!supabase) return null;
+  if (!_supabase) return null;
   try {
-    const { data, error } = await supabase
+    const { data, error } = await _supabase
       .from('app_data').select('value').eq('key', key).single();
     if (error) return null;
     return data?.value ?? null;
   } catch { return null; }
 }
 
-// ── Écrire une clé ────────────────────────────────────────────────
 export async function dbSet(key, value) {
-  if (!supabase) return;
+  if (!_supabase) return;
   try {
-    await supabase.from('app_data')
+    await _supabase.from('app_data')
       .upsert({ key, value, updated_at: new Date().toISOString() });
   } catch {}
 }
 
-// ── Écouter les changements en temps réel ─────────────────────────
 export function dbSubscribe(key, callback) {
-  if (!supabase) return () => {};
-  const channel = supabase
-    .channel(`realtime:${key}`)
-    .on('postgres_changes', {
-      event: '*', schema: 'public', table: 'app_data',
-      filter: `key=eq.${key}`
-    }, payload => {
-      callback(payload.new?.value ?? null);
-    })
-    .subscribe();
-  return () => supabase.removeChannel(channel);
+  if (!_supabase) return () => {};
+  try {
+    const channel = _supabase
+      .channel(`realtime:${key}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'app_data',
+        filter: `key=eq.${key}`
+      }, payload => { try { callback(payload.new?.value ?? null); } catch {} })
+      .subscribe();
+    return () => { try { _supabase.removeChannel(channel); } catch {} };
+  } catch { return () => {}; }
 }
