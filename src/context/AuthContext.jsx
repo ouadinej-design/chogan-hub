@@ -66,7 +66,8 @@ export function AuthProvider({ children }) {
     ) || null;
   };
 
-  const login = (firstName, lastName, password, role) => {
+  const login = async (firstName, lastName, password, role) => {
+    await syncAccountsFromCloud();
     const u = findUser(firstName, lastName, role);
     if (!u) return { ok: false, error: 'Compte introuvable. Vérifiez votre prénom et nom.' };
     if (u.locked) return { ok: false, error: 'Compte verrouillé. Contactez votre administratrice.' };
@@ -214,7 +215,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, loading, login, logout, changePassword,
       createConsultant, resetPassword, toggleLock, deleteConsultant,
-      getAllConsultants, canAccess, ROLES, getFilteredSales, getFilteredEvents,
+      getAllConsultants, canAccess, ROLES, getFilteredSales, getFilteredEvents, syncAccountsFromCloud,
     }}>
       {!loading && children}
     </AuthContext.Provider>
