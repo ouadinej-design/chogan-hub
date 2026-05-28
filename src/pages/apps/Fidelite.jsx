@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -68,6 +68,24 @@ function ClientsTab({ cfg, userName }) {
   const [addingBonus, setAddingBonus] = useState(null);
 
   const { getFilteredSales } = useAuth();
+
+  // Charger les ventes depuis Supabase au montage
+  useEffect(() => {
+    const SB = 'https://fwcauakszxjrzcexjlvt.supabase.co';
+    const KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
+    fetch(`${SB}/rest/v1/app_data?key=eq.le_sales&select=value`, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
+    }).then(r => r.json()).then(d => {
+      const v = d?.[0]?.value;
+      if (Array.isArray(v) && v.length > 0) {
+        const local = JSON.parse(localStorage.getItem('le_sales')||'[]');
+        // Merger: garder les plus récentes
+        const merged = [...v];
+        local.forEach(s => { if (!merged.find(x => x.id === s.id)) merged.push(s); });
+        localStorage.setItem('le_sales', JSON.stringify(merged));
+      }
+    }).catch(() => {});
+  }, []);
   const sales = getFilteredSales();
   const [bonusPoints, setBonusPoints] = useState(() => {
     try { return JSON.parse(localStorage.getItem('le_fidelite')||'{}'); } catch { return {}; }
