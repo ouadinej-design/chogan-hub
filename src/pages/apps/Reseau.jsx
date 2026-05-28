@@ -92,6 +92,67 @@ export default function Reseau() {
     return { eu, da };
   };
 
+  // Top 5 clients par CA
+  const getTopClients = (nodeName) => {
+    const ns = sales.filter(s => s.consultant === nodeName && s.client);
+    const map = {};
+    ns.forEach(s => {
+      const k = (s.client||'').trim();
+      if (!k) return;
+      if (!map[k]) map[k] = { name:k, total:0, currency:s.currency||s.cur||'€', count:0 };
+      map[k].total += parseFloat(s.amount||s.amt)||0;
+      map[k].count++;
+    });
+    return Object.values(map)
+      .sort((a,b) => b.total - a.total)
+      .slice(0, 5)
+      .map(c => ({ name:c.name, date:`${c.count} achat(s)`, details:`${c.total.toFixed(0)} ${c.currency}` }));
+  };
+
+  // Top 5 produits vendus
+  const getTopProducts = (nodeName) => {
+    const ns = sales.filter(s => s.consultant === nodeName);
+    const map = {};
+    ns.forEach(s => {
+      (s.items||[]).forEach(it => {
+        const k = (it.prod||'').trim();
+        if (!k) return;
+        if (!map[k]) map[k] = { name:k, qty:0, total:0 };
+        map[k].qty   += parseInt(it.qty)||1;
+        map[k].total += parseFloat(it.amt)||0;
+      });
+      if ((!s.items||s.items.length===0) && s.product) {
+        const k = s.product.trim();
+        if (!map[k]) map[k] = { name:k, qty:0, total:0 };
+        map[k].qty   += parseInt(s.qty)||1;
+        map[k].total += parseFloat(s.amount||s.amt)||0;
+      }
+    });
+    return Object.values(map)
+      .sort((a,b) => b.qty - a.qty)
+      .slice(0, 5)
+      .map(p => ({ name:p.name, date:`${p.qty} unité(s)`, qty:`${p.qty} un.` }));
+  };
+
+  // Top 5 meilleures ventes
+  const getTopSales = (nodeName) => {
+    return sales
+      .filter(s => s.consultant === nodeName && (parseFloat(s.amount||s.amt)||0) > 0)
+      .sort((a,b) => (parseFloat(b.amount||b.amt)||0) - (parseFloat(a.amount||a.amt)||0))
+      .slice(0, 5)
+      .map(s => ({
+        name: s.client || s.product || s.prod || '—',
+        date: s.date || s.createdAt?.split('T')[0] || '—',
+        total: `${parseFloat(s.amount||s.amt)||0} ${s.currency||s.cur||'€'}`
+      }));
+  };
+
+  // Top 5 événements
+  const getTopEvents = (nodeName) => {
+    const evs = events.filter(e => (e.consultant||'').toLowerCase() === nodeName.toLowerCase() || !e.consultant);
+    return evs.slice(0, 5).map(e => ({ name:e.n||e.name||'—', date:e.d||e.date||'—', loc:e.lbl||e.loc||'—' }));
+  };
+
   // ── Événements d'un membre ────────────────────────────────────
   const getMemberEvents = (nodeName) => {
     return events.filter(e => (e.consultant || '').toLowerCase() === nodeName.toLowerCase());
@@ -191,7 +252,17 @@ export default function Reseau() {
 
     return (
       <div key={node.id} style={{ display:'flex', flexDirection:'column', alignItems:'center', position:'relative' }}>
-        <div onClick={() => setSelectedMember({ ...node, _caEu: eu, _caDa: da, _events: getMemberEvents(node.name) })}
+        <div onClick={() => {
+              const { eu: _eu, da: _da } = getCA(node.name);
+              setSelectedMember({
+                ...node,
+                _caEu: _eu, _caDa: _da,
+                _events:    getTopEvents(node.name),
+                _topClients: getTopClients(node.name).length > 0 ? getTopClients(node.name) : node.topClientsList||[],
+                _topProducts:getTopProducts(node.name).length > 0 ? getTopProducts(node.name) : node.bestSellersList||[],
+                _topSales:   getTopSales(node.name).length > 0 ? getTopSales(node.name) : node.meilleuresVentesList||[],
+              });
+            }}
           style={{ background:'white', border:'1px solid #D2B795', borderRadius:'12px', padding:'12px', minWidth:'140px', textAlign:'center', cursor:'pointer', boxShadow:'0 4px 10px rgba(210,183,149,0.15)', margin:'5px', position:'relative', zIndex:2 }}>
           <div style={{ fontSize:'10px', fontWeight:'700', color: node.genre==='homme'?'#3d6b9e':'#8C6D4F', textTransform:'uppercase' }}>
             {displayRole(node.role, node.genre)}
@@ -442,10 +513,10 @@ export default function Reseau() {
             </div>
 
             {/* Événements réels depuis le Planner */}
-            {(selectedMember._events||[]).length > 0 && (
+            {(selectedMember._events||selectedMember.eventsList||[]).length > 0 && (
               <div style={{ marginTop:'15px' }}>
-                <span style={{ fontSize:'11px', fontWeight:'700', color:'#8C6D4F', textTransform:'uppercase', letterSpacing:'1px', display:'block', marginBottom:'6px' }}>📅 ÉVÉNEMENTS</span>
-                {selectedMember._events.map((ev, i) => (
+                <span style={{ fontSize:'11px', fontWeight:'700', color:'#8C6D4F', textTransform:'uppercase', letterSpacing:'1px', display:'block', marginBottom:'6px' }}>📅 TOP 5 ÉVÉNEMENTS</span>
+                {(selectedMember._events||selectedMember.eventsList||[]).map((ev, i) => (
                   <div key={i} style={{ background:'#FAF8F5', padding:'8px 12px', borderRadius:'8px', fontSize:'12px', borderLeft:'3px solid #D2B795', marginBottom:'4px' }}>
                     <div style={{ fontWeight:'600' }}>{ev.n}</div>
                     <div style={{ color:'#777', fontSize:'11px', marginTop:'2px' }}>{ev.d} — {ev.lbl}</div>
@@ -455,9 +526,10 @@ export default function Reseau() {
             )}
 
             {/* Top ventes & best-sellers du profil */}
-            {[['🛍️ TOP VENTES',selectedMember.meilleuresVentesList,'name','total'],
-              ['💄 BEST-SELLERS',selectedMember.bestSellersList,'name','qty'],
-              ['👥 FIDÉLITÉ CLIENTS',selectedMember.topClientsList,'name','details']
+            {[
+              ['🛍️ TOP 5 VENTES',        selectedMember._topSales    || selectedMember.meilleuresVentesList, 'name','total'],
+              ['💄 TOP 5 BEST-SELLERS',  selectedMember._topProducts || selectedMember.bestSellersList,     'name','qty'],
+              ['👥 TOP 5 CLIENTS',       selectedMember._topClients  || selectedMember.topClientsList,      'name','details'],
             ].map(([title,list,k1,k2]) => list?.length > 0 && (
               <div key={title} style={{ marginTop:'15px' }}>
                 <span style={{ fontSize:'11px', fontWeight:'700', color:'#8C6D4F', textTransform:'uppercase', letterSpacing:'1px', display:'block', marginBottom:'6px' }}>{title}</span>
