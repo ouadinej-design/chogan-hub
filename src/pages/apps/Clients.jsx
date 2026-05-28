@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
@@ -10,6 +10,24 @@ export default function Clients() {
   const [selected, setSelected] = useState(null);
 
   const { getFilteredSales } = useAuth();
+
+  // Charger les ventes depuis Supabase au montage
+  useEffect(() => {
+    const SB = 'https://fwcauakszxjrzcexjlvt.supabase.co';
+    const KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
+    fetch(`${SB}/rest/v1/app_data?key=eq.le_sales&select=value`, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
+    }).then(r => r.json()).then(d => {
+      const v = d?.[0]?.value;
+      if (Array.isArray(v) && v.length > 0) {
+        const local = JSON.parse(localStorage.getItem('le_sales')||'[]');
+        // Merger: garder les plus récentes
+        const merged = [...v];
+        local.forEach(s => { if (!merged.find(x => x.id === s.id)) merged.push(s); });
+        localStorage.setItem('le_sales', JSON.stringify(merged));
+      }
+    }).catch(() => {});
+  }, []);
   const sales = getFilteredSales();
   const now = useMemo(() => { const d=new Date(); d.setHours(0,0,0,0); return d; }, []);
 
