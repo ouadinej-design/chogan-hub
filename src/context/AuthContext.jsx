@@ -185,11 +185,18 @@ export function AuthProvider({ children }) {
       }
       if (user.role === 'marraine') {
         try {
-          const tree = JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes || [];
+          const treeRaw1 = JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes || [];
+          const treeRaw2 = JSON.parse(localStorage.getItem('limitless_team_tree_v5')||'{"nodes":[]}').nodes || [];
+          const tree = [...treeRaw1, ...treeRaw2];
           const teamNames = tree.map(n => (n.name||'').toLowerCase());
+          const fullName  = `${user.firstName||''} ${user.lastName||''}`.trim().toLowerCase();
           return all.filter(s => {
             const cons = (s.consultant||'').toLowerCase();
-            return !cons || cons === name || teamNames.some(t => t===cons || t.includes(cons) || cons.includes(t));
+            // Ventes sans consultant OU ventes de la marraine OU ventes de l'équipe
+            return !cons ||
+              cons.includes(name) || name.includes(cons) ||
+              cons.includes(fullName) || fullName.includes(cons) ||
+              teamNames.some(t => t && (t === cons || t.includes(cons) || cons.includes(t)));
           });
         } catch { return all; }
       }
@@ -211,7 +218,10 @@ export function AuthProvider({ children }) {
       }
       if (user.role === 'marraine') {
         try {
-          const tree = JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes || [];
+          // Lire depuis les deux clés possibles
+          const treeRaw1 = JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes || [];
+          const treeRaw2 = JSON.parse(localStorage.getItem('limitless_team_tree_v5')||'{"nodes":[]}').nodes || [];
+          const tree = [...treeRaw1, ...treeRaw2];
           const teamNames = tree.map(n => (n.name||'').toLowerCase());
           return all.filter(e => {
             const cons = (e.consultant||'').toLowerCase();
