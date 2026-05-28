@@ -157,6 +157,20 @@ export function AuthProvider({ children }) {
   };
 
   const getAllConsultants = () => store.get('consultants', []);
+
+  // Ventes avec indicateur d'appartenance (pour la Marraine)
+  const getFilteredSalesWithOwner = () => {
+    const sales = getFilteredSales();
+    if (!user || user.role !== 'marraine') return sales.map(s => ({...s, _owner:'mine'}));
+    const name     = (user.firstName||'').toLowerCase();
+    const fullName = `${user.firstName||''} ${user.lastName||''}`.trim().toLowerCase();
+    return sales.map(s => {
+      const cons = (s.consultant||'').toLowerCase();
+      const isMine = !cons || cons === name || cons === fullName ||
+                     cons.includes(name) || fullName.includes(cons);
+      return { ...s, _owner: isMine ? 'mine' : 'team' };
+    });
+  };
   const canAccess = (appId) => {
     if (!user) return false;
     if (user.role === 'admin') return true; // Admin has access to everything
@@ -178,9 +192,13 @@ export function AuthProvider({ children }) {
       if (!user || user.role === 'admin') return all;
       const name = (user.firstName||'').toLowerCase();
       if (user.role === 'consultante') {
+        const fullName = `${user.firstName||''} ${user.lastName||''}`.trim().toLowerCase();
         return all.filter(s => {
           const cons = (s.consultant||'').toLowerCase();
-          return !cons || cons === name || cons.includes(name) || name.includes(cons);
+          if (!cons) return false; // Ne pas montrer les ventes sans consultant assigné
+          return cons === name || cons === fullName ||
+                 cons.includes(name) || name.includes(cons) ||
+                 cons.includes(fullName) || fullName.includes(cons);
         });
       }
       if (user.role === 'marraine') {
@@ -211,9 +229,12 @@ export function AuthProvider({ children }) {
       if (!user || user.role === 'admin') return all;
       const name = (user.firstName||'').toLowerCase();
       if (user.role === 'consultante') {
+        const fullNameE = `${user.firstName||''} ${user.lastName||''}`.trim().toLowerCase();
         return all.filter(e => {
           const cons = (e.consultant||'').toLowerCase();
-          return !cons || cons === name || cons.includes(name);
+          if (!cons) return false;
+          return cons === name || cons === fullNameE ||
+                 cons.includes(name) || name.includes(cons);
         });
       }
       if (user.role === 'marraine') {
@@ -237,7 +258,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, loading, login, logout, changePassword,
       createConsultant, resetPassword, toggleLock, deleteConsultant,
-      getAllConsultants, canAccess, ROLES, getFilteredSales, getFilteredEvents,
+      getAllConsultants, canAccess, ROLES, getFilteredSales, getFilteredEvents, getFilteredSalesWithOwner,
     }}>
       {!loading && children}
     </AuthContext.Provider>
