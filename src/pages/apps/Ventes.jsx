@@ -2,6 +2,69 @@ import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
 
+// ── Filtre équipe pour la Marraine ───────────────────────────
+function useTeamFilter(user) {
+  const myName  = user ? `${user.firstName||''} ${user.lastName||''}`.trim() : '';
+  const firstName = (user?.firstName||'').toLowerCase();
+  const [selected, setSelected] = useState('tous');
+
+  const treeNodes = (() => {
+    try {
+      const t1 = JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes||[];
+      const t2 = JSON.parse(localStorage.getItem('limitless_team_tree_v5')||'{"nodes":[]}').nodes||[];
+      return [...t1,...t2];
+    } catch { return []; }
+  })();
+
+  const myNode = treeNodes.find(n => {
+    const nn=(n.name||'').toLowerCase();
+    return nn===myName.toLowerCase()||nn.includes(firstName)||(firstName.length>2&&firstName.includes(nn.split(' ')[0]));
+  });
+  const consultants = myNode ? treeNodes.filter(n=>n.parentId===myNode.id).map(n=>n.name) : [];
+
+  const filterSales = (items) => {
+    if (!user||user.role!=='marraine'||selected==='tous') return items;
+    return items.filter(s => {
+      const c=(s.consultant||'').toLowerCase();
+      if (selected==='moi') return c.includes(firstName)||(firstName.length>2&&firstName.includes(c.split(' ')[0]));
+      const sel=selected.toLowerCase();
+      return c.includes(sel.split(' ')[0])||(sel.split(' ')[0].length>2&&sel.includes(c.split(' ')[0]));
+    });
+  };
+
+  const C_COLORS=[
+    {bg:'rgba(80,130,200,0.12)',border:'#5082C8',text:'#2d5a9e'},
+    {bg:'rgba(100,180,100,0.12)',border:'#64B464',text:'#2d7a2d'},
+    {bg:'rgba(180,100,200,0.12)',border:'#B464C8',text:'#7a2d9e'},
+    {bg:'rgba(210,160,50,0.12)',border:'#D2A032',text:'#8C6D00'},
+    {bg:'rgba(50,190,180,0.12)',border:'#32BEB4',text:'#1a7a74'},
+  ];
+  const OWNER_C={bg:'rgba(220,80,120,0.10)',border:'#DC5078',text:'#a03060'};
+
+  const FilterDropdown = () => {
+    if (!user||user.role!=='marraine') return null;
+    const opts=[
+      {v:'tous',l:"👥 Toute l'équipe",col:'#4A3E3D',bg:'#F5EFE8',bd:'#D2B795'},
+      {v:'moi', l:`🌸 Moi — ${myName}`,col:OWNER_C.text,bg:OWNER_C.bg,bd:OWNER_C.border},
+      ...consultants.map((n,i)=>({v:n.toLowerCase(),l:`👤 ${n}`,col:C_COLORS[i%C_COLORS.length].text,bg:C_COLORS[i%C_COLORS.length].bg,bd:C_COLORS[i%C_COLORS.length].border}))
+    ];
+    const cur=opts.find(o=>o.v===selected)||opts[0];
+    return (
+      <div style={{marginBottom:12,position:'relative'}}>
+        <select value={selected} onChange={e=>setSelected(e.target.value)}
+          style={{width:'100%',padding:'10px 14px',borderRadius:10,border:`1.5px solid ${cur.bd}`,
+            background:cur.bg,color:cur.col,fontWeight:700,fontSize:13,cursor:'pointer',
+            appearance:'none',WebkitAppearance:'none',boxSizing:'border-box'}}>
+          {opts.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
+        </select>
+        <span style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',color:cur.col,fontSize:12}}>▾</span>
+      </div>
+    );
+  };
+
+  return { filterSales, FilterDropdown };
+}
+
 // ── Cloud sync inline ──────────────────────────────────────────
 const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
 const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
@@ -43,6 +106,7 @@ export default function Ventes() {
   const [sales, setSales]   = useState([]);
   const [search, setSearch] = useState('');
   const [catFilter, setCat] = useState('Toutes');
+  const { filterSales, FilterDropdown } = useTeamFilter(user);
   const [editing, setEditing] = useState(null);
   const [form, setForm]     = useState({});
 
@@ -58,7 +122,7 @@ export default function Ventes() {
   const openEdit = (v) => { setEditing(v.id); setForm({ client:v.client||'', email:v.email||'', tel:v.tel||'', product:v.product||v.prod||'', qty:String(v.qty||1), amount:String(v.amount||v.amt||''), currency:v.currency||v.cur||'€', date:v.date||'', note:v.note||'', consultant:v.consultant||'' }); };
   const saveEdit = () => { save(sales.map(s=>s.id!==editing?s:{...s,...form,amount:parseFloat(form.amount)||0,amt:form.amount})); setEditing(null); };
 
-  const filtered = sales.filter(s => {
+  const filtered = filterSales(sales).filter(s => {
     const q = search.toLowerCase();
     const matchSearch = !q || (s.client||'').toLowerCase().includes(q)||(s.product||s.prod||'').toLowerCase().includes(q)||(s.consultant||'').toLowerCase().includes(q);
     const matchCat = catFilter==='Toutes'||(s.category||s.cat||'')===catFilter;
@@ -113,7 +177,10 @@ export default function Ventes() {
           </div>
         </div>
 
-        {/* Filtres */}
+        {/* Filtre équipe */}
+        <FilterDropdown />
+
+        {/* Filtres recherche */}
         <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Rechercher..."
             style={{flex:1,minWidth:150,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',fontSize:13}}/>
