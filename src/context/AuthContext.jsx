@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
   };
 
   const login = (firstName, lastName, password, role) => {
-    const u = findUser(firstName, lastName, role);
+    const u = findUser(firstName, lastName, role, password);
     if (!u) return { ok: false, error: 'Compte introuvable. Vérifiez votre prénom et nom.' };
     if (u.locked) return { ok: false, error: 'Compte verrouillé. Contactez votre administratrice.' };
     if (u.password !== password) return { ok: false, error: 'Mot de passe incorrect.' };
