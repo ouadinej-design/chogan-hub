@@ -444,7 +444,18 @@ function VentesTab() {
                 : product ? <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,lineHeight:1.5}}>{product}</p> : null
               }
               {v.note && <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,fontStyle:'italic'}}>📝 {v.note}</p>}
-              {v.consultant && <p style={{fontSize:10,color:'var(--text-dim)',marginTop:4}}>Consultante : {v.consultant}</p>}
+              {v.consultant && (
+                <p style={{fontSize:11, marginTop:6, display:'flex', alignItems:'center', gap:4}}>
+                  <span style={{
+                    background: v._owner==='mine' ? 'rgba(220,80,120,0.12)' : v._owner==='team' ? 'rgba(60,130,200,0.12)' : '#F5EFE8',
+                    color:      v._owner==='mine' ? '#c0415a' : v._owner==='team' ? '#2d6aa0' : '#8C6D4F',
+                    padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700,
+                    border: v._owner==='mine' ? '1px solid rgba(220,80,120,0.3)' : v._owner==='team' ? '1px solid rgba(60,130,200,0.3)' : '1px solid #D2B795'
+                  }}>
+                    {v._owner==='mine' ? '🌸 Ma vente' : v._owner==='team' ? '💙 Équipe' : '👤'} — {v.consultant}
+                  </span>
+                </p>
+              )}
               {/* Boutons Modifier / Réinitialiser */}
               <div style={S.actionRow}>
                 <button style={S.editBtn} onClick={() => openEdit(v)}>✏️ Modifier</button>
