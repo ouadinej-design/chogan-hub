@@ -264,7 +264,8 @@ function EvenementsTab() {
     return cons.includes(memberFilter.split(' ')[0])||(memberFilter.split(' ')[0].length>2&&memberFilter.includes(cons.split(' ')[0]));
   });
   const setEvts = (v) => setAllEvts_(v);
-  const [editId, setEditId] = useState(null);
+  const [editId, setEditId]           = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [form, setForm]     = useState({ name:'', type:'Salon/Expo', date:new Date().toISOString().split('T')[0], email:'', tel:'' });
   const [filter, setFilter] = useState('perso');
   const [ok, setOk]         = useState('');
@@ -322,24 +323,72 @@ function EvenementsTab() {
       </div>
       {filter==='perso'&&<>
         {futurs.length>0&&<><p style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',color:'var(--or-deep)',marginBottom:8}}>✦ Prochains — {futurs.length}</p>
-        {futurs.map(ev=><div key={ev.id} style={{display:'flex',alignItems:'center',gap:10,background:'var(--bg-card)',border:'1px solid var(--or-border)',borderRadius:12,padding:'10px 12px',marginBottom:8,borderLeft:'3px solid var(--blue)'}}>
-          <div style={{flex:1,minWidth:0}}>
-            <p style={{fontSize:12,fontWeight:600,color:'var(--taupe)'}}>{ev.n}</p>
-            <p style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>{fmt(ev.d)} · <span style={{color:'var(--blue)'}}>{ev.lbl}</span></p>
-            {ev.email&&<p style={{fontSize:9,color:'var(--text-dim)'}}>✉ {ev.email}</p>}
-          </div>
-          <Badge d={ev.d}/>
-          <button style={{background:'none',border:'none',cursor:'pointer',fontSize:14,padding:'2px 4px'}} onClick={()=>openEdit(ev)}>✏️</button>
-          <button style={{background:'none',border:'none',cursor:'pointer',fontSize:14,padding:'2px 4px',color:'var(--red)'}} onClick={()=>del(ev.id)}>🗑</button>
-        </div>)}</>}
+        {futurs.map(ev=>{
+          const j=diffJ(ev.d);
+          const jColor=j===0?'var(--red)':j<=7?'#f59e0b':'var(--green)';
+          return <div key={ev.id} onClick={()=>setSelectedEvent(ev)}
+            style={{display:'flex',alignItems:'center',gap:10,background:'var(--bg-card)',border:'1px solid var(--or-border)',borderRadius:12,padding:'10px 12px',marginBottom:8,borderLeft:'3px solid var(--blue)',cursor:'pointer'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <p style={{fontSize:12,fontWeight:600,color:'var(--taupe)'}}>{ev.n}</p>
+              <p style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>{fmt(ev.d)} · <span style={{color:'var(--blue)'}}>{ev.lbl}</span></p>
+              {ev.email&&<p style={{fontSize:9,color:'var(--text-dim)'}}>✉ {ev.email}</p>}
+              {ev.consultant&&<p style={{fontSize:9,color:'var(--or-deep)',marginTop:2}}>👤 {ev.consultant}</p>}
+            </div>
+            <Badge d={ev.d}/>
+          </div>;
+        })}</>}
         {passes.length>0&&<><p style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',color:'var(--text-muted)',margin:'12px 0 8px'}}>📁 Historique</p>
-        {passes.map(ev=><div key={ev.id} style={{display:'flex',alignItems:'center',gap:10,background:'var(--bg-card)',border:'1px solid var(--or-border)',borderRadius:12,padding:'10px 12px',marginBottom:8,opacity:0.6}}>
+        {passes.map(ev=><div key={ev.id} onClick={()=>setSelectedEvent(ev)}
+          style={{display:'flex',alignItems:'center',gap:10,background:'var(--bg-card)',border:'1px solid var(--or-border)',borderRadius:12,padding:'10px 12px',marginBottom:8,opacity:0.6,cursor:'pointer'}}>
           <div style={{flex:1}}><p style={{fontSize:12,color:'var(--taupe)',textDecoration:'line-through'}}>{ev.n}</p><p style={{fontSize:10,color:'var(--text-muted)'}}>{fmt(ev.d)}</p></div>
           <Badge d={ev.d}/>
-          <button style={{background:'none',border:'none',cursor:'pointer',fontSize:14,color:'var(--red)'}} onClick={()=>del(ev.id)}>🗑</button>
         </div>)}</>}
         {!evts.length&&<div style={{textAlign:'center',color:'var(--text-muted)',padding:'40px 20px',fontSize:13}}>Aucun événement.</div>}
       </>}
+      {/* Modal détail événement */}
+      {selectedEvent && (
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:16}}>
+          <div style={{background:'white',borderRadius:16,padding:24,width:'100%',maxWidth:400,boxShadow:'0 10px 30px rgba(0,0,0,0.15)',border:'1px solid var(--or-border)'}}>
+            {/* Header */}
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
+              <div>
+                <p style={{fontSize:18,fontWeight:700,color:'var(--taupe)',fontFamily:'var(--font-display)'}}>{selectedEvent.n}</p>
+                <span style={{display:'inline-block',background:'var(--or-pale)',color:'var(--or-deep)',padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:600,marginTop:4}}>{selectedEvent.lbl}</span>
+              </div>
+              <button onClick={()=>setSelectedEvent(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'var(--text-muted)',lineHeight:1}}>✕</button>
+            </div>
+            {/* Infos */}
+            <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
+              <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--or-border)'}}>
+                <span style={{color:'var(--text-muted)',fontSize:13}}>📅 Date</span>
+                <strong style={{color:'var(--taupe)',fontSize:13}}>{selectedEvent.d ? new Date(selectedEvent.d).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—'}</strong>
+              </div>
+              <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--or-border)'}}>
+                <span style={{color:'var(--text-muted)',fontSize:13}}>⏰ Dans</span>
+                <Badge d={selectedEvent.d}/>
+              </div>
+              {selectedEvent.email && <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--or-border)'}}>
+                <span style={{color:'var(--text-muted)',fontSize:13}}>✉️ Email</span>
+                <a href={`mailto:${selectedEvent.email}`} style={{color:'var(--blue)',fontSize:13,fontWeight:600}}>{selectedEvent.email}</a>
+              </div>}
+              {selectedEvent.tel && <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--or-border)'}}>
+                <span style={{color:'var(--text-muted)',fontSize:13}}>📞 Téléphone</span>
+                <a href={`tel:${selectedEvent.tel}`} style={{color:'var(--blue)',fontSize:13,fontWeight:600}}>{selectedEvent.tel}</a>
+              </div>}
+              {selectedEvent.consultant && <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--or-border)'}}>
+                <span style={{color:'var(--text-muted)',fontSize:13}}>👤 Consultante</span>
+                <strong style={{color:'var(--or-deep)',fontSize:13}}>{selectedEvent.consultant}</strong>
+              </div>}
+            </div>
+            {/* Actions */}
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>{openEdit(selectedEvent);setSelectedEvent(null);}} style={{flex:1,padding:'11px',background:'var(--or-pale)',border:'1px solid var(--or-border)',borderRadius:8,cursor:'pointer',fontWeight:600,color:'var(--or-deep)',fontSize:13}}>✏️ Modifier</button>
+              <button onClick={()=>{del(selectedEvent.id);setSelectedEvent(null);}} style={{flex:1,padding:'11px',background:'#FFF0F0',border:'1px solid #FFA3A3',borderRadius:8,cursor:'pointer',fontWeight:600,color:'var(--red)',fontSize:13}}>🗑 Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {filter==='strategique'&&Object.entries(TC).map(([type,color])=>{
         const items=STRATEGIC.filter(e=>e.t===type).sort((a,b)=>new Date(a.d)-new Date(b.d));
         return<div key={type} style={{marginBottom:14}}>
