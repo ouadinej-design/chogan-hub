@@ -7,6 +7,7 @@ import { getTodayLogs, store } from './utils/storage';
 import Login      from './pages/Login';
 import Home       from './pages/Home';
 import Orders      from './pages/apps/Orders';
+import Ventes      from './pages/apps/Ventes';
 import Inspirations from './pages/apps/Inspirations';
 import Clients    from './pages/apps/Clients';
 import Fidelite   from './pages/apps/Fidelite';
@@ -59,6 +60,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/"                   element={<Home />} />
         <Route path="/app/orders"         element={<Orders />} />
+        <Route path="/app/ventes"         element={<Ventes />} />
         <Route path="/app/inspirations"    element={<Inspirations />} />
         <Route path="/app/clients"        element={<Clients />} />
         <Route path="/app/fidelite"       element={<Fidelite />} />
