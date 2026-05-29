@@ -3,6 +3,37 @@ import { PERFUMES } from '../../utils/choganData';
 import { useData } from '../../context/DataContext';
 import AppLayout from '../../components/AppLayout';
 
+// ── Couleurs par consultant ───────────────────────────────────────
+const CONSULT_COLORS = [
+  { bg:'rgba(80,130,200,0.12)',  border:'#5082C8', text:'#2d5a9e' },
+  { bg:'rgba(100,180,100,0.12)', border:'#64B464', text:'#2d7a2d' },
+  { bg:'rgba(180,100,200,0.12)', border:'#B464C8', text:'#7a2d9e' },
+  { bg:'rgba(210,160,50,0.12)',  border:'#D2A032', text:'#8C6D00' },
+  { bg:'rgba(50,190,180,0.12)',  border:'#32BEB4', text:'#1a7a74' },
+  { bg:'rgba(220,120,60,0.12)',  border:'#DC783C', text:'#9e4a1a' },
+];
+const OWNER_C = { bg:'rgba(220,80,120,0.10)', border:'#DC5078', text:'#a03060' };
+const _cc = {}; let _ci = 0;
+function cColor(name, ownerFirst) {
+  if (!name) return CONSULT_COLORS[0];
+  const n = name.toLowerCase().trim();
+  const o = (ownerFirst||'').toLowerCase().trim();
+  if (o && (n.includes(o) || o.includes(n.split(' ')[0]))) return OWNER_C;
+  if (!_cc[n]) { _cc[n] = CONSULT_COLORS[_ci % CONSULT_COLORS.length]; _ci++; }
+  return _cc[n];
+}
+function ColorBadge({ consultant, ownerFirst }) {
+  if (!consultant) return null;
+  const col = cColor(consultant, ownerFirst);
+  const isMine = col === OWNER_C;
+  return (
+    <span style={{ display:'inline-block', background:col.bg, border:`1px solid ${col.border}`,
+      color:col.text, borderRadius:12, padding:'2px 10px', fontSize:11, fontWeight:700, marginTop:4 }}>
+      {isMine ? '🌸 Moi' : `👤 ${consultant}`}
+    </span>
+  );
+}
+
 // ── Cloud sync (localStorage + Supabase) ─────────────────────────
 const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
 const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
@@ -449,17 +480,10 @@ function VentesTab() {
                 : product ? <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,lineHeight:1.5}}>{product}</p> : null
               }
               {v.note && <p style={{fontSize:11,color:'var(--text-muted)',marginTop:6,fontStyle:'italic'}}>📝 {v.note}</p>}
-              {v.consultant && (
-                <p style={{fontSize:11, marginTop:6, display:'flex', alignItems:'center', gap:4}}>
-                  <span style={{
-                    background: v._owner==='mine' ? 'rgba(220,80,120,0.12)' : v._owner==='team' ? 'rgba(60,130,200,0.12)' : '#F5EFE8',
-                    color:      v._owner==='mine' ? '#c0415a' : v._owner==='team' ? '#2d6aa0' : '#8C6D4F',
-                    padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700,
-                    border: v._owner==='mine' ? '1px solid rgba(220,80,120,0.3)' : v._owner==='team' ? '1px solid rgba(60,130,200,0.3)' : '1px solid #D2B795'
-                  }}>
-                    {v._owner==='mine' ? '🌸 Ma vente' : v._owner==='team' ? '💙 Équipe' : '👤'} — {v.consultant}
-                  </span>
-                </p>
+              {v.consultant && user?.role !== 'consultante' && (
+                <div style={{marginTop:6}}>
+                  <ColorBadge consultant={v.consultant} ownerFirst={user?.firstName} />
+                </div>
               )}
               {/* Boutons Modifier / Réinitialiser */}
               <div style={S.actionRow}>
