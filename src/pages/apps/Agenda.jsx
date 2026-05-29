@@ -137,6 +137,7 @@ function AgendaOriginal() {
 
 // ── CALENDRIER STRATÉGIQUE ────────────────────────────────────────
 function AgendaIframe() {
+  const { user: calUser } = useAuth();
   const [filter, setFilter] = useState('tout');
 
   const now = new Date(); now.setHours(0,0,0,0);
@@ -144,11 +145,27 @@ function AgendaIframe() {
   const diffJ = d => Math.ceil((new Date(d)-now)/86400000);
   const day = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 
-  // Charger les événements perso depuis localStorage
+  // Charger les événements perso depuis localStorage — filtrés par consultant
   const persoEvts = (() => {
     try {
-      return JSON.parse(localStorage.getItem('le_cevents')||'[]').map(e => ({
-        n: e.n, d: e.d, t: 'perso', icon: '📌', id: e.id, lbl: e.lbl
+      const all = JSON.parse(localStorage.getItem('le_cevents')||'[]');
+      const myFirst = (calUser?.firstName||'').toLowerCase().trim();
+      const myFull  = `${calUser?.firstName||''} ${calUser?.lastName||''}`.trim().toLowerCase();
+
+      const filtered = all.filter(e => {
+        if (!calUser || calUser.role === 'admin') return true;
+        const cons = (e.consultant||'').toLowerCase().trim();
+        if (calUser.role === 'consultante') {
+          if (!cons) return false;
+          return cons.split(' ').some(w => w === myFirst);
+        }
+        // Marraine : voit tout
+        return true;
+      });
+
+      return filtered.map(e => ({
+        n: e.n || e.title || e.client, d: e.d || e.date, t: 'perso', icon: '📌', id: e.id, lbl: e.lbl || e.type,
+        consultant: e.consultant
       }));
     } catch { return []; }
   })();
