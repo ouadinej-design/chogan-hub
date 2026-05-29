@@ -58,11 +58,17 @@ const TABS = [
 ];
 
 export default function Orders() {
+  const { user } = useAuth();
+  const isConsultante = user?.role === 'consultante';
+  const visibleTabs = TABS.filter(t => {
+    if (isConsultante && (t.id === 'ventes' || t.id === 'clients')) return false;
+    return true;
+  });
   const [tab, setTab] = useState('bon');
   return (
     <AppLayout title="Commandes" icon="🛒">
       <div style={S.tabsWrap}>
-        {TABS.map(t => (
+        {visibleTabs.map(t => (
           <button key={t.id} style={{ ...S.tab, ...(tab===t.id?S.tabActive:{}) }} onClick={() => setTab(t.id)}>
             {t.label}
           </button>
