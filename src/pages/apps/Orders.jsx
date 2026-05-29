@@ -192,6 +192,8 @@ function BonCommandeTab() {
       };
       const updated = [sale, ...existing];
       cloudSave('le_sales', updated);
+      console.log('✅ Sale saved:', sale.client, sale.amount, sale.consultant);
+      console.log('✅ Total sales in localStorage:', updated.length);
       setSaved(true);
       setCart([]); setProd(''); setAmt(''); setClient(''); setEmail(''); setTel(''); setNote('');
       setTimeout(() => setSaved(false), 4000);
