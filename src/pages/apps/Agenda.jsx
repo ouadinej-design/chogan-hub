@@ -232,7 +232,10 @@ function AgendaIframe() {
 // ── ÉVÉNEMENTS ────────────────────────────────────────────────────
 function EvenementsTab() {
   const { user:evtUser } = useAuth();
-  useEffect(() => { syncFromServer(); }, []);
+  const [syncDone, setSyncDone] = useState(false);
+  useEffect(() => {
+    syncFromServer().then(() => setSyncDone(true));
+  }, []);
 
   const [allEvts, setAllEvts_] = useCloudData('le_cevents', []);
   const [memberFilter, setMemberFilter] = useState('tous');
