@@ -11,7 +11,7 @@ async function fetchAndMergeAccounts() {
     const cloud = data?.accounts;
     if (!Array.isArray(cloud) || cloud.length === 0) { console.warn('No accounts returned from API'); return false; }
     // Remplacer complètement avec les données cloud (source de vérité)
-    localStorage.setItem('consultants', JSON.stringify(cloud));
+    localStorage.setItem('chogan_hub_consultants', JSON.stringify(cloud));
     console.log('✓ Comptes chargés depuis API:', cloud.map(u=>u.firstName+' '+u.lastName).join(', '));
     return true;
   } catch (e) {
@@ -63,7 +63,7 @@ export default function Login() {
               merged.push(cu);
             }
           });
-          localStorage.setItem('consultants', JSON.stringify(merged));
+          localStorage.setItem('chogan_hub_consultants', JSON.stringify(merged));
         }
       }
     } catch {}
