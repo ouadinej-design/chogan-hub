@@ -74,6 +74,8 @@ export default function Clients() {
   const [selected, setSelected] = useState(null);
 
   const { getFilteredSales, user } = useAuth();
+  const [memberFilter, setMemberFilter] = useState('tous');
+  const myFN = (user?.firstName||'').toLowerCase();
 
   // Charger les ventes depuis Supabase au montage
   useEffect(() => {
@@ -204,9 +206,6 @@ export default function Clients() {
       </div>
     );
   };
-
-  // Filter clients by selected member
-  const rawSalesFiltered = filterByConsultant(getFilteredSales(), s => s.consultant);
 
   const Group = ({ title, color, items, offset=0 }) => {
     if (!items.length) return null;
