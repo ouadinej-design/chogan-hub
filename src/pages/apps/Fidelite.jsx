@@ -118,7 +118,16 @@ function ClientsTab({ cfg, userName }) {
       }
     }).catch(() => {});
   }, []);
-  const sales = getFilteredSales();
+  const myFN_filter = (user?.firstName||'').toLowerCase();
+  // Appliquer le filtre membre aux ventes
+  const allSalesFid = getFilteredSales();
+  const sales = user?.role !== 'marraine' || memberFilter === 'tous' ? allSalesFid : allSalesFid.filter(s => {
+    const cons = (s.consultant||'').toLowerCase();
+    if (!cons) return false;
+    if (memberFilter === 'moi') return cons.includes(myFN_filter)||(myFN_filter.length>2&&myFN_filter.includes(cons.split(' ')[0]));
+    const sel = memberFilter.toLowerCase();
+    return cons.includes(sel.split(' ')[0])||(sel.split(' ')[0].length>2&&sel.includes(cons.split(' ')[0]));
+  });
   const [bonusPoints, setBonusPoints] = useState(() => {
     try { return JSON.parse(localStorage.getItem('le_fidelite')||'{}'); } catch { return {}; }
   });
@@ -154,7 +163,7 @@ function ClientsTab({ cfg, userName }) {
     if (memberFilter === 'tous') return true;
     const lastSale = cl.sales[cl.sales.length-1];
     const cons = (lastSale?.consultant||'').toLowerCase();
-    if (memberFilter === 'moi') return cons.includes(myFN)||(myFN.length>2&&myFN.includes(cons.split(' ')[0]));
+    if (memberFilter === 'moi') return cons.includes(myFN_filter)||(myFN.length>2&&myFN.includes(cons.split(' ')[0]));
     return cons.includes(memberFilter.split(' ')[0])||(memberFilter.split(' ')[0].length>2&&memberFilter.includes(cons.split(' ')[0]));
   });
 
