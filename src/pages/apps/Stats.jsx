@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,13 +8,14 @@ export default function Stats() {
 
   return (
     <AppLayout title="Statistiques" icon="📊">
-      <div style={{ display:'flex', borderBottom:'1px solid var(--or-border)' }}>
-        {[['stats','📈 Mes stats'],['dashboard','🏠 Dashboard']].map(([k,l]) => (
-          <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:12, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)' }} onClick={() => setTab(k)}>{l}</button>
+      <div style={{ display:'flex', borderBottom:'1px solid var(--or-border)', overflowX:'auto', scrollbarWidth:'none' }}>
+        {[['stats','📈 Stats'],['dashboard','🏠 Dashboard'],['activite','📅 Activité']].map(([k,l]) => (
+          <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:11, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
       {tab === 'stats'     && <StatsTab user={user} />}
       {tab === 'dashboard' && <DashboardTab />}
+      {tab === 'activite'  && <ActiviteTab />}
     </AppLayout>
   );
 }
@@ -318,6 +319,92 @@ function DashboardTab() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── ACTIVITÉ (depuis l'Agenda) ────────────────────────────────────
+function ActiviteTab() {
+  const { getFilteredEvents, getFilteredSales, user } = useAuth();
+  const [filter, setFilter] = useState('all');
+
+  const events = (() => {
+    try { return JSON.parse(localStorage.getItem('le_cevents') || '[]'); } catch { return []; }
+  })();
+  const sales = getFilteredSales();
+  const now = new Date();
+
+  // Fusionner events + ventes dans un seul fil chronologique
+  const allActivity = [
+    ...events.map(e => ({ ...e, _type: 'event', _date: new Date(e.date || e.createdAt || now) })),
+    ...sales.map(s => ({ ...s, _type: 'sale', _date: new Date(s.date || s.createdAt || now) })),
+  ].sort((a, b) => b._date - a._date);
+
+  const filtered = allActivity.filter(a => {
+    if (filter === 'events') return a._type === 'event';
+    if (filter === 'sales') return a._type === 'sale';
+    return true;
+  });
+
+  const byMonth = {};
+  filtered.forEach(a => {
+    const key = a._date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    if (!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push(a);
+  });
+
+  return (
+    <div style={{ padding: 16 }}>
+      {/* Filtres */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        {[['all', 'Tout'], ['events', '📅 Événements'], ['sales', '💰 Ventes']].map(([k, l]) => (
+          <button key={k} onClick={() => setFilter(k)} style={{ padding: '7px 14px', borderRadius: 20, border: '1px solid var(--or-border)', background: filter === k ? 'var(--or)' : 'var(--bg-card)', color: filter === k ? '#fff' : 'var(--text-muted)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{l}</button>
+        ))}
+      </div>
+
+      {/* Résumé */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+        {[{ v: events.length, l: 'Événements' }, { v: sales.length, l: 'Ventes' }].map((k, i) => (
+          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--or-border)', borderRadius: 12, textAlign: 'center', padding: '11px 8px' }}>
+            <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--or-deep)', fontFamily: 'var(--font-display)' }}>{k.v}</p>
+            <p style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2 }}>{k.l}</p>
+          </div>
+        ))}
+      </div>
+
+      {Object.keys(byMonth).length === 0 && (
+        <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 20px', fontSize: 13 }}>
+          Aucune activité enregistrée.
+        </div>
+      )}
+
+      {Object.entries(byMonth).map(([month, items]) => (
+        <div key={month} style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--or-deep)', marginBottom: 8, padding: '4px 0', borderBottom: '1px solid var(--or-border)' }}>
+            {month} · {items.length} activité{items.length > 1 ? 's' : ''}
+          </div>
+          {items.map((a, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 0', borderBottom: '1px solid rgba(210,183,149,0.08)' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: a._type === 'sale' ? 'rgba(45,122,74,0.12)' : 'rgba(61,107,158,0.12)', border: `1px solid ${a._type === 'sale' ? '#2d7a4a' : '#3d6b9e'}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>
+                {a._type === 'sale' ? '💰' : '📅'}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--taupe)' }}>
+                  {a._type === 'sale' ? (a.client || a.product || 'Vente') : (a.title || a.type || 'Événement')}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                  {a._type === 'sale' && `${a.amount || a.amt || 0} ${a.currency || a.cur || 'DA'} · ${a.product || ''}`}
+                  {a._type === 'event' && (a.loc || a.location || a.type || '')}
+                </div>
+                {a.consultant && <div style={{ fontSize: 10, color: 'var(--or-deep)', marginTop: 2 }}>👤 {a.consultant}</div>}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'right', flexShrink: 0 }}>
+                {a._date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

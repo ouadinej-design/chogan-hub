@@ -81,16 +81,94 @@ export default function Fidelite() {
   return (
     <AppLayout title="Fidélité" icon="💳">
       <div style={S.tabs}>
-        {[['clients','💳 Clients'],['design','🎨 Ma carte'],['qr','📱 QR Code'],['notifs','🔔 Notifs']].map(([k,l]) => (
+        {[['clients','💳 Clients'],['agenda','📅 Agenda'],['design','🎨 Ma carte'],['qr','📱 QR Code'],['notifs','🔔 Notifs']].map(([k,l]) => (
           <button key={k} style={{ ...S.tab, ...(tab===k?S.tabActive:{}) }} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
 
       {tab === 'clients' && <ClientsTab cfg={cfg} userName={user?.firstName} />}
+      {tab === 'agenda'  && <AgendaFideliteTab userName={user?.firstName} />}
       {tab === 'design'  && <DesignTab cfg={cfg} updCfg={updCfg} />}
       {tab === 'qr'      && <QRTab cfg={cfg} userName={user?.firstName} />}
       {tab === 'notifs'  && <NotifsTab cfg={cfg} userName={user?.firstName} />}
     </AppLayout>
+  );
+}
+
+// ── AGENDA FIDÉLITÉ ───────────────────────────────────────────────
+function AgendaFideliteTab({ userName }) {
+  // Récupérer les événements liés à la fidélité depuis l'agenda
+  const events = (() => { try { return JSON.parse(localStorage.getItem('le_cevents') || '[]'); } catch { return []; } })();
+  const fidelite = (() => { try { return JSON.parse(localStorage.getItem('le_fidelite') || '{}'); } catch { return {}; } })();
+
+  // Événements fidélité = ventes trackées + anniversaires clients
+  const clients = Object.values(fidelite);
+  const now = new Date();
+
+  // Événements de ventes récents (source=commande ou de l'agenda)
+  const recentSales = events
+    .filter(e => e.source === 'commande' || e.type === 'Vente')
+    .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt))
+    .slice(0, 20);
+
+  // Clients à relancer (dernière vente > 30j)
+  const toRelance = clients
+    .filter(c => {
+      if (!c.lastDate) return false;
+      const days = Math.floor((now - new Date(c.lastDate)) / 86400000);
+      return days > 30;
+    })
+    .sort((a, b) => new Date(a.lastDate) - new Date(b.lastDate))
+    .slice(0, 10);
+
+  return (
+    <div style={{ padding: 16 }}>
+      {/* À relancer */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--or-deep)', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>🔔 Clients à relancer</span>
+          <span style={{ background: '#d9770615', color: '#d97706', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>{toRelance.length}</span>
+        </div>
+        {toRelance.length === 0 && <div style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: '14px 0' }}>Aucun client à relancer 🎉</div>}
+        {toRelance.map((c, i) => {
+          const days = Math.floor((now - new Date(c.lastDate)) / 86400000);
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg-card)', border: '1px solid #d9770630', borderRadius: 12, padding: '10px 12px', marginBottom: 8 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: '#d9770612', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚠️</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--taupe)' }}>{c.name}</div>
+                <div style={{ fontSize: 11, color: '#d97706', marginTop: 1 }}>Inactif depuis {days} jours</div>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>
+                <div style={{ fontWeight: 600, color: 'var(--or-deep)' }}>{(c.total || 0).toFixed(0)} €</div>
+                <div style={{ fontSize: 10 }}>CA total</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Achats fidélité récents */}
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--or-deep)', marginBottom: 10 }}>
+          ✨ Achats récents (fidélité)
+        </div>
+        {recentSales.length === 0 && <div style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: '14px 0' }}>Aucun achat enregistré. Créez une vente dans Commandes.</div>}
+        {recentSales.map((e, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg-card)', border: '1px solid var(--or-border)', borderRadius: 12, padding: '10px 12px', marginBottom: 8 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(184,154,106,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>💳</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--taupe)' }}>{e.client || e.title || '—'}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{e.product || e.type || ''}</div>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--or-deep)', fontWeight: 700, textAlign: 'right' }}>
+              <div>{e.amount || e.amt || 0} {e.currency || e.cur || 'DA'}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{new Date(e.date || e.createdAt || now).toLocaleDateString('fr-FR')}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

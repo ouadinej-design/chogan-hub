@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
-import { sendDailyReport, shouldSendReport } from './utils/emailReport';
-import { getTodayLogs, store } from './utils/storage';
+import { sendDailyReport, shouldSendReport, buildDailyStats } from './utils/emailReport';
+import { store } from './utils/storage';
 import Login      from './pages/Login';
 import Home       from './pages/Home';
 import Orders      from './pages/apps/Orders';
@@ -35,16 +35,17 @@ function AppRoutes() {
       if (shouldSendReport(user.id)) {
         const adminEmail = store.get('admin_email') || user.email;
         if (adminEmail) {
+          const { logs, stats } = buildDailyStats(user.id);
           await sendDailyReport({
             consultantName: user.displayName || `${user.firstName} ${user.lastName}`,
             consultantEmail: user.email || '',
             adminEmail,
-            logs: getTodayLogs(user.id),
-            stats: { orders:0, clients:0, revenue:0 },
+            logs,
+            stats,
           });
         }
       }
-    }, 3000);
+    }, 5000);
     return () => clearTimeout(delay);
   }, [user]);
 

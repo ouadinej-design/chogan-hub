@@ -59,6 +59,15 @@ export default function Settings() {
     store.set('emailjs_template', emailConf.templateId);
     store.set('emailjs_key',      emailConf.publicKey);
     store.set('admin_email',      emailConf.adminEmail);
+    // Sauvegarder aussi dans le format unifié pour emailReport.js
+    localStorage.setItem('chogan_email_cfg', JSON.stringify({
+      serviceId:  emailConf.serviceId,
+      templateId: emailConf.templateId,
+      publicKey:  emailConf.publicKey,
+    }));
+    localStorage.setItem('emailjs_service_id',  emailConf.serviceId);
+    localStorage.setItem('emailjs_template_id', emailConf.templateId);
+    localStorage.setItem('emailjs_public_key',  emailConf.publicKey);
     notify('✓ Configuration email sauvegardée.');
   };
   const testEmail = async () => {

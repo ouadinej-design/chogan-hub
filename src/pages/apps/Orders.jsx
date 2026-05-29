@@ -192,8 +192,62 @@ function BonCommandeTab() {
       };
       const updated = [sale, ...existing];
       cloudSave('le_sales', updated);
-      console.log('✅ Sale saved:', sale.client, sale.amount, sale.consultant);
-      console.log('✅ Total sales in localStorage:', updated.length);
+
+      // ── AUTO : Créer/Mettre à jour la fiche client ────────────────
+      try {
+        const clientsRaw = JSON.parse(localStorage.getItem('le_clients') || '[]');
+        const existIdx = clientsRaw.findIndex(c => (c.name||'').toLowerCase() === client.trim().toLowerCase());
+        if (existIdx >= 0) {
+          clientsRaw[existIdx].email = email.trim() || clientsRaw[existIdx].email;
+          clientsRaw[existIdx].tel   = tel.trim()   || clientsRaw[existIdx].tel;
+          clientsRaw[existIdx].lastDate = rawDate;
+          clientsRaw[existIdx].consultant = sale.consultant;
+        } else {
+          clientsRaw.unshift({
+            id: `CL-${Date.now()}`,
+            name: client.trim(), email: email.trim(), tel: tel.trim(),
+            consultant: sale.consultant,
+            createdAt: new Date().toISOString(),
+            lastDate: rawDate,
+          });
+        }
+        cloudSave('le_clients', clientsRaw);
+      } catch {}
+
+      // ── AUTO : Créer/Incrémenter la carte de fidélité ────────────
+      try {
+        const fidRaw = JSON.parse(localStorage.getItem('le_fidelite') || '{}');
+        const cKey = client.trim().toLowerCase();
+        const amtEur = cur === 'DA' ? (parseFloat(amt)||0) / (parseFloat(taux)||245) : (parseFloat(amt)||0);
+        if (!fidRaw[cKey]) {
+          fidRaw[cKey] = { name: client.trim(), email: email.trim(), tel: tel.trim(), total: 0, consultant: sale.consultant, createdAt: new Date().toISOString() };
+        }
+        fidRaw[cKey].total = (fidRaw[cKey].total || 0) + amtEur;
+        fidRaw[cKey].lastDate = rawDate;
+        fidRaw[cKey].consultant = sale.consultant;
+        cloudSave('le_fidelite', fidRaw);
+      } catch {}
+
+      // ── AUTO : Ajouter un événement dans l'agenda ─────────────────
+      try {
+        const eventsRaw = JSON.parse(localStorage.getItem('le_cevents') || '[]');
+        const newEvent = {
+          id: `EV-${Date.now()}`,
+          type: 'Vente',
+          title: `Vente — ${client.trim()}`,
+          client: client.trim(),
+          date: rawDate,
+          amount: parseFloat(amt) || 0,
+          currency: cur,
+          product: sale.product,
+          consultant: sale.consultant,
+          createdAt: new Date().toISOString(),
+          source: 'commande',
+        };
+        cloudSave('le_cevents', [newEvent, ...eventsRaw]);
+      } catch {}
+
+      console.log('✅ Sale saved + Client + Fidélité + Agenda créés automatiquement');
       setSaved(true);
       setCart([]); setProd(''); setAmt(''); setClient(''); setEmail(''); setTel(''); setNote('');
       setTimeout(() => setSaved(false), 4000);

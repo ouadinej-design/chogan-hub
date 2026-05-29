@@ -344,9 +344,10 @@ export default function Reseau() {
       </div>
 
       {/* ONGLETS */}
-      <div style={{ display:'flex', gap:'10px', marginBottom:'20px', justifyContent:'center' }}>
+      <div style={{ display:'flex', gap:'10px', marginBottom:'20px', justifyContent:'center', flexWrap:'wrap' }}>
         <button onClick={() => setActiveTab('arbre')} style={{ padding:'10px 20px', borderRadius:'20px', border:'1px solid #D2B795', background:activeTab==='arbre'?'#D2B795':'white', color:activeTab==='arbre'?'white':'#4A3E3D', cursor:'pointer', fontWeight:'600' }}>🌳 Arbre</button>
         {(user?.role === 'admin' || user?.role === 'marraine') && <button onClick={() => setActiveTab('gestion')} style={{ padding:'10px 20px', borderRadius:'20px', border:'1px solid #D2B795', background:activeTab==='gestion'?'#D2B795':'white', color:activeTab==='gestion'?'white':'#4A3E3D', cursor:'pointer', fontWeight:'600' }}>⚙️ Gestion</button>}
+        <button onClick={() => setActiveTab('equipe')} style={{ padding:'10px 20px', borderRadius:'20px', border:'1px solid #D2B795', background:activeTab==='equipe'?'#D2B795':'white', color:activeTab==='equipe'?'white':'#4A3E3D', cursor:'pointer', fontWeight:'600' }}>👥 Équipe</button>
       </div>
 
       {/* VUE ARBRE */}
@@ -584,6 +585,110 @@ export default function Reseau() {
           </div>
         </div>
       )}
+      {/* VUE ÉQUIPE — Activité depuis l'agenda */}
+      {activeTab === 'equipe' && <EquipeTab user={user} sales={sales} events={events} tree={tree} />}
+
+    </div>
+  );
+}
+
+// ── ONGLET ÉQUIPE ──────────────────────────────────────────────────
+function EquipeTab({ user, sales, events, tree }) {
+  const now = new Date();
+  const [search, setSearch] = React.useState('');
+
+  // Construire la liste des membres de l'équipe depuis l'arbre réseau
+  const membres = React.useMemo(() => {
+    const nodes = tree?.nodes || [];
+    return nodes.map(n => {
+      const name = (n.name || '').toLowerCase();
+      // Ventes de ce membre
+      const mSales = sales.filter(s => {
+        const c = (s.consultant || '').toLowerCase();
+        return c && (c.includes(name.split(' ')[0]) || name.includes(c.split(' ')[0]));
+      });
+      // Événements de ce membre
+      const mEvents = events.filter(e => {
+        const c = (e.consultant || '').toLowerCase();
+        return c && (c.includes(name.split(' ')[0]) || name.includes(c.split(' ')[0]));
+      });
+      // CA ce mois
+      const caMonth = mSales
+        .filter(s => { const d=new Date(s.date||s.createdAt); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); })
+        .reduce((t,s) => t+(parseFloat(s.amount||s.amt)||0), 0);
+      // Dernière connexion simulée depuis dernière vente
+      const lastSale = mSales.sort((a,b)=>new Date(b.date||b.createdAt)-new Date(a.date||a.createdAt))[0];
+      const lastDate = lastSale?.date || lastSale?.createdAt || null;
+      const daysInactive = lastDate ? Math.floor((now - new Date(lastDate)) / 86400000) : 999;
+      return {
+        id: n.id, name: n.name, role: n.role || 'Consultante',
+        totalSales: mSales.length, caMonth, caTotal: mSales.reduce((t,s)=>t+(parseFloat(s.amount||s.amt)||0),0),
+        totalEvents: mEvents.length, lastDate, daysInactive,
+        actif: daysInactive < 30,
+      };
+    });
+  }, [tree, sales, events]);
+
+  const filtered = membres.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+  const totalCA = filtered.reduce((t,m) => t+m.caTotal, 0);
+  const actifs = filtered.filter(m => m.actif).length;
+
+  return (
+    <div style={{ padding:16 }}>
+      {/* Résumé équipe */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:14 }}>
+        {[{v:membres.length,l:'Membres',c:'#D2B795'},{v:actifs,l:'Actifs',c:'#2d7a4a'},{v:totalCA.toFixed(0)+' DA',l:'CA Total',c:'#3d6b9e'}].map((k,i)=>(
+          <div key={i} style={{ background:'var(--bg-card)', border:`1px solid ${k.c}30`, borderRadius:12, textAlign:'center', padding:'11px 6px' }}>
+            <p style={{ fontSize:16, fontWeight:800, color:k.c, fontFamily:'var(--font-display)' }}>{k.v}</p>
+            <p style={{ fontSize:8, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:0.5, marginTop:2 }}>{k.l}</p>
+          </div>
+        ))}
+      </div>
+
+      <input
+        placeholder="🔍 Rechercher un membre..."
+        value={search} onChange={e => setSearch(e.target.value)}
+        style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid var(--or-border)', background:'var(--bg-card)', color:'var(--text)', fontSize:13, boxSizing:'border-box', marginBottom:12, fontFamily:'var(--font-body)' }}
+      />
+
+      {filtered.length === 0 && (
+        <div style={{ textAlign:'center', color:'var(--text-muted)', padding:'40px 20px', fontSize:13 }}>
+          <div style={{ fontSize:32, marginBottom:8 }}>👥</div>
+          Aucun membre dans le réseau. Ajoutez-en via l'onglet Arbre / Gestion.
+        </div>
+      )}
+
+      {filtered.map(m => (
+        <div key={m.id} style={{ background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:14, marginBottom:10, position:'relative' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+            <div style={{ width:38, height:38, borderRadius:12, background:`${m.actif?'#2d7a4a':'#8C8C8C'}20`, border:`2px solid ${m.actif?'#2d7a4a':'#ccc'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, flexShrink:0 }}>
+              {m.role==='Marraine'?'🌸':m.role==='Manager'?'⭐':'💼'}
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:700, color:'var(--taupe)', fontSize:14 }}>{m.name}</div>
+              <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:2 }}>{m.role}</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:9, fontWeight:700, padding:'3px 8px', borderRadius:8, background:m.actif?'rgba(45,122,74,0.1)':'rgba(140,140,140,0.1)', color:m.actif?'#2d7a4a':'#8C8C8C' }}>
+                {m.actif ? '✓ Actif' : `Inactif ${m.daysInactive<999?m.daysInactive+'j':''}`}
+              </div>
+            </div>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6 }}>
+            {[{v:m.totalSales,l:'Ventes',c:'var(--or-deep)'},{v:m.caMonth.toFixed(0),l:'CA mois',c:'#3d6b9e'},{v:m.totalEvents,l:'Événements',c:'#6b4d8a'}].map((k,i)=>(
+              <div key={i} style={{ background:`${k.c}08`, border:`1px solid ${k.c}20`, borderRadius:8, textAlign:'center', padding:'7px 4px' }}>
+                <p style={{ fontSize:14, fontWeight:800, color:k.c }}>{k.v}</p>
+                <p style={{ fontSize:8, color:'var(--text-muted)', textTransform:'uppercase' }}>{k.l}</p>
+              </div>
+            ))}
+          </div>
+          {m.lastDate && (
+            <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:8, borderTop:'1px solid var(--or-border)', paddingTop:6 }}>
+              📅 Dernière vente : {new Date(m.lastDate).toLocaleDateString('fr-FR')}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
