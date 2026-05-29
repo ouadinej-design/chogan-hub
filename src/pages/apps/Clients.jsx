@@ -1,3 +1,4 @@
+import { syncFromServer } from '../../lib/syncAll';
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { cloudSave } from '../../lib/cloudSync';
@@ -37,6 +38,9 @@ function ColorBadge({ consultant, ownerFirst }) {
 const COLORS = ['#B89A6A','#9e5a7a','#3d6b9e','#4a7c59','#6b4d8a','#8a4d4d','#3d7a8a'];
 
 export default function Clients() {
+  // Sync données depuis serveur au montage
+  useEffect(() => { syncFromServer(); }, []);
+
   const [filter,   setFilter]   = useState('all');
   const [search,   setSearch]   = useState('');
   const [selected, setSelected] = useState(null);
