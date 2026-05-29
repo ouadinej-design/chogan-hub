@@ -150,7 +150,7 @@ function BonCommandeTab() {
     setQty(String(cart.reduce((s,c) => s+c.qty, 0)));
     const total = cart.reduce((s,c) => s+c.price*c.qty, 0);
     setAmt(cur==='DA' ? String(Math.round(total*(parseFloat(taux)||245))) : total.toFixed(2));
-  }, [cart]);
+  }, [cart, cur, taux]);
 
   const addToCart = (p, size) => {
     const key = `${p.id}-${size}`;
@@ -353,14 +353,16 @@ function BonCommandeTab() {
 const CATS_V = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 function VentesTab() {
   const { getFilteredSales, user } = useAuth();
-  const [sales, setSales]   = useState(() => { try { return getFilteredSales(); } catch { return []; } });
+  const [sales, setSales]   = useState([]);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState(null);
   const [form, setForm]     = useState({});
 
-  // Refresh toutes les 3s depuis localStorage
+  // Charger et rafraîchir toutes les 3s
   useEffect(() => {
-    const interval = setInterval(() => { try { setSales(getFilteredSales()); } catch {} }, 3000);
+    const load = () => { try { setSales(getFilteredSales()); } catch {} };
+    load(); // chargement immédiat
+    const interval = setInterval(load, 3000);
     return () => clearInterval(interval);
   }, []);
 
