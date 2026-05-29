@@ -2,6 +2,37 @@ import { useState, useEffect } from 'react';
 import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
 
+// ── Couleurs par consultant ───────────────────────────────────────
+const CONSULT_COLORS = [
+  { bg:'rgba(80,130,200,0.12)',  border:'#5082C8', text:'#2d5a9e' },
+  { bg:'rgba(100,180,100,0.12)', border:'#64B464', text:'#2d7a2d' },
+  { bg:'rgba(180,100,200,0.12)', border:'#B464C8', text:'#7a2d9e' },
+  { bg:'rgba(210,160,50,0.12)',  border:'#D2A032', text:'#8C6D00' },
+  { bg:'rgba(50,190,180,0.12)',  border:'#32BEB4', text:'#1a7a74' },
+  { bg:'rgba(220,120,60,0.12)',  border:'#DC783C', text:'#9e4a1a' },
+];
+const OWNER_C = { bg:'rgba(220,80,120,0.10)', border:'#DC5078', text:'#a03060' };
+const _cc = {}; let _ci = 0;
+function cColor(name, ownerFirst) {
+  if (!name) return CONSULT_COLORS[0];
+  const n = name.toLowerCase().trim();
+  const o = (ownerFirst||'').toLowerCase().trim();
+  if (o && (n.includes(o) || o.includes(n.split(' ')[0]))) return OWNER_C;
+  if (!_cc[n]) { _cc[n] = CONSULT_COLORS[_ci % CONSULT_COLORS.length]; _ci++; }
+  return _cc[n];
+}
+function ColorBadge({ consultant, ownerFirst }) {
+  if (!consultant) return null;
+  const col = cColor(consultant, ownerFirst);
+  const isMine = col === OWNER_C;
+  return (
+    <span style={{ display:'inline-block', background:col.bg, border:`1px solid ${col.border}`,
+      color:col.text, borderRadius:12, padding:'2px 10px', fontSize:11, fontWeight:700, marginTop:4 }}>
+      {isMine ? '🌸 Moi' : `👤 ${consultant}`}
+    </span>
+  );
+}
+
 const THEMES = [
   { label:'Luxe Or',    c1:'#2a2016', c2:'#3d3020', acc:'#D4AF37' },
   { label:'Nude Rose',  c1:'#2d1f1f', c2:'#3d2828', acc:'#c97070' },
@@ -67,7 +98,7 @@ function ClientsTab({ cfg, userName }) {
   const [bonusReason, setBonusReason] = useState('');
   const [addingBonus, setAddingBonus] = useState(null);
 
-  const { getFilteredSales } = useAuth();
+  const { getFilteredSales, user } = useAuth();
 
   // Charger les ventes depuis Supabase au montage
   useEffect(() => {
