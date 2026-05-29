@@ -31,11 +31,12 @@ export function getChoganStatus(totalEuros) {
 }
 
 export function computeCAFromSales(sales, consultantName) {
-  const n = (consultantName||'').toLowerCase();
+  const nodeFirst = (consultantName||'').trim().toLowerCase().split(' ')[0];
+  if (!nodeFirst) return 0;
   return sales
     .filter(s => {
-      const c = (s.consultant||'').toLowerCase();
-      return c && (c.includes(n.split(' ')[0]) || n.includes(c.split(' ')[0]));
+      const saleWords = (s.consultant||'').trim().toLowerCase().split(' ');
+      return saleWords.some(w => w === nodeFirst);
     })
     .filter(s => (s.currency||s.cur||'€') === '€')
     .reduce((t, s) => t + (parseFloat(s.amount||s.amt)||0), 0);

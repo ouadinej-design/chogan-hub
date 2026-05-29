@@ -85,8 +85,21 @@ export default function Reseau() {
   const visibleNodes = getVisibleNodes();
 
   // ── CA depuis les ventes réelles ──────────────────────────────
+  // Match flexible : compare le prénom (1er mot) en minuscules
+  const matchConsultant = (saleConsultant, nodeName) => {
+    const sc = (saleConsultant||'').trim().toLowerCase();
+    const nn = (nodeName||'').trim().toLowerCase();
+    if (!sc || !nn) return false;
+    // Match exact
+    if (sc === nn) return true;
+    // Match par prénom (1er mot du nœud doit être présent dans le champ consultant)
+    const nodeFirst = nn.split(' ')[0];
+    const saleWords = sc.split(' ');
+    return saleWords.some(w => w === nodeFirst);
+  };
+
   const getCA = (nodeName) => {
-    const ns = sales.filter(s => s.consultant === nodeName);
+    const ns = sales.filter(s => matchConsultant(s.consultant, nodeName));
     const eu = ns.filter(x => (x.currency || x.cur) === '€' || (!x.currency && !x.cur))
                   .reduce((t, x) => t + (parseFloat(x.amount || x.amt) || 0), 0);
     const da = ns.filter(x => (x.currency || x.cur) === 'DA')
@@ -102,7 +115,7 @@ export default function Reseau() {
 
   // Top 5 clients par CA
   const getTopClients = (nodeName) => {
-    const ns = sales.filter(s => s.consultant === nodeName && s.client);
+    const ns = sales.filter(s => matchConsultant(s.consultant, nodeName) && s.client);
     const map = {};
     ns.forEach(s => {
       const k = (s.client||'').trim();
@@ -119,7 +132,7 @@ export default function Reseau() {
 
   // Top 5 produits vendus
   const getTopProducts = (nodeName) => {
-    const ns = sales.filter(s => s.consultant === nodeName);
+    const ns = sales.filter(s => matchConsultant(s.consultant, nodeName));
     const map = {};
     ns.forEach(s => {
       (s.items||[]).forEach(it => {
@@ -145,7 +158,7 @@ export default function Reseau() {
   // Top 5 meilleures ventes
   const getTopSales = (nodeName) => {
     return sales
-      .filter(s => s.consultant === nodeName && (parseFloat(s.amount||s.amt)||0) > 0)
+      .filter(s => matchConsultant(s.consultant, nodeName) && (parseFloat(s.amount||s.amt)||0) > 0)
       .sort((a,b) => (parseFloat(b.amount||b.amt)||0) - (parseFloat(a.amount||a.amt)||0))
       .slice(0, 5)
       .map(s => ({
