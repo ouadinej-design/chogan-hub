@@ -234,8 +234,16 @@ function EvenementsTab() {
   const [allEvts, setAllEvts_] = useCloudData('le_cevents', []);
   const evts = allEvts.filter(e => {
     if (!evtUser || evtUser.role === 'admin') return true;
-    const name = (evtUser.firstName||'').toLowerCase();
-    return !e.consultant || (e.consultant||'').toLowerCase().includes(name);
+    const cons = (e.consultant||'').toLowerCase().trim();
+    const name = (evtUser.firstName||'').toLowerCase().trim();
+    const full = `${evtUser.firstName||''} ${evtUser.lastName||''}`.trim().toLowerCase();
+    if (evtUser.role === 'consultante') {
+      // Consultante : voit UNIQUEMENT ses propres événements
+      if (!cons) return false;
+      return cons === name || cons === full || cons.includes(name);
+    }
+    // Marraine : voit ses événements + ceux de son équipe
+    return !cons || cons.includes(name) || full.includes(cons) || cons.includes(full);
   });
   const setEvts = (v) => setAllEvts_(v);
   const [editId, setEditId] = useState(null);
