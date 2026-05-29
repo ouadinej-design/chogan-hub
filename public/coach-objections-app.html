@@ -297,6 +297,12 @@ function switchTab(tab){
   document.querySelectorAll('.tab')[tab==='demande'?0:1].classList.add('active');
 }
 
+
+/* ═══ BYPASS AUTH — accès géré par le Hub Chogan ═══ */
+(function(){
+  try { localStorage.setItem('cg_auth_v1', 'true'); } catch(e){}
+})();
+
 window.addEventListener('DOMContentLoaded',()=>{
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
   setTimeout(()=>{

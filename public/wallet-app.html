@@ -402,6 +402,12 @@ function SS(n){
   SCRS.forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==n));
   if(n==='main'){buildPills();tick();}
 }
+
+/* ═══ BYPASS AUTH — accès géré par le Hub Chogan ═══ */
+(function(){
+  try { localStorage.setItem('cg_ok', JSON.stringify(true)); } catch(e){}
+})();
+
 function init(){
   if(LS.g('ok')){SS('main');return;}
   const pr=LS.g('pr');

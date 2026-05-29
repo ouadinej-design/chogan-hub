@@ -841,6 +841,12 @@ function SS(n){
 }
 
 /* ═══════════ INIT ═══════════ */
+
+/* ═══ BYPASS AUTH — accès géré par le Hub Chogan ═══ */
+(function(){
+  try { localStorage.setItem('cg_ok', JSON.stringify(true)); } catch(e){}
+})();
+
 function init(){
   if(LS.g('ok')){SS('menu');return}
   const pr=LS.g('pr');
