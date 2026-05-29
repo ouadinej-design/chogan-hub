@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { syncFromServer } from '../../lib/syncAll';
 import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
 import { cloudSave } from '../../lib/cloudSync';
@@ -56,6 +57,8 @@ const ICONS = [
 
 export default function Fidelite() {
   const { user } = useAuth();
+  useEffect(() => { syncFromServer(); }, []);
+
   const [tab, setTab] = useState('clients');
 
   // Config carte
