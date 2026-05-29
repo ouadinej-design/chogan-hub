@@ -3,39 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, ROLES } from '../context/AuthContext';
 import Logo from '../components/Logo';
 
-const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
-const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
-
 async function fetchAndMergeAccounts() {
-  // Toujours s'assurer que Admin existe
   try {
-    const local = JSON.parse(localStorage.getItem('consultants') || '[]');
-    localStorage.setItem('consultants', JSON.stringify(local));
-  } catch {}
-  try {
-    const res = await fetch(
-      `${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`,
-      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' } }
-    );
-    console.log('Supabase fetch status:', res.status);
-    if (!res.ok) { console.warn('Supabase error:', res.status, await res.text()); return; }
+    const res = await fetch('/api/accounts');
+    if (!res.ok) return;
     const data = await res.json();
-    console.log('Supabase data:', JSON.stringify(data).substring(0, 200));
-    const cloud = data?.[0]?.value;
-    if (!Array.isArray(cloud) || cloud.length === 0) { console.warn('No accounts in cloud'); return; }
+    const cloud = data?.accounts;
+    if (!Array.isArray(cloud) || cloud.length === 0) return;
     const local  = JSON.parse(localStorage.getItem('consultants') || '[]');
     const merged = [...local];
     cloud.forEach(cu => {
       const exists = merged.some(lu =>
-        (lu.firstName || '').toLowerCase() === (cu.firstName || '').toLowerCase() &&
-        (lu.lastName  || '').toLowerCase() === (cu.lastName  || '').toLowerCase()
+        (lu.firstName||'').toLowerCase() === (cu.firstName||'').toLowerCase() &&
+        (lu.lastName||'').toLowerCase()  === (cu.lastName||'').toLowerCase()
       );
       if (!exists) merged.push(cu);
     });
     localStorage.setItem('consultants', JSON.stringify(merged));
-    console.log('✓ Comptes chargés:', merged.map(u => u.firstName).join(', '));
+    console.log('✓ Comptes cloud chargés:', merged.length);
   } catch (e) {
-    console.warn('Supabase fetch error:', e.message);
+    console.warn('API accounts error:', e.message);
   }
 }
 
