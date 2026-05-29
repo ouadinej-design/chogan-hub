@@ -352,19 +352,23 @@ function BonCommandeTab() {
 // ── VENTES (copie de l'onglet Agenda – lit le_sales) ────────────
 const CATS_V = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 function VentesTab() {
-  const [sales, setSales]   = useState(() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } });
+  const { getFilteredSales, user } = useAuth();
+  const [sales, setSales]   = useState(() => { try { return getFilteredSales(); } catch { return []; } });
   const [search, setSearch] = useState('');
-  const [editing, setEditing] = useState(null); // sale being edited
+  const [editing, setEditing] = useState(null);
   const [form, setForm]     = useState({});
 
-  const save = (updated) => { cloudSave('le_sales', updated); setSales(updated); };
-  const refresh = () => { setSales(getFilteredSales()); };
+  // Refresh toutes les 3s depuis localStorage
+  useEffect(() => {
+    const interval = setInterval(() => { try { setSales(getFilteredSales()); } catch {} }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
+  const save = (updated) => { cloudSave('le_sales', updated); setSales(updated); };
   const deleteSale = (id) => { if (!window.confirm('Supprimer cette vente ?')) return; save(sales.filter(s=>s.id!==id)); };
 
   const openEdit = (v) => {
     setEditing(v.id);
-    setEditClient(null);
     setForm({
       client:     v.client||'',
       email:      v.email||'',
