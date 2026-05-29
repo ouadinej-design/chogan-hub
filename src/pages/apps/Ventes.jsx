@@ -90,8 +90,12 @@ function cColor(name,ownerFirst){
 const CATS_V=['Toutes','Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 
 export default function Ventes() {
-  // Sync données depuis serveur au montage
-  useEffect(() => { syncFromServer(); }, []);
+  // Sync depuis serveur puis recharger
+  useEffect(() => {
+    syncFromServer().then(() => {
+      try { setSales(getFilteredSales()); } catch {}
+    });
+  }, []);
 
   const { getFilteredSales, user } = useAuth();
   const [sales, setSales]   = useState([]);
