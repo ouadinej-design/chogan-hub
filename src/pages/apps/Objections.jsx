@@ -7,7 +7,7 @@ export default function Objections() {
   const [allowed, setAllowed] = useState(null);
 
   useEffect(() => {
-    if (!user || user.role === 'admin' || user.role === 'marraine') { setAllowed(true); return; }
+    if (!user || user.role === 'admin') { setAllowed(true); return; }
     const check = async () => {
       try {
         const res = await fetch('/api/data?key=chogan_vip_access');

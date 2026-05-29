@@ -8,7 +8,7 @@ export default function Wallet() {
 
   useEffect(() => {
     // Admin et marraine ont toujours accès
-    if (!user || user.role === 'admin' || user.role === 'marraine') { setAllowed(true); return; }
+    if (!user || user.role === 'admin') { setAllowed(true); return; }
     // Vérifier l'accès VIP depuis Supabase + localStorage
     const check = async () => {
       try {
