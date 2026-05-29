@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useCloudData } from '../../lib/useCloudData';
 import { cloudLoad } from '../../lib/cloudSync';
+import { getConsultantColor, OWNER_COLOR } from '../../lib/consultantColors';
+import { getChoganStatus, computeCAFromSales, CHOGAN_TIERS } from '../../lib/choganPoints';
 import { dbSet, dbGet, isEnabled } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
@@ -90,6 +92,12 @@ export default function Reseau() {
     const da = ns.filter(x => (x.currency || x.cur) === 'DA')
                   .reduce((t, x) => t + (parseFloat(x.amount || x.amt) || 0), 0);
     return { eu, da };
+  };
+
+  // Statut fidélité Chogan calculé depuis les ventes
+  const getChoganStatusForNode = (nodeName) => {
+    const ca = computeCAFromSales(sales, nodeName);
+    return getChoganStatus(ca);
   };
 
   // Top 5 clients par CA
@@ -254,6 +262,8 @@ export default function Reseau() {
       <div key={node.id} style={{ display:'flex', flexDirection:'column', alignItems:'center', position:'relative' }}>
         <div onClick={() => {
               const { eu: _eu, da: _da } = getCA(node.name);
+              const _status = getChoganStatusForNode(node.name);
+              const _color  = getConsultantColor(node.name, user?.firstName+' '+user?.lastName);
               setSelectedMember({
                 ...node,
                 _caEu: _eu, _caDa: _da,
@@ -261,6 +271,8 @@ export default function Reseau() {
                 _topClients: getTopClients(node.name).length > 0 ? getTopClients(node.name) : node.topClientsList||[],
                 _topProducts:getTopProducts(node.name).length > 0 ? getTopProducts(node.name) : node.bestSellersList||[],
                 _topSales:   getTopSales(node.name).length > 0 ? getTopSales(node.name) : node.meilleuresVentesList||[],
+                _choganStatus: _status,
+                _color: _color,
               });
             }}
           style={{ background:'white', border:'1px solid #D2B795', borderRadius:'12px', padding:'12px', minWidth:'140px', textAlign:'center', cursor:'pointer', boxShadow:'0 4px 10px rgba(210,183,149,0.15)', margin:'5px', position:'relative', zIndex:2 }}>
@@ -334,7 +346,7 @@ export default function Reseau() {
       {/* ONGLETS */}
       <div style={{ display:'flex', gap:'10px', marginBottom:'20px', justifyContent:'center' }}>
         <button onClick={() => setActiveTab('arbre')} style={{ padding:'10px 20px', borderRadius:'20px', border:'1px solid #D2B795', background:activeTab==='arbre'?'#D2B795':'white', color:activeTab==='arbre'?'white':'#4A3E3D', cursor:'pointer', fontWeight:'600' }}>🌳 Arbre</button>
-        {user?.role === 'admin' && <button onClick={() => setActiveTab('gestion')} style={{ padding:'10px 20px', borderRadius:'20px', border:'1px solid #D2B795', background:activeTab==='gestion'?'#D2B795':'white', color:activeTab==='gestion'?'white':'#4A3E3D', cursor:'pointer', fontWeight:'600' }}>⚙️ Gestion</button>}
+        {(user?.role === 'admin' || user?.role === 'marraine') && <button onClick={() => setActiveTab('gestion')} style={{ padding:'10px 20px', borderRadius:'20px', border:'1px solid #D2B795', background:activeTab==='gestion'?'#D2B795':'white', color:activeTab==='gestion'?'white':'#4A3E3D', cursor:'pointer', fontWeight:'600' }}>⚙️ Gestion</button>}
       </div>
 
       {/* VUE ARBRE */}
@@ -358,7 +370,7 @@ export default function Reseau() {
       )}
 
       {/* VUE GESTION — Admin uniquement */}
-      {activeTab === 'gestion' && user?.role === 'admin' && (
+      {activeTab === 'gestion' && (user?.role === 'admin' || user?.role === 'marraine') && (
         <div style={{ maxWidth:'1000px', margin:'0 auto', display:'flex', flexDirection:'column', gap:'25px' }}>
           <div style={{ background:'white', padding:'25px', borderRadius:'14px', border:'1px solid #D2B795', boxShadow:'0 4px 12px rgba(0,0,0,0.03)' }}>
             <h3 style={{ marginTop:0, color:'#4A3E3D', marginBottom:'20px', fontSize:'16px', letterSpacing:'1px', textTransform:'uppercase' }}>✨ FORMULAIRE D'INSCRIPTION COMPLET</h3>
@@ -483,8 +495,15 @@ export default function Reseau() {
           <div style={{ background:'white', border:'1px solid #D2B795', borderRadius:'16px', padding:'25px', width:'100%', maxWidth:'440px', position:'relative', maxHeight:'90vh', overflowY:'auto', boxShadow:'0 10px 25px rgba(0,0,0,0.15)' }}>
             <button onClick={() => setSelectedMember(null)} style={{ position:'absolute', top:'15px', right:'15px', background:'none', border:'none', fontSize:'18px', cursor:'pointer', color:'#4A3E3D' }}>✕</button>
             <div style={{ textAlign:'center', marginBottom:'20px' }}>
-              <h2 style={{ margin:'0 0 5px 0', fontSize:'18px', color:'#4A3E3D', fontFamily:'serif', letterSpacing:'1px' }}>{selectedMember.name}</h2>
-              <span style={{ background:'#F5EFE8', color:'#8C6D4F', padding:'4px 12px', borderRadius:'12px', fontSize:'11px', fontWeight:'bold', textTransform:'uppercase' }}>{displayRole(selectedMember.role, selectedMember.genre)}</span>
+              <div style={{ width:48, height:48, borderRadius:'50%', margin:'0 auto 10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22,
+                background: selectedMember._color?.bg || '#F5EFE8',
+                border: `2px solid ${selectedMember._color?.border || '#D2B795'}` }}>
+                {selectedMember.genre==='homme'?'👨':'👩'}
+              </div>
+              <h2 style={{ margin:'0 0 5px 0', fontSize:'18px', color: selectedMember._color?.text || '#4A3E3D', fontFamily:'serif', letterSpacing:'1px' }}>{selectedMember.name}</h2>
+              <span style={{ background: selectedMember._color?.bg||'#F5EFE8', color:selectedMember._color?.text||'#8C6D4F', padding:'4px 12px', borderRadius:'12px', fontSize:'11px', fontWeight:'bold', textTransform:'uppercase', border:`1px solid ${selectedMember._color?.border||'#D2B795'}` }}>
+                {displayRole(selectedMember.role, selectedMember.genre)}
+              </span>
             </div>
             <div style={{ background:'#FAF5EE', padding:'12px 15px', borderRadius:'10px', marginBottom:'15px', border:'1px solid rgba(210,183,149,0.2)' }}>
               <div style={{ fontSize:'12px', fontWeight:'bold', color:'#4A3E3D', display:'flex', justifyContent:'space-between' }}>
@@ -506,9 +525,25 @@ export default function Reseau() {
                   <strong style={{ color:'#3d6b9e' }}>{Math.round(selectedMember._caDa||0).toLocaleString('fr-FR')} DA</strong>
                 </div>
               )}
-              <div style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', borderBottom:'1px solid #F0EAE1' }}>
-                <span style={{ color:'#8C6D4F' }}>💎 Statut Fidélité :</span>
-                <strong>{selectedMember.fidelity || 'Initial'}</strong>
+              <div style={{ padding:'8px 0', borderBottom:'1px solid #F0EAE1' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                  <span style={{ color:'#8C6D4F' }}>💎 Statut Chogan :</span>
+                  <strong style={{ color: selectedMember._choganStatus?.color || '#D2B795' }}>
+                    {selectedMember._choganStatus?.label || selectedMember.fidelity || 'Membre 🌱'}
+                  </strong>
+                </div>
+                {selectedMember._choganStatus && (
+                  <div>
+                    <div style={{ width:'100%', height:6, background:'#E6DCD0', borderRadius:3, overflow:'hidden', marginBottom:4 }}>
+                      <div style={{ width:`${selectedMember._choganStatus.pct}%`, height:'100%', background:selectedMember._choganStatus.color, borderRadius:3, transition:'width 0.5s' }}/>
+                    </div>
+                    {selectedMember._choganStatus.nextTier && (
+                      <div style={{ fontSize:10, color:'#999', textAlign:'right' }}>
+                        Prochain niveau {selectedMember._choganStatus.nextTier} dans {selectedMember._choganStatus.remaining} €
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
