@@ -14,10 +14,33 @@ const C_COLORS = [
 ];
 const OWNER_C = { bg:'rgba(220,80,120,0.10)', border:'#DC5078', text:'#a03060' };
 
+function normalize(str) {
+  return (str||'').trim().toLowerCase().replace(/\s+/g,' ');
+}
+
 function getConsultants() {
   try {
     const list = JSON.parse(localStorage.getItem(PREFIX + 'consultants') || '[]');
-    return list.filter(c => c?.firstName && c.role !== 'admin');
+    const filtered = list.filter(c => c?.firstName && c.role !== 'admin');
+    
+    // Dédoublonner : "Nej Ouadi" et "Ouadi Nej" = même personne
+    const seen = new Map();
+    filtered.forEach(c => {
+      const fn = normalize(c.firstName);
+      const ln = normalize(c.lastName||'');
+      // Clé normalisée : mots triés alphabétiquement
+      const key = [fn, ln].filter(Boolean).sort().join('_');
+      if (!seen.has(key)) {
+        seen.set(key, c);
+      } else {
+        // Garder celui dont le prénom ressemble à un vrai prénom (plus court)
+        const existing = seen.get(key);
+        if (fn.length <= normalize(existing.firstName).length) {
+          seen.set(key, c);
+        }
+      }
+    });
+    return Array.from(seen.values());
   } catch { return []; }
 }
 
@@ -36,24 +59,30 @@ export function useTeamFilter(user) {
     return () => clearInterval(iv);
   }, []);
 
+  // Match flexible : "Nej Ouadi", "Ouadi Nej", "Nej" → même personne
+  const matchConsultant = (consStr, firstName, lastName) => {
+    const cons = normalize(consStr);
+    const fn   = normalize(firstName);
+    const ln   = normalize(lastName||'');
+    if (!cons || !fn) return false;
+    // Match exact
+    if (cons === fn || cons === `${fn} ${ln}`.trim() || cons === `${ln} ${fn}`.trim()) return true;
+    // Match prénom seul
+    if (cons.includes(fn) || fn.includes(cons.split(' ')[0])) return true;
+    // Match nom seul si non vide
+    if (ln && (cons.includes(ln) || ln.includes(cons.split(' ')[0]))) return true;
+    return false;
+  };
+
   // Filtre générique — fonctionne pour ventes, clients, événements
   const filterByConsultant = (items) => {
     if (!user || user.role !== 'marraine' || selected === 'tous') return items;
     return items.filter(item => {
-      const cons = (item.consultant || '').toLowerCase().trim();
-      if (!cons) return selected === 'moi'; // sans consultant = à moi
-      if (selected === 'moi') {
-        return cons === myFirst || cons === myFull ||
-               cons.includes(myFirst) || myFull.includes(cons.split(' ')[0]);
-      }
-      // Chercher la consultante sélectionnée par id
+      const cons = (item.consultant || '').trim();
+      if (!cons) return selected === 'moi';
+      if (selected === 'moi') return matchConsultant(cons, user.firstName, user.lastName);
       const selC = teamList.find(c => c.id === selected);
-      if (selC) {
-        const selFull = `${selC.firstName} ${selC.lastName||''}`.trim().toLowerCase();
-        const selFirst = selC.firstName.toLowerCase();
-        return cons === selFirst || cons === selFull ||
-               cons.includes(selFirst) || selFull.includes(cons.split(' ')[0]);
-      }
+      if (selC) return matchConsultant(cons, selC.firstName, selC.lastName);
       return false;
     });
   };

@@ -26,7 +26,13 @@ async function sbGet() {
         merged.push(c);
       }
     });
-    return merged;
+    // Dédoublonner par nom complet normalisé (évite "Nej Ouadi" + "Ouadi Nej")
+    const deduped = new Map();
+    merged.forEach(c => {
+      const key = [c.firstName||'', c.lastName||''].map(s=>s.trim().toLowerCase()).sort().join('_');
+      if (!deduped.has(key)) deduped.set(key, c);
+    });
+    return Array.from(deduped.values());
   } catch { return []; }
 }
 
