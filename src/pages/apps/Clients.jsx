@@ -38,8 +38,11 @@ function ColorBadge({ consultant, ownerFirst }) {
 const COLORS = ['#B89A6A','#9e5a7a','#3d6b9e','#4a7c59','#6b4d8a','#8a4d4d','#3d7a8a'];
 
 export default function Clients() {
-  // Sync données depuis serveur au montage
-  useEffect(() => { syncFromServer(); }, []);
+  // Sync depuis serveur puis forcer rechargement
+  const [syncKey, setSyncKey] = useState(0);
+  useEffect(() => {
+    syncFromServer().then(() => setSyncKey(k => k + 1));
+  }, []);
 
   const [filter,   setFilter]   = useState('all');
   const [search,   setSearch]   = useState('');
@@ -79,7 +82,8 @@ export default function Clients() {
   const myFullName = user ? `${user.firstName||''} ${user.lastName||''}`.trim() : '';
 
   // Appliquer le filtre membre aux ventes
-  const allSales = getFilteredSales();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const allSales = useMemo(() => getFilteredSales(), [syncKey, memberFilter]);
   const sales = user?.role !== 'marraine' || memberFilter === 'tous' ? allSales : allSales.filter(s => {
     const cons = (s.consultant||'').toLowerCase();
     if (memberFilter === 'moi') return cons.includes(myFN)||(myFN.length>2&&myFN.includes(cons.split(' ')[0]));
