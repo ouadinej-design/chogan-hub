@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { cloudSave } from '../../lib/cloudSync';
 import AppLayout from '../../components/AppLayout';
 
 // ── Couleurs par consultant ───────────────────────────────────────
