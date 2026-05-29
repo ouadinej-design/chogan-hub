@@ -185,29 +185,11 @@ function ClientsTab({ cfg, userName }) {
   const [addingBonus, setAddingBonus] = useState(null);
 
   const { getFilteredSales, user } = useAuth();
+  const { filterByConsultant: filterFid, FilterDropdown: FidDropdown } = useTeamFilter(user);
 
-  // Charger les ventes depuis Supabase au montage
-  useEffect(() => {
-    const SB = 'https://fwcauakszxjrzcexjlvt.supabase.co';
-    const KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
-    fetch(`${SB}/rest/v1/app_data?key=eq.le_sales&select=value`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
-    }).then(r => r.json()).then(d => {
-      const v = d?.[0]?.value;
-      if (Array.isArray(v) && v.length > 0) {
-        const local = JSON.parse(localStorage.getItem('le_sales')||'[]');
-        // Merger: garder les plus récentes
-        const merged = [...v];
-        local.forEach(s => { if (!merged.find(x => x.id === s.id)) merged.push(s); });
-        localStorage.setItem('le_sales', JSON.stringify(merged));
-      }
-    }).catch(() => {});
-  }, []);
-  const myFN_filter = (user?.firstName||'').toLowerCase();
-  // Appliquer le filtre membre aux ventes
   // eslint-disable-next-line
   const allSalesFid = useMemo(() => getFilteredSales(), [syncKey]);
-  const sales = filterFid ? filterFid(allSalesFid) : allSalesFid;
+  const sales = filterFid(allSalesFid);
   const [bonusPoints, setBonusPoints] = useState(() => {
     try { return JSON.parse(localStorage.getItem('le_fidelite')||'{}'); } catch { return {}; }
   });
@@ -449,8 +431,6 @@ function ClientsTab({ cfg, userName }) {
   // Stats globales
   const gold   = clients.filter(c=>c.total>=3000).length;
   const silver = clients.filter(c=>c.total>=1000&&c.total<3000).length;
-
-  const { filterByConsultant: filterFid, FilterDropdown: FidDropdown } = useTeamFilter(user);
 
   return (
     <div style={S.pad}>

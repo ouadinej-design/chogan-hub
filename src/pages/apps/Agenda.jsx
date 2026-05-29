@@ -241,17 +241,22 @@ function EvenementsTab() {
   const [allEvts, setAllEvts_] = useCloudData('le_cevents', []);
   const { filterByConsultant: filterEvts, FilterDropdown: AgendaDropdown } = useTeamFilter(evtUser);
 
-  const evts = filterEvts(allEvts.filter(e => {
+  const evts = allEvts.filter(e => {
     if (!evtUser || evtUser.role === 'admin') return true;
     const cons = (e.consultant||'').toLowerCase().trim();
     const name = (evtUser.firstName||'').toLowerCase().trim();
     const full = `${evtUser.firstName||''} ${evtUser.lastName||''}`.trim().toLowerCase();
     if (evtUser.role === 'consultante') {
+      // Consultante ne voit QUE ses propres événements
       if (!cons) return false;
-      return cons === name || cons === full || cons.includes(name);
+      return cons === name || cons === full ||
+             cons.includes(name) || name.includes(cons.split(' ')[0]);
     }
-    return true; // marraine voit tout, filtrage géré par filterEvts
-  }));
+    // Marraine : filtrage géré par filterEvts ci-dessous
+    return true;
+  });
+  // Appliquer filtre équipe pour la marraine
+  const evtsFiltres = evtUser?.role === 'marraine' ? filterEvts(evts) : evts;
   const setEvts = (v) => setAllEvts_(v);
   const [editId, setEditId]           = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -270,8 +275,8 @@ function EvenementsTab() {
     save_(e); setEditId(null); setForm({name:'',type:'Salon/Expo',date:new Date().toISOString().split('T')[0],email:'',tel:''});
     setTimeout(()=>setOk(''),2500);
   };
-  const del = id => { if(!window.confirm('Supprimer ?')) return; save_(evts.filter(x=>x.id!==id)); };
-  const sorted=([...evts]).sort((a,b)=>new Date(a.d)-new Date(b.d));
+  const del = id => { if(!window.confirm('Supprimer ?')) return; save_(evtsFiltres.filter(x=>x.id!==id)); };
+  const sorted=([...evtsFiltres]).sort((a,b)=>new Date(a.d)-new Date(b.d));
   const futurs=sorted.filter(e=>new Date(e.d)>=now);
   const passes=sorted.filter(e=>new Date(e.d)<now);
   const fmt=d=>d?new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'—';
