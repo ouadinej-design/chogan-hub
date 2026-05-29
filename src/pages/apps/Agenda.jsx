@@ -276,7 +276,7 @@ function EvenementsTab() {
     if (!form.name.trim()||!form.date) return;
     let e=[...evts];
     if (editId) { e=e.map(x=>x.id===editId?{...x,n:form.name.trim(),lbl:form.type,d:form.date,email:form.email,tel:form.tel}:x); setOk('✦ Modifié !'); }
-    else { e=[...e,{id:Date.now().toString(),n:form.name.trim(),lbl:form.type,d:form.date,email:form.email.trim(),tel:form.tel.trim()}]; setOk('✦ Ajouté !'); }
+    else { const consultantN=`${evtUser?.firstName||''} ${evtUser?.lastName||''}`.trim(); e=[...e,{id:Date.now().toString(),n:form.name.trim(),lbl:form.type,d:form.date,email:form.email.trim(),tel:form.tel.trim(),consultant:consultantN}]; setOk('✦ Ajouté !'); }
     save_(e); setEditId(null); setForm({name:'',type:'Salon/Expo',date:new Date().toISOString().split('T')[0],email:'',tel:''});
     setTimeout(()=>setOk(''),2500);
   };
