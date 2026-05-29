@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { syncFromServer } from '../../lib/syncAll';
 import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
@@ -57,7 +57,10 @@ const ICONS = [
 
 export default function Fidelite() {
   const { user } = useAuth();
-  useEffect(() => { syncFromServer(); }, []);
+  const [syncKey, setSyncKey] = useState(0);
+  useEffect(() => {
+    syncFromServer().then(() => setSyncKey(k => k + 1));
+  }, []);
 
   const [tab, setTab] = useState('clients');
 
@@ -124,7 +127,8 @@ function ClientsTab({ cfg, userName }) {
   }, []);
   const myFN_filter = (user?.firstName||'').toLowerCase();
   // Appliquer le filtre membre aux ventes
-  const allSalesFid = getFilteredSales();
+  // eslint-disable-next-line
+  const allSalesFid = useMemo(() => getFilteredSales(), [syncKey, memberFilter]);
   const sales = user?.role !== 'marraine' || memberFilter === 'tous' ? allSalesFid : allSalesFid.filter(s => {
     const cons = (s.consultant||'').toLowerCase();
     if (!cons) return false;
