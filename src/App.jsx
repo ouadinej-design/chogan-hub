@@ -52,9 +52,6 @@ function AppRoutes() {
   if (!user) return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/app/wallet"      element={<Wallet />} />
-      <Route path="/app/coach-vocal" element={<CoachVocal />} />
-      <Route path="/app/objections"  element={<Objections />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

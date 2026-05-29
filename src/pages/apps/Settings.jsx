@@ -82,10 +82,10 @@ export default function Settings() {
   };
 
   const consultants = getAllConsultants();
-  const TABS_ADMIN    = ['profile', 'create', 'manage', 'permissions', 'email'];
+  const TABS_ADMIN    = ['profile', 'create', 'manage', 'permissions', 'vip', 'email'];
   const TABS_CONSULTANT = ['profile'];
   const tabs = user?.role === 'admin' ? TABS_ADMIN : TABS_CONSULTANT;
-  const tabLabels = { profile: '👤 Profil', create: '➕ Créer', manage: '👥 Comptes', permissions: '🔐 Accès', email: '✉ Email' };
+  const tabLabels = { profile: '👤 Profil', create: '➕ Créer', manage: '👥 Comptes', permissions: '🔐 Accès', vip: '🔑 Apps VIP', email: '✉ Email' };
 
   return (
     <AppLayout title="Paramètres" icon="⚙️">
@@ -211,6 +211,9 @@ export default function Settings() {
         {/* ── EMAIL ── */}
         {tab === 'permissions' && user?.role === 'admin' && (
           <PermissionsTab />
+        )}
+        {tab === 'vip' && user?.role === 'admin' && (
+          <VipAccessTab consultants={consultants} />
         )}
 
         {tab === 'email' && user?.role === 'admin' && (
@@ -427,3 +430,118 @@ const S = {
   actionBtn: { flex: 1, background: 'transparent', border: '1px solid var(--or-border)', color: 'var(--text-muted)', borderRadius: 8, padding: '7px 4px', fontSize: 11, cursor: 'pointer', textAlign: 'center' },
   helpBox: { background: 'rgba(210,183,149,0.08)', border: '1px solid var(--or-border)', borderRadius: 12, padding: 14, marginBottom: 16 },
 };
+
+// ── VIP ACCESS TAB ────────────────────────────────────────────────
+const VIP_APPS = [
+  { id: 'wallet',      label: '💰 Wallet',      icon: '💰' },
+  { id: 'coach-vocal', label: '🎤 Coach Vocal',  icon: '🎤' },
+  { id: 'objections',  label: '💬 Objections',   icon: '💬' },
+];
+
+function VipAccessTab({ consultants }) {
+  const [access, setAccess] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('chogan_vip_access') || '{}'); } catch { return {}; }
+  });
+  const [saved, setSaved] = useState('');
+
+  const toggle = (userId, appId) => {
+    setAccess(prev => {
+      const userApps = prev[userId] || [];
+      const has = userApps.includes(appId);
+      const updated = {
+        ...prev,
+        [userId]: has ? userApps.filter(a => a !== appId) : [...userApps, appId]
+      };
+      localStorage.setItem('chogan_vip_access', JSON.stringify(updated));
+      // Sync Supabase
+      fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'chogan_vip_access', value: updated })
+      }).catch(() => {});
+      return updated;
+    });
+    setSaved('✓ Sauvegardé');
+    setTimeout(() => setSaved(''), 2000);
+  };
+
+  const grantAll = (userId) => {
+    setAccess(prev => {
+      const updated = { ...prev, [userId]: VIP_APPS.map(a => a.id) };
+      localStorage.setItem('chogan_vip_access', JSON.stringify(updated));
+      fetch('/api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'chogan_vip_access', value: updated }) }).catch(() => {});
+      return updated;
+    });
+    setSaved('✓ Accès complet accordé');
+    setTimeout(() => setSaved(''), 2000);
+  };
+
+  const revokeAll = (userId) => {
+    setAccess(prev => {
+      const updated = { ...prev, [userId]: [] };
+      localStorage.setItem('chogan_vip_access', JSON.stringify(updated));
+      fetch('/api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'chogan_vip_access', value: updated }) }).catch(() => {});
+      return updated;
+    });
+    setSaved('✓ Accès révoqué');
+    setTimeout(() => setSaved(''), 2000);
+  };
+
+  return (
+    <div style={{ padding: '0 4px' }}>
+      <p style={S.sectionTitle}>🔑 Accès aux Apps VIP</p>
+      <div style={{ background: 'rgba(210,183,149,0.08)', border: '1px solid var(--or-border)', borderRadius: 12, padding: 12, marginBottom: 16, fontSize: 12, color: 'var(--text-muted)' }}>
+        Accordez l'accès à <strong>Wallet</strong>, <strong>Coach Vocal</strong> et <strong>Objections</strong> pour chaque consultante/marraine.
+      </div>
+      {saved && <div style={S.success}>{saved}</div>}
+      {consultants.length === 0 && <p style={S.empty}>Aucun compte créé.</p>}
+      {consultants.map(c => {
+        const userApps = access[c.id] || [];
+        const hasAll   = VIP_APPS.every(a => userApps.includes(a.id));
+        const initials = `${c.firstName?.[0]||''}${c.lastName?.[0]||''}`.toUpperCase();
+        return (
+          <div key={c.id} style={{ ...S.cCard, marginBottom: 14 }}>
+            {/* En-tête */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ ...S.avatar, background: c.role === 'marraine' ? 'linear-gradient(135deg,#9e5a7a,#c47a9e)' : 'linear-gradient(135deg,var(--or),var(--or-deep))' }}>
+                {initials}
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{c.firstName} {c.lastName}</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  {c.role === 'marraine' ? '🌸 Marraine' : '💼 Consultante'}
+                  {c.email ? ` · ${c.email}` : ''}
+                </p>
+              </div>
+              <button onClick={() => hasAll ? revokeAll(c.id) : grantAll(c.id)}
+                style={{ fontSize: 11, padding: '5px 10px', borderRadius: 8, border: '1px solid var(--or-border)',
+                  background: hasAll ? 'rgba(192,57,43,0.08)' : 'rgba(74,124,89,0.1)',
+                  color: hasAll ? 'var(--red)' : 'var(--green)', cursor: 'pointer', fontWeight: 600 }}>
+                {hasAll ? '❌ Tout révoquer' : '✅ Tout accorder'}
+              </button>
+            </div>
+            {/* Boutons par app */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              {VIP_APPS.map(app => {
+                const has = userApps.includes(app.id);
+                return (
+                  <button key={app.id} onClick={() => toggle(c.id, app.id)}
+                    style={{ flex: 1, padding: '8px 4px', borderRadius: 10, fontSize: 11, fontWeight: 700,
+                      cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
+                      background: has ? 'rgba(74,124,89,0.12)' : 'var(--surface)',
+                      border: `1.5px solid ${has ? '#64B464' : 'var(--or-border)'}`,
+                      color: has ? '#2d7a2d' : 'var(--text-muted)' }}>
+                    {app.icon}<br />{app.label.replace(/^[^ ]+ /, '')}<br />
+                    <span style={{ fontSize: 9 }}>{has ? '✓ Accès' : '✗ Bloqué'}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
