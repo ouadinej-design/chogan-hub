@@ -5,24 +5,18 @@ import Logo from '../components/Logo';
 
 async function fetchAndMergeAccounts() {
   try {
-    const res = await fetch('/api/accounts');
-    if (!res.ok) return;
+    const res = await fetch('/api/accounts', { cache: 'no-store' });
+    if (!res.ok) { console.warn('API /accounts status:', res.status); return false; }
     const data = await res.json();
     const cloud = data?.accounts;
-    if (!Array.isArray(cloud) || cloud.length === 0) return;
-    const local  = JSON.parse(localStorage.getItem('consultants') || '[]');
-    const merged = [...local];
-    cloud.forEach(cu => {
-      const exists = merged.some(lu =>
-        (lu.firstName||'').toLowerCase() === (cu.firstName||'').toLowerCase() &&
-        (lu.lastName||'').toLowerCase()  === (cu.lastName||'').toLowerCase()
-      );
-      if (!exists) merged.push(cu);
-    });
-    localStorage.setItem('consultants', JSON.stringify(merged));
-    console.log('✓ Comptes cloud chargés:', merged.length);
+    if (!Array.isArray(cloud) || cloud.length === 0) { console.warn('No accounts returned from API'); return false; }
+    // Remplacer complètement avec les données cloud (source de vérité)
+    localStorage.setItem('consultants', JSON.stringify(cloud));
+    console.log('✓ Comptes chargés depuis API:', cloud.map(u=>u.firstName+' '+u.lastName).join(', '));
+    return true;
   } catch (e) {
     console.warn('API accounts error:', e.message);
+    return false;
   }
 }
 
