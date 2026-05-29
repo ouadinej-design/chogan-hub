@@ -185,7 +185,7 @@ function BonCommandeTab() {
         currency: cur, cur: cur,
         category: cat, cat: cat,
         date: rawDate, note: note || '',
-        consultant: consultant || defaultConsultant,
+        consultant: consultant || consultantName,
         createdAt: new Date().toISOString(),
       };
       const updated = [sale, ...existing];
