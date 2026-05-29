@@ -57,10 +57,7 @@ const ICONS = [
 
 export default function Fidelite() {
   const { user } = useAuth();
-  const [syncKey, setSyncKey] = useState(0);
-  useEffect(() => {
-    syncFromServer().then(() => setSyncKey(k => k + 1));
-  }, []);
+  useEffect(() => { syncFromServer(); }, []);
 
   const [tab, setTab] = useState('clients');
 
@@ -101,6 +98,8 @@ export default function Fidelite() {
 function ClientsTab({ cfg, userName }) {
   const [search, setSearch]           = useState('');
   const [selectedClient, setSelected] = useState(null);
+  const [syncKey, setSyncKey]         = useState(0);
+  useEffect(() => { syncFromServer().then(() => setSyncKey(k => k+1)); }, []);
   const [memberFilter, setMemberFilter] = useState('tous');
   const [bonusAmt, setBonusAmt]       = useState('');
   const [bonusReason, setBonusReason] = useState('');
