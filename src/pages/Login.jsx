@@ -26,11 +26,12 @@ export default function Login() {
   const [form, setForm] = useState({ firstName: '', lastName: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [accountsLoaded, setAccountsLoaded] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   // Charger les comptes Supabase dès que la page de login s'affiche
-  useEffect(() => { fetchAndMergeAccounts(); }, []);
+  useEffect(() => { fetchAndMergeAccounts().then(() => setAccountsLoaded(true)); }, []);
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -45,32 +46,12 @@ export default function Login() {
     if (selectedRole !== 'admin' && !form.lastName.trim()) { setError('Entrez votre nom.'); return; }
     if (!form.password) { setError('Entrez votre mot de passe.'); return; }
     setLoading(true);
-    // Try to fetch account from Supabase if not in localStorage
-    try {
-      const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
-      const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
-      const res = await fetch(`${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`, {
-        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data[0] && Array.isArray(data[0].value)) {
-          const existing = JSON.parse(localStorage.getItem('consultants') || '[]');
-          const cloud = data[0].value;
-          const merged = [...existing];
-          cloud.forEach(cu => {
-            if (!merged.some(lu => lu.firstName?.toLowerCase() === cu.firstName?.toLowerCase() && lu.lastName?.toLowerCase() === cu.lastName?.toLowerCase())) {
-              merged.push(cu);
-            }
-          });
-          localStorage.setItem('chogan_hub_consultants', JSON.stringify(merged));
-        }
-      }
-    } catch {}
+    // Toujours recharger les comptes depuis le serveur avant de tenter le login
+    await fetchAndMergeAccounts();
     const result = login(form.firstName, form.lastName, form.password, selectedRole);
     setLoading(false);
     if (result && result.ok) navigate('/');
-    else setError((result && result.error) || 'Compte introuvable.');
+    else setError((result && result.error) || 'Compte introuvable. Vérifiez prénom, nom et mot de passe.');
   };
 
   const roleInfo = selectedRole ? ROLES[selectedRole] : null;
@@ -150,7 +131,7 @@ export default function Login() {
               {error && <div style={S.error}>{error}</div>}
 
               <button className="btn-gold" type="submit" disabled={loading} style={{ marginBottom: 10 }}>
-                {loading ? '...' : 'SE CONNECTER'}
+                {loading ? '⏳ Vérification...' : 'SE CONNECTER'}
               </button>
               <button type="button" style={S.backBtn}
                 onClick={() => { setStep('role'); setForm({ firstName: '', lastName: '', password: '' }); setError(''); }}>

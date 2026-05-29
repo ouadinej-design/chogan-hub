@@ -6,11 +6,27 @@ const SB_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_pvQfNMexCi9
 
 async function sbGet() {
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/app_data?key=eq.chogan_hub_consultants&select=value`, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+    // Charger depuis les deux clés possibles (migration)
+    const [r1, r2] = await Promise.all([
+      fetch(`${SB_URL}/rest/v1/app_data?key=eq.chogan_hub_consultants&select=value`, {
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+      }),
+      fetch(`${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`, {
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+      })
+    ]);
+    const d1 = r1.ok ? await r1.json() : [];
+    const d2 = r2.ok ? await r2.json() : [];
+    const list1 = Array.isArray(d1?.[0]?.value) ? d1[0].value : [];
+    const list2 = Array.isArray(d2?.[0]?.value) ? d2[0].value : [];
+    // Merger les deux listes sans doublons
+    const merged = [...list1];
+    list2.forEach(c => {
+      if (!merged.find(m => m.id === c.id || (m.firstName === c.firstName && m.lastName === c.lastName))) {
+        merged.push(c);
+      }
     });
-    const d = await r.json();
-    return Array.isArray(d?.[0]?.value) ? d[0].value : [];
+    return merged;
   } catch { return []; }
 }
 
