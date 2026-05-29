@@ -1,3 +1,4 @@
+import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { PERFUMES } from '../../utils/choganData';
 import { useData } from '../../context/DataContext';
@@ -79,6 +80,9 @@ export default function Orders() {
 const CATS  = ['Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 
 function BonCommandeTab() {
+  const { user: authUser } = useAuth();
+  const consultantName = authUser ? `${authUser.firstName||''} ${authUser.lastName||''}`.trim() : '';
+
   const [cart, setCart]       = useState([]);
   const [search, setSearch]   = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -97,6 +101,10 @@ function BonCommandeTab() {
   const [date, setDate]             = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote]             = useState('');
   const [consultant, setConsultant] = useState('');
+
+  React.useEffect(() => {
+    if (consultantName) setConsultant(consultantName);
+  }, [consultantName]);
 
   // Fusionner PERFUMES statiques avec les prix mis à jour via Claude AI
   const customPrix = (() => {
