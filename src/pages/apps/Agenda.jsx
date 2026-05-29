@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { cloudSave } from '../../lib/cloudSync';
+import { syncFromServer } from '../../lib/syncAll';
 import { useCloudData } from '../../lib/useCloudData';
 import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
@@ -231,6 +232,8 @@ function AgendaIframe() {
 // ── ÉVÉNEMENTS ────────────────────────────────────────────────────
 function EvenementsTab() {
   const { user:evtUser } = useAuth();
+  useEffect(() => { syncFromServer(); }, []);
+
   const [allEvts, setAllEvts_] = useCloudData('le_cevents', []);
   const [memberFilter, setMemberFilter] = useState('tous');
 
