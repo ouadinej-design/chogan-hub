@@ -49,7 +49,7 @@ const STRATEGIC = [
 const TC = { mus:'#059669', cath:'#7c3aed', comm:'#d97706', saison:'#0891b2' };
 const TL = { mus:'Islam', cath:'Chrétien', comm:'Commerce', saison:'Saison' };
 
-export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', showIframe = false }) {
+export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', showIframe = false, hideVentes = false }) {
   const [tab, setTab] = useState('agenda');
   return (
     <AppLayout title={appTitle} icon={appIcon}>
