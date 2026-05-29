@@ -416,7 +416,16 @@ function VentesTab() {
     const interval = setInterval(load, 3000);
     return () => clearInterval(interval);
   }, []);
-  const save = (updated) => { cloudSave('le_sales', updated); setSales(updated); };
+  const save = (updated) => {
+    // Merger avec TOUTES les ventes avant de sauvegarder
+    const all = (() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } })();
+    const byId = new Map();
+    all.forEach(s => byId.set(s.id||JSON.stringify(s), s));
+    updated.forEach(s => byId.set(s.id||JSON.stringify(s), s));
+    const final = Array.from(byId.values());
+    cloudSave('le_sales', final);
+    setSales(updated);
+  };
   const deleteSale = (id) => { if (!window.confirm('Supprimer cette vente ?')) return; save(sales.filter(s=>s.id!==id)); };
 
   const openEdit = (v) => {

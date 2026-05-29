@@ -51,7 +51,30 @@ export default function Ventes() {
     const iv = setInterval(load, 3000);
     return () => clearInterval(iv);
   }, []);
-  const save = (updated) => { cloudSave('le_sales', updated); setSales(updated); };
+  const save = (updated) => {
+    // Merger avec TOUTES les ventes (pas seulement les siennes)
+    const all = (() => { try { return JSON.parse(localStorage.getItem('le_sales')||'[]'); } catch { return []; } })();
+    const myName = user ? `${user.firstName||''} ${user.lastName||''}`.trim().toLowerCase() : '';
+    const myFirst = (user?.firstName||'').toLowerCase();
+    // Garder les ventes des AUTRES consultantes
+    const others = all.filter(s => {
+      const cons = (s.consultant||'').toLowerCase();
+      if (!cons) return false;
+      return !cons.includes(myFirst) && !myFirst.includes(cons.split(' ')[0]);
+    });
+    // Merger : autres + mes ventes mises à jour
+    const merged = [...others, ...updated.filter(s => {
+      const seen = new Set(others.map(o => o.id));
+      return !seen.has(s.id);
+    }), ...updated.filter(s => others.find(o => o.id === s.id) ? false : true)];
+    // Plus simple : par id unique
+    const byId = new Map();
+    others.forEach(s => byId.set(s.id||JSON.stringify(s), s));
+    updated.forEach(s => byId.set(s.id||JSON.stringify(s), s));
+    const final = Array.from(byId.values());
+    cloudSave('le_sales', final);
+    setSales(updated);
+  };
   const del = (id) => { if (!window.confirm('Supprimer ?')) return; save(sales.filter(s=>s.id!==id)); };
   const openEdit = (v) => { setEditing(v.id); setForm({ client:v.client||'', email:v.email||'', tel:v.tel||'', product:v.product||v.prod||'', qty:String(v.qty||1), amount:String(v.amount||v.amt||''), currency:v.currency||v.cur||'€', date:v.date||'', note:v.note||'', consultant:v.consultant||'' }); };
   const saveEdit = () => { save(sales.map(s=>s.id!==editing?s:{...s,...form,amount:parseFloat(form.amount)||0,amt:form.amount})); setEditing(null); };
