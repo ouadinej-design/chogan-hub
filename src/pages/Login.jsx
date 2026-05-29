@@ -7,6 +7,11 @@ const SB_URL = 'https://fwcauakszxjrzcexjlvt.supabase.co';
 const SB_KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
 
 async function fetchAndMergeAccounts() {
+  // Toujours s'assurer que Admin existe
+  try {
+    const local = JSON.parse(localStorage.getItem('consultants') || '[]');
+    localStorage.setItem('consultants', JSON.stringify(local));
+  } catch {}
   try {
     const res = await fetch(
       `${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`,
