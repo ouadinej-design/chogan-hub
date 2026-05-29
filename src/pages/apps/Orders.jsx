@@ -102,7 +102,7 @@ function BonCommandeTab() {
   const [note, setNote]             = useState('');
   const [consultant, setConsultant] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (consultantName) setConsultant(consultantName);
   }, [consultantName]);
 
