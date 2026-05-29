@@ -1,6 +1,7 @@
 import AppLayout from '../../components/AppLayout';
 import { cloudSave } from '../../lib/cloudSync';
 import { useAuth } from '../../context/AuthContext';
+import { syncFromServer } from '../../lib/syncAll';
 import { useState, useEffect } from 'react';
 
 // ── Filtre équipe pour la Marraine ───────────────────────────
@@ -89,6 +90,9 @@ function cColor(name,ownerFirst){
 const CATS_V=['Toutes','Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 
 export default function Ventes() {
+  // Sync données depuis serveur au montage
+  useEffect(() => { syncFromServer(); }, []);
+
   const { getFilteredSales, user } = useAuth();
   const [sales, setSales]   = useState([]);
   const [search, setSearch] = useState('');
