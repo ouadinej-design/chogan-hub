@@ -256,7 +256,12 @@ function BonCommandeTab() {
           <textarea rows={2} placeholder="Préférences, allergies..." value={note} onChange={e=>setNote(e.target.value)} style={{ resize:'none' }} /></div>
 
         <div className="field"><label className="label">Consultante</label>
-          <input value={consultant} onChange={e=>setConsultant(e.target.value)} placeholder="Nom de la consultante" /></div>
+          <input
+              value={consultant}
+              readOnly
+              style={{ backgroundColor:'#F5EFE8', color:'#8C6D4F', fontWeight:600, cursor:'default', border:'1px solid #D2B795' }}
+              placeholder="Nom automatique"
+            /></div>
       </div>
 
       <button className="btn-gold" onClick={saveToAgenda}>✦ Valider la transaction → Agenda</button>
