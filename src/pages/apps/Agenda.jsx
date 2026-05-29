@@ -394,8 +394,7 @@ function VentesTab() {
   const [search,setSearch]=useState('');
   const [editing,setEditing]=useState(null);
   const [form,setForm]=useState({});
-  const agendaUserId = (() => { try { const s=JSON.parse(localStorage.getItem('store_session')||'null'); return s?.firstName ? `${s.firstName}_${s.lastName||''}`.trim().replace(/\s+/g,'_').toLowerCase() : null; } catch { return null; } })();
-  const save_=u=>{localStorage.setItem('le_sales',JSON.stringify(u));setSales(u);cloudSave('le_sales',u,agendaUserId);};
+  const save_=u=>{localStorage.setItem('le_sales',JSON.stringify(u));setSales(u);cloudSave('le_sales',u);};
   const del=id=>{if(!window.confirm('Supprimer ?'))return;save_(sales.filter(s=>s.id!==id));};
   const openEdit=v=>{setEditing(v.id);setForm({client:v.client||'',email:v.email||'',tel:v.tel||'',product:v.product||v.prod||'',qty:String(v.qty||1),category:v.category||v.cat||'Parfum',amount:String(v.amount||v.amt||''),currency:v.currency||v.cur||'€',date:v.date||new Date().toISOString().split('T')[0],note:v.note||'',consultant:v.consultant||''});};
   const saveEdit=()=>{save_(sales.map(s=>s.id!==editing?s:{...s,client:form.client,email:form.email,tel:form.tel,product:form.product,prod:form.product,qty:parseInt(form.qty)||1,category:form.category,cat:form.category,amount:parseFloat(form.amount)||0,amt:form.amount,currency:form.currency,cur:form.currency,date:form.date,note:form.note,consultant:form.consultant}));setEditing(null);};

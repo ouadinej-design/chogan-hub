@@ -193,9 +193,7 @@ function ClientsTab({ cfg, userName }) {
   const [bonusPoints, setBonusPoints] = useState(() => {
     try { return JSON.parse(localStorage.getItem('le_fidelite')||'{}'); } catch { return {}; }
   });
-
-  const userId = user ? `${user.firstName}_${user.lastName||''}`.trim().replace(/\s+/g,'_').toLowerCase() : null;
-  const saveBP = (bp) => { setBonusPoints(bp); cloudSave('le_fidelite', bp, userId); };
+  const saveBP = (bp) => { setBonusPoints(bp); cloudSave('le_fidelite', bp); };
 
   const calcPts = (s) => s.currency==='€' ? Math.floor(s.amount*10) : Math.floor((s.amount/245)*10);
 
