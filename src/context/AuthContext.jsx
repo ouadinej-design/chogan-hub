@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { store } from '../utils/storage';
+import { syncFromServer } from '../lib/syncAll';
 
 const AuthContext = createContext(null);
 const AUTH_VERSION = 'v3';
@@ -45,11 +46,35 @@ export function AuthProvider({ children }) {
       store.remove('session');
     }
     const saved = store.get('session');
-    if (saved) {
-      const u = findUser(saved.firstName, saved.lastName, saved.role);
-      if (u) setUser(u);
-    }
-    setLoading(false);
+    const initApp = async () => {
+      if (saved) {
+        // Charger les comptes depuis le serveur (pour marraine sur nouvel appareil)
+        try {
+          const r = await fetch('/api/accounts');
+          if (r.ok) {
+            const d = await r.json();
+            if (Array.isArray(d?.accounts) && d.accounts.length > 0) {
+              const local = store.get('consultants', []);
+              const merged = [...local];
+              d.accounts.forEach(rc => {
+                if (!merged.find(lc => lc.id === rc.id)) merged.push(rc);
+              });
+              store.set('consultants', merged);
+            }
+          }
+        } catch {}
+        const u = findUser(saved.firstName, saved.lastName, saved.role);
+        if (u) {
+          setUser(u);
+          // Sync données si marraine ou admin
+          if (u.role === 'marraine' || u.role === 'admin') {
+            syncFromServer().catch(() => {});
+          }
+        }
+      }
+      setLoading(false);
+    };
+    initApp();
   }, []);
 
   const findUser = (firstName, lastName, role) => {
@@ -76,6 +101,10 @@ export function AuthProvider({ children }) {
     const logs  = store.get(`logs_${u.id}_${today}`, []);
     logs.push({ section: 'Connexion', action: 'Connexion au Hub', ts: new Date().toISOString() });
     store.set(`logs_${u.id}_${today}`, logs);
+    // Sync données après login
+    if (u.role === 'marraine' || u.role === 'admin') {
+      setTimeout(() => syncFromServer().catch(() => {}), 500);
+    }
     return { ok: true };
   };
 

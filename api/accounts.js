@@ -6,7 +6,7 @@ const SB_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_pvQfNMexCi9
 
 async function sbGet() {
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/app_data?key=eq.consultants&select=value`, {
+    const r = await fetch(`${SB_URL}/rest/v1/app_data?key=eq.chogan_hub_consultants&select=value`, {
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
     });
     const d = await r.json();
@@ -23,7 +23,7 @@ async function sbSet(accounts) {
         'Content-Type': 'application/json',
         Prefer: 'resolution=merge-duplicates'
       },
-      body: JSON.stringify({ key: 'consultants', value: accounts })
+      body: JSON.stringify({ key: 'chogan_hub_consultants', value: accounts })
     });
   } catch {}
 }

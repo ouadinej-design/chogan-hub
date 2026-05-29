@@ -1,20 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { cloudSave, cloudLoad } from './cloudSync';
-
-// Récupère l'userId depuis la session
-function getCurrentUserId() {
-  try {
-    const session = JSON.parse(localStorage.getItem('store_session') || 'null');
-    if (session?.firstName) {
-      return `${session.firstName}_${session.lastName||''}`.trim().replace(/\s+/g,'_').toLowerCase();
-    }
-  } catch {}
-  return null;
-}
+import { cloudSave, getCurrentUserId } from './cloudSync';
 
 /**
- * Hook universel — lit/écrit dans Supabase + localStorage
- * Écrit avec la clé utilisateur, lit depuis le localStorage (déjà syncé par syncFromServer)
+ * Hook universel — lit localStorage (déjà syncé par syncFromServer), écrit avec userId
  */
 export function useCloudData(key, defaultValue = []) {
   const [data, setData_] = useState(() => {
@@ -22,24 +10,25 @@ export function useCloudData(key, defaultValue = []) {
     catch { return defaultValue; }
   });
 
-  // Écrire partout (localStorage + Supabase clé utilisateur)
   const setData = useCallback((newData) => {
     setData_(newData);
     const userId = getCurrentUserId();
     cloudSave(key, newData, userId);
   }, [key]);
 
-  // Recharger depuis localStorage quand les données changent (après sync)
+  // Rafraîchir depuis localStorage si syncFromServer l'a mis à jour
   useEffect(() => {
-    const interval = setInterval(() => {
+    const check = () => {
       try {
         const local = JSON.parse(localStorage.getItem(key) || 'null');
-        if (local && Array.isArray(local) && local.length > (Array.isArray(data) ? data.length : 0)) {
-          setData_(local);
-        }
+        if (local === null) return;
+        const localLen = Array.isArray(local) ? local.length : Object.keys(local).length;
+        const curLen  = Array.isArray(data)   ? data.length  : Object.keys(data || {}).length;
+        if (localLen > curLen) setData_(local);
       } catch {}
-    }, 2000);
-    return () => clearInterval(interval);
+    };
+    const iv = setInterval(check, 1500);
+    return () => clearInterval(iv);
   }, [key, data]);
 
   return [data, setData, true];
