@@ -127,12 +127,12 @@ export default function Fidelite() {
 function ClientsTab({ cfg, userName }) {
   const [search, setSearch]           = useState('');
   const [selectedClient, setSelected] = useState(null);
+  const [memberFilter, setMemberFilter] = useState('tous');
   const [bonusAmt, setBonusAmt]       = useState('');
   const [bonusReason, setBonusReason] = useState('');
   const [addingBonus, setAddingBonus] = useState(null);
 
   const { getFilteredSales, user } = useAuth();
-  const { filterByConsultant, FilterDropdown } = useTeamFilter(user);
 
   // Charger les ventes depuis Supabase au montage
   useEffect(() => {
@@ -180,6 +180,16 @@ function ClientsTab({ cfg, userName }) {
     const total = base + bonus;
     return { ...c, base, bonus, total, level:getLevel(total) };
   }).sort((a,b) => b.total - a.total);
+
+  // Filtre par membre (Marraine uniquement)
+  const myFN = (user?.firstName||'').toLowerCase();
+  const filteredClients = user?.role !== 'marraine' ? clients : clients.filter(cl => {
+    if (memberFilter === 'tous') return true;
+    const lastSale = cl.sales[cl.sales.length-1];
+    const cons = (lastSale?.consultant||'').toLowerCase();
+    if (memberFilter === 'moi') return cons.includes(myFN)||(myFN.length>2&&myFN.includes(cons.split(' ')[0]));
+    return cons.includes(memberFilter.split(' ')[0])||(memberFilter.split(' ')[0].length>2&&memberFilter.includes(cons.split(' ')[0]));
+  });
 
   if (search) clients = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -385,8 +395,30 @@ function ClientsTab({ cfg, userName }) {
   const gold   = clients.filter(c=>c.total>=3000).length;
   const silver = clients.filter(c=>c.total>=1000&&c.total<3000).length;
 
+  // Build team member options
+  const treeN = (() => {
+    try {
+      const t1=JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes||[];
+      const t2=JSON.parse(localStorage.getItem('limitless_team_tree_v5')||'{"nodes":[]}').nodes||[];
+      return [...t1,...t2];
+    } catch { return []; }
+  })();
+  const myNode = treeN.find(n=>{const nn=(n.name||'').toLowerCase();return nn.includes(myFN)||(myFN.length>2&&myFN.includes(nn.split(' ')[0]));});
+  const teamMembers = myNode ? treeN.filter(n=>n.parentId===myNode.id).map(n=>n.name) : [];
+  const myFullName = user ? `${user.firstName||''} ${user.lastName||''}`.trim() : '';
+
   return (
     <div style={S.pad}>
+    {user?.role === 'marraine' && (
+      <select value={memberFilter} onChange={e=>setMemberFilter(e.target.value)}
+        style={{width:'100%',padding:'10px 14px',borderRadius:10,marginBottom:12,
+          border:'1.5px solid #D2B795',background:'#F5EFE8',color:'#4A3E3D',
+          fontWeight:700,fontSize:13,cursor:'pointer'}}>
+        <option value="tous">👥 Toute l'équipe</option>
+        <option value="moi">🌸 Moi — {myFullName}</option>
+        {teamMembers.map(n=><option key={n} value={n.toLowerCase()}>👤 {n}</option>)}
+      </select>
+    )}
       {/* Stats */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:14 }}>
         {[
@@ -403,7 +435,7 @@ function ClientsTab({ cfg, userName }) {
 
       <input placeholder="🔍 Rechercher un client..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:12 }} />
 
-      {clients.length === 0
+      {filteredClients.length === 0
         ? <div style={S.empty}>Aucun client. Les clients apparaissent automatiquement après une vente enregistrée dans l'Agenda.</div>
         : clients.map(c => {
           const initials = c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
