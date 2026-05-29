@@ -28,7 +28,7 @@ export default function Reseau() {
   useEffect(() => {
     if (user?.role !== 'admin') return;
     try {
-      const list = JSON.parse(localStorage.getItem('consultants') || '[]');
+      const list = JSON.parse(localStorage.getItem('chogan_hub_consultants') || '[]');
       const existingNames = list.map(u => u.firstName.toLowerCase());
       let updated = false;
       tree.nodes.forEach(n => {
@@ -43,7 +43,7 @@ export default function Reseau() {
           updated = true;
         }
       });
-      if (updated) localStorage.setItem('consultants', JSON.stringify(list));
+      if (updated) localStorage.setItem('chogan_hub_consultants', JSON.stringify(list));
     } catch {}
   }, [tree.nodes.length]);
 
@@ -223,7 +223,7 @@ export default function Reseau() {
       );
       if (!exists) {
         list.push({ id, firstName, lastName, displayName:`${firstName} ${lastName}`.trim(), role:hubRole, password:mdp||'Chogan#123', locked:false });
-        localStorage.setItem('consultants', JSON.stringify(list));
+        localStorage.setItem('chogan_hub_consultants', JSON.stringify(list));
         if (isEnabled) await dbSet('consultants', list);
       }
     } catch(e) { console.error('createAccount error', e); }
