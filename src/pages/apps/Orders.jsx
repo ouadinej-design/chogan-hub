@@ -59,9 +59,9 @@ const TABS = [
 
 export default function Orders() {
   const { user } = useAuth();
-  const isConsultante = user?.role === 'consultante';
+  const hideTabsRoles = ['consultante','marraine'];
   const visibleTabs = TABS.filter(t => {
-    if (isConsultante && (t.id === 'ventes' || t.id === 'clients')) return false;
+    if (hideTabsRoles.includes(user?.role) && (t.id === 'ventes' || t.id === 'clients')) return false;
     return true;
   });
   const [tab, setTab] = useState('bon');
