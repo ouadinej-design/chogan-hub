@@ -1,5 +1,3 @@
-// Hook réutilisable — filtre équipe pour toutes les apps
-// Source des consultants : chogan_hub_consultants (comptes enregistrés)
 import { useState, useEffect } from 'react';
 
 const PREFIX = 'chogan_hub_';
@@ -14,44 +12,50 @@ const C_COLORS = [
 ];
 const OWNER_C = { bg:'rgba(220,80,120,0.10)', border:'#DC5078', text:'#a03060' };
 
-function normalize(str) {
-  return (str||'').trim().toLowerCase().replace(/\s+/g,' ');
-}
+function norm(s) { return (s||'').trim().toLowerCase().replace(/\s+/g,' '); }
 
 function getConsultants() {
   try {
     const list = JSON.parse(localStorage.getItem(PREFIX + 'consultants') || '[]');
     const filtered = list.filter(c => c?.firstName && c.role !== 'admin');
-    
-    // Dédoublonner : "Nej Ouadi" et "Ouadi Nej" = même personne
+    // Dédoublonner par mots triés
     const seen = new Map();
     filtered.forEach(c => {
-      const fn = normalize(c.firstName);
-      const ln = normalize(c.lastName||'');
-      // Clé normalisée : mots triés alphabétiquement
-      const key = [fn, ln].filter(Boolean).sort().join('_');
-      if (!seen.has(key)) {
-        seen.set(key, c);
-      } else {
-        // Garder celui dont le prénom ressemble à un vrai prénom (plus court)
-        const existing = seen.get(key);
-        if (fn.length <= normalize(existing.firstName).length) {
-          seen.set(key, c);
-        }
-      }
+      const key = [norm(c.firstName), norm(c.lastName||'')].filter(Boolean).sort().join('_');
+      if (!seen.has(key)) seen.set(key, c);
     });
     return Array.from(seen.values());
   } catch { return []; }
 }
 
+// Est-ce que le champ "consultant" d'une vente correspond à cette personne ?
+// Stratégie : le prénom DOIT matcher (évite faux positifs sur nom de famille partagé)
+function matchPerson(consField, firstName, lastName) {
+  const cons  = norm(consField);
+  const fn    = norm(firstName);
+  const ln    = norm(lastName || '');
+  if (!cons || !fn) return false;
+
+  // Les mots du champ consultant
+  const words = cons.split(' ');
+
+  // Le prénom doit être présent exactement dans les mots
+  const fnMatch = words.some(w => w === fn || fn === w);
+  if (!fnMatch) return false;
+
+  // Si nom de famille présent, il doit aussi matcher
+  if (ln && words.length > 1) {
+    const lnMatch = words.some(w => w === ln);
+    return lnMatch;
+  }
+
+  return true;
+}
+
 export function useTeamFilter(user) {
-  const myName    = user ? `${user.firstName||''} ${user.lastName||''}`.trim() : '';
-  const myFirst   = (user?.firstName||'').toLowerCase();
-  const myFull    = myName.toLowerCase();
   const [selected, setSelected] = useState('tous');
   const [teamList, setTeamList] = useState([]);
 
-  // Charger la liste des consultants (+ refresh si changement)
   useEffect(() => {
     const load = () => setTeamList(getConsultants());
     load();
@@ -59,33 +63,26 @@ export function useTeamFilter(user) {
     return () => clearInterval(iv);
   }, []);
 
-  // Match flexible : "Nej Ouadi", "Ouadi Nej", "Nej" → même personne
-  const matchConsultant = (consStr, firstName, lastName) => {
-    const cons = normalize(consStr);
-    const fn   = normalize(firstName);
-    const ln   = normalize(lastName||'');
-    if (!cons || !fn) return false;
-    // Match exact
-    if (cons === fn || cons === `${fn} ${ln}`.trim() || cons === `${ln} ${fn}`.trim()) return true;
-    // Match prénom seul
-    if (cons.includes(fn) || fn.includes(cons.split(' ')[0])) return true;
-    // Match nom seul si non vide
-    if (ln && (cons.includes(ln) || ln.includes(cons.split(' ')[0]))) return true;
-    return false;
-  };
-
-  // Filtre générique — fonctionne pour ventes, clients, événements
   const filterByConsultant = (items) => {
     if (!user || user.role !== 'marraine' || selected === 'tous') return items;
+
     return items.filter(item => {
       const cons = (item.consultant || '').trim();
-      if (!cons) return selected === 'moi';
-      if (selected === 'moi') return matchConsultant(cons, user.firstName, user.lastName);
+
+      if (selected === 'moi') {
+        if (!cons) return true; // ventes sans consultant = à la marraine
+        return matchPerson(cons, user.firstName, user.lastName);
+      }
+
+      // Consultante sélectionnée par ID
       const selC = teamList.find(c => c.id === selected);
-      if (selC) return matchConsultant(cons, selC.firstName, selC.lastName);
-      return false;
+      if (!selC) return false;
+      if (!cons) return false; // ventes sans consultant n'appartiennent pas à la consultante
+      return matchPerson(cons, selC.firstName, selC.lastName);
     });
   };
+
+  const myName = user ? `${user.firstName||''} ${user.lastName||''}`.trim() : '';
 
   const FilterDropdown = ({ style }) => {
     if (!user || user.role !== 'marraine') return null;
