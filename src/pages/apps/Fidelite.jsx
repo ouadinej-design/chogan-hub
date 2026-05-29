@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
+import { cloudSave } from '../../lib/cloudSync';
 
 // ── Couleurs par consultant ───────────────────────────────────────
 const CONSULT_COLORS = [
@@ -132,7 +133,7 @@ function ClientsTab({ cfg, userName }) {
     try { return JSON.parse(localStorage.getItem('le_fidelite')||'{}'); } catch { return {}; }
   });
 
-  const saveBP = (bp) => { setBonusPoints(bp); localStorage.setItem('le_fidelite', JSON.stringify(bp)); };
+  const saveBP = (bp) => { setBonusPoints(bp); cloudSave('le_fidelite', bp); };
 
   const calcPts = (s) => s.currency==='€' ? Math.floor(s.amount*10) : Math.floor((s.amount/245)*10);
 
