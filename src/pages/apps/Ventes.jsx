@@ -112,7 +112,8 @@ export default function Ventes() {
     return () => clearInterval(iv);
   }, []);
 
-  const save = (updated) => { cloudSave('le_sales', updated); setSales(updated); };
+  const userId = user ? `${user.firstName}_${user.lastName||''}`.trim().replace(/\s+/g,'_').toLowerCase() : null;
+  const save = (updated) => { cloudSave('le_sales', updated, userId); setSales(updated); };
   const del = (id) => { if (!window.confirm('Supprimer ?')) return; save(sales.filter(s=>s.id!==id)); };
   const openEdit = (v) => { setEditing(v.id); setForm({ client:v.client||'', email:v.email||'', tel:v.tel||'', product:v.product||v.prod||'', qty:String(v.qty||1), amount:String(v.amount||v.amt||''), currency:v.currency||v.cur||'€', date:v.date||'', note:v.note||'', consultant:v.consultant||'' }); };
   const saveEdit = () => { save(sales.map(s=>s.id!==editing?s:{...s,...form,amount:parseFloat(form.amount)||0,amt:form.amount})); setEditing(null); };

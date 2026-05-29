@@ -191,7 +191,9 @@ function BonCommandeTab() {
         createdAt: new Date().toISOString(),
       };
       const updated = [sale, ...existing];
-      cloudSave('le_sales', updated);
+      // Clé utilisateur pour sync multi-device
+      const saveUserId = authUser ? `${authUser.firstName}_${authUser.lastName||''}`.trim().replace(/\s+/g,'_').toLowerCase() : null;
+      cloudSave('le_sales', updated, saveUserId);
 
       // ── AUTO : Créer/Mettre à jour la fiche client ────────────────
       try {
@@ -211,7 +213,7 @@ function BonCommandeTab() {
             lastDate: rawDate,
           });
         }
-        cloudSave('le_clients', clientsRaw);
+        cloudSave('le_clients', clientsRaw, saveUserId);
       } catch {}
 
       // ── AUTO : Créer/Incrémenter la carte de fidélité ────────────
@@ -225,7 +227,7 @@ function BonCommandeTab() {
         fidRaw[cKey].total = (fidRaw[cKey].total || 0) + amtEur;
         fidRaw[cKey].lastDate = rawDate;
         fidRaw[cKey].consultant = sale.consultant;
-        cloudSave('le_fidelite', fidRaw);
+        cloudSave('le_fidelite', fidRaw, saveUserId);
       } catch {}
 
       // ── AUTO : Ajouter un événement dans l'agenda ─────────────────
@@ -244,7 +246,7 @@ function BonCommandeTab() {
           createdAt: new Date().toISOString(),
           source: 'commande',
         };
-        cloudSave('le_cevents', [newEvent, ...eventsRaw]);
+        cloudSave('le_cevents', [newEvent, ...eventsRaw], saveUserId);
       } catch {}
 
       console.log('✅ Sale saved + Client + Fidélité + Agenda créés automatiquement');
@@ -416,7 +418,8 @@ function VentesTab() {
     return () => clearInterval(interval);
   }, []);
 
-  const save = (updated) => { cloudSave('le_sales', updated); setSales(updated); };
+  const saveUserId2 = user ? `${user.firstName}_${user.lastName||''}`.trim().replace(/\s+/g,'_').toLowerCase() : null;
+  const save = (updated) => { cloudSave('le_sales', updated, saveUserId2); setSales(updated); };
   const deleteSale = (id) => { if (!window.confirm('Supprimer cette vente ?')) return; save(sales.filter(s=>s.id!==id)); };
 
   const openEdit = (v) => {
