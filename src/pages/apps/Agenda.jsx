@@ -54,7 +54,7 @@ export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', showIframe =
   return (
     <AppLayout title={appTitle} icon={appIcon}>
       <div style={{ display:'flex', borderBottom:'1px solid var(--or-border)', overflowX:'auto', scrollbarWidth:'none' }}>
-        {[['agenda','📅 Agenda'],['evenements','📆 Événements'],...(hideVentes?[]:[['ventes','💰 Ventes']])].map(([k,l]) => (
+        {[['agenda','📅 Agenda'],['evenements','📆 Événements'],['ventes','💰 Ventes']].filter(([k])=>!(hideVentes && k==='ventes')).map(([k,l]) => (
           <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:12, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
