@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { cloudSave } from '../../lib/cloudSync';
+import { useTeamFilter } from '../../lib/useTeamFilter.jsx';
 import { syncFromServer } from '../../lib/syncAll';
 import { useCloudData } from '../../lib/useCloudData';
 import { useAuth } from '../../context/AuthContext';
@@ -238,22 +239,9 @@ function EvenementsTab() {
   }, []);
 
   const [allEvts, setAllEvts_] = useCloudData('le_cevents', []);
-  const [memberFilter, setMemberFilter] = useState('tous');
+  const { filterByConsultant: filterEvts, FilterDropdown: AgendaDropdown } = useTeamFilter(evtUser);
 
-  // Récupérer les membres de l'équipe
-  const myFN   = (evtUser?.firstName||'').toLowerCase();
-  const myFull = `${evtUser?.firstName||''} ${evtUser?.lastName||''}`.trim().toLowerCase();
-  const treeN  = (() => {
-    try {
-      const t1=JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes||[];
-      const t2=JSON.parse(localStorage.getItem('limitless_team_tree_v5')||'{"nodes":[]}').nodes||[];
-      return [...t1,...t2];
-    } catch { return []; }
-  })();
-  const myNode = treeN.find(n=>{const nn=(n.name||'').toLowerCase();return nn.includes(myFN)||(myFN.length>2&&myFN.includes(nn.split(' ')[0]));});
-  const teamMembers = myNode ? treeN.filter(n=>n.parentId===myNode.id).map(n=>n.name) : [];
-
-  const evts = allEvts.filter(e => {
+  const evts = filterEvts(allEvts.filter(e => {
     if (!evtUser || evtUser.role === 'admin') return true;
     const cons = (e.consultant||'').toLowerCase().trim();
     const name = (evtUser.firstName||'').toLowerCase().trim();
@@ -262,13 +250,8 @@ function EvenementsTab() {
       if (!cons) return false;
       return cons === name || cons === full || cons.includes(name);
     }
-    // Marraine : filtre par membre sélectionné
-    const baseFilter = !cons || cons.includes(name) || full.includes(cons) || cons.includes(full);
-    if (!baseFilter) return false;
-    if (memberFilter === 'tous') return true;
-    if (memberFilter === 'moi') return cons.includes(myFN)||(myFN.length>2&&myFN.includes(cons.split(' ')[0]));
-    return cons.includes(memberFilter.split(' ')[0])||(memberFilter.split(' ')[0].length>2&&memberFilter.includes(cons.split(' ')[0]));
-  });
+    return true; // marraine voit tout, filtrage géré par filterEvts
+  }));
   const setEvts = (v) => setAllEvts_(v);
   const [editId, setEditId]           = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -296,17 +279,7 @@ function EvenementsTab() {
   const Badge=({d})=>{const j=diffJ(d),c=j<0?'var(--text-dim)':j<=7?'var(--red)':j<=30?'#d97706':'var(--green)',l=j<0?`J+${Math.abs(j)}`:j===0?'Auj.':`J-${j}`;return<span style={{fontSize:10,fontWeight:700,color:c,background:`${c}12`,padding:'2px 8px',borderRadius:20,border:`1px solid ${c}30`,flexShrink:0}}>{l}</span>;};
   return (
     <div style={{padding:16}}>
-      {/* Filtre équipe (Marraine uniquement) */}
-      {evtUser?.role === 'marraine' && (
-        <select value={memberFilter} onChange={e=>setMemberFilter(e.target.value)}
-          style={{width:'100%',padding:'10px 14px',borderRadius:10,marginBottom:12,
-            border:'1.5px solid #D2B795',background:'#F5EFE8',color:'#4A3E3D',
-            fontWeight:700,fontSize:13,cursor:'pointer'}}>
-          <option value="tous">👥 Toute l'équipe</option>
-          <option value="moi">🌸 Moi — {`${evtUser?.firstName||''} ${evtUser?.lastName||''}`.trim()}</option>
-          {teamMembers.map(n=><option key={n} value={n.toLowerCase()}>👤 {n}</option>)}
-        </select>
-      )}
+      <AgendaDropdown />
       <div style={{background:'var(--bg-card)',border:'1px solid var(--or-border)',borderRadius:14,padding:14,marginBottom:14}}>
         <p style={{fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--or-deep)',marginBottom:10}}>{editId?'✏️ Modifier':'➕ Ajouter'}</p>
         {ok&&<div style={{background:'rgba(74,124,89,0.1)',border:'1px solid rgba(74,124,89,0.3)',borderRadius:10,padding:'8px 12px',color:'var(--green)',fontSize:12,fontWeight:600,marginBottom:10}}>{ok}</div>}

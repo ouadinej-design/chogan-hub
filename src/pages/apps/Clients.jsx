@@ -2,6 +2,7 @@ import { syncFromServer } from '../../lib/syncAll';
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { cloudSave } from '../../lib/cloudSync';
+import { useTeamFilter } from '../../lib/useTeamFilter.jsx';
 import AppLayout from '../../components/AppLayout';
 
 // ── Couleurs par consultant ───────────────────────────────────────
@@ -49,47 +50,11 @@ export default function Clients() {
   const [selected, setSelected] = useState(null);
 
   const { getFilteredSales, user } = useAuth();
-  const [memberFilter, setMemberFilter] = useState('tous');
-  const myFN = (user?.firstName||'').toLowerCase();
+  const { filterByConsultant, FilterDropdown } = useTeamFilter(user);
 
-  // Charger les ventes depuis Supabase au montage
-  useEffect(() => {
-    const SB = 'https://fwcauakszxjrzcexjlvt.supabase.co';
-    const KEY = 'sb_publishable_pvQfNMexCi9Y0Sm6onPQoQ_9aIWhow5';
-    fetch(`${SB}/rest/v1/app_data?key=eq.le_sales&select=value`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
-    }).then(r => r.json()).then(d => {
-      const v = d?.[0]?.value;
-      if (Array.isArray(v) && v.length > 0) {
-        const local = JSON.parse(localStorage.getItem('le_sales')||'[]');
-        // Merger: garder les plus récentes
-        const merged = [...v];
-        local.forEach(s => { if (!merged.find(x => x.id === s.id)) merged.push(s); });
-        localStorage.setItem('le_sales', JSON.stringify(merged));
-      }
-    }).catch(() => {});
-  }, []);
-  // Récupérer l'équipe de la marraine
-  const treeNodes = useMemo(() => {
-    try {
-      const t1=JSON.parse(localStorage.getItem('le_tree')||'{"nodes":[]}').nodes||[];
-      const t2=JSON.parse(localStorage.getItem('limitless_team_tree_v5')||'{"nodes":[]}').nodes||[];
-      return [...t1,...t2];
-    } catch { return []; }
-  }, []);
-  const myNode = treeNodes.find(n=>{const nn=(n.name||'').toLowerCase();return nn.includes(myFN)||(myFN.length>2&&myFN.includes(nn.split(' ')[0]));});
-  const teamMembers = myNode ? treeNodes.filter(n=>n.parentId===myNode.id).map(n=>n.name) : [];
-  const myFullName = user ? `${user.firstName||''} ${user.lastName||''}`.trim() : '';
-
-  // Appliquer le filtre membre aux ventes
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const allSales = useMemo(() => getFilteredSales(), [syncKey, memberFilter]);
-  const sales = user?.role !== 'marraine' || memberFilter === 'tous' ? allSales : allSales.filter(s => {
-    const cons = (s.consultant||'').toLowerCase();
-    if (memberFilter === 'moi') return cons.includes(myFN)||(myFN.length>2&&myFN.includes(cons.split(' ')[0]));
-    const sel = memberFilter.toLowerCase();
-    return cons.includes(sel.split(' ')[0])||(sel.split(' ')[0].length>2&&sel.includes(cons.split(' ')[0]));
-  });
+  const allSales = useMemo(() => getFilteredSales(), [syncKey]);
+  const sales = filterByConsultant(allSales);
 
   const now = useMemo(() => { const d=new Date(); d.setHours(0,0,0,0); return d; }, []);
 
@@ -220,17 +185,7 @@ export default function Clients() {
   return (
     <AppLayout title="Clients" icon="👥">
       <div style={S.pad}>
-        {/* Filtre équipe Marraine */}
-        {user?.role === 'marraine' && (
-          <select value={memberFilter} onChange={e=>setMemberFilter(e.target.value)}
-            style={{width:'100%',padding:'10px 14px',borderRadius:10,marginBottom:12,
-              border:'1.5px solid #D2B795',background:'#F5EFE8',color:'#4A3E3D',
-              fontWeight:700,fontSize:13,cursor:'pointer',boxSizing:'border-box'}}>
-            <option value="tous">👥 Toute l'équipe</option>
-            <option value="moi">🌸 Moi — {myFullName}</option>
-            {teamMembers.map(n=><option key={n} value={n.toLowerCase()}>👤 {n}</option>)}
-          </select>
-        )}
+        <FilterDropdown />
         {/* Stats rapides */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:14 }}>
           {[{v:grR.length,l:'Récents',c:'var(--green)'},{v:grW.length,l:'À relancer',c:'#d97706'},{v:grU.length,l:'Urgents',c:'var(--red)'}].map((x,i) => (
