@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import Tutorial, { useTutorial } from '../../components/Tutorial';
 import { syncFromServer } from '../../lib/syncAll';
 import AppLayout from '../../components/AppLayout';
 import { useAuth } from '../../context/AuthContext';
@@ -57,6 +58,7 @@ const ICONS = [
 ];
 
 export default function Fidelite() {
+  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('fidelite');
   const { user } = useAuth();
   useEffect(() => { syncFromServer(); }, []);
 
@@ -80,7 +82,7 @@ export default function Fidelite() {
   };
 
   return (
-    <AppLayout title="Fidélité" icon="💳">
+    <AppLayout onHelp={resetTuto} title="Fidélité" icon="💳">
       <div style={S.tabs}>
         {[['clients','💳 Clients'],['agenda','📅 Agenda'],['design','🎨 Ma carte'],['qr','📱 QR Code'],['notifs','🔔 Notifs']].map(([k,l]) => (
           <button key={k} style={{ ...S.tab, ...(tab===k?S.tabActive:{}) }} onClick={() => setTab(k)}>{l}</button>
@@ -92,6 +94,7 @@ export default function Fidelite() {
       {tab === 'design'  && <DesignTab cfg={cfg} updCfg={updCfg} />}
       {tab === 'qr'      && <QRTab cfg={cfg} userName={user?.firstName} />}
       {tab === 'notifs'  && <NotifsTab cfg={cfg} userName={user?.firstName} />}
+          <Tutorial appId="fidelite" show={showTuto} onClose={closeTuto} />
     </AppLayout>
   );
 }

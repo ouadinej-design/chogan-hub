@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import Tutorial, { useTutorial } from '../../components/Tutorial';
 import { useState, useEffect } from 'react';
 import { PERFUMES } from '../../utils/choganData';
 import { useData } from '../../context/DataContext';
@@ -46,6 +47,7 @@ const TABS = [
 ];
 
 export default function Orders() {
+  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('orders');
   const { user } = useAuth();
   const hideTabsRoles = ['consultante','marraine'];
   const visibleTabs = TABS.filter(t => {
@@ -54,7 +56,7 @@ export default function Orders() {
   });
   const [tab, setTab] = useState('bon');
   return (
-    <AppLayout title="Commandes" icon="🛒">
+    <AppLayout onHelp={resetTuto} title="Commandes" icon="🛒">
       <div style={S.tabsWrap}>
         {visibleTabs.map(t => (
           <button key={t.id} style={{ ...S.tab, ...(tab===t.id?S.tabActive:{}) }} onClick={() => setTab(t.id)}>
@@ -66,6 +68,7 @@ export default function Orders() {
       {tab === 'ventes'  && <VentesTab />}
       {tab === 'clients' && <AgendaClientsTab />}
       {tab === 'maj'     && <MajPrixTab />}
+          <Tutorial appId="orders" show={showTuto} onClose={closeTuto} />
     </AppLayout>
   );
 }

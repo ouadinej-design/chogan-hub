@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import Tutorial, { useTutorial } from '../components/Tutorial';
 import { useEffect, useState } from 'react';
 import { useAuth, ROLES } from '../context/AuthContext';
 import { store } from '../utils/storage';
@@ -49,6 +50,7 @@ const DEFAULT_SUCS = [
 ];
 
 export default function Home() {
+  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('home');
   const { user, logout, canAccess } = useAuth();
   const navigate = useNavigate();
   const [page, setPage] = useState('news');
@@ -324,6 +326,7 @@ function AppCard({ app, delay, onClick }) {
           </div>
         )}
       </div>
+      <Tutorial appId="home" show={showTuto} onClose={closeTuto} />
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import Tutorial, { useTutorial } from '../../components/Tutorial';
 import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
 export default function Wallet() {
+  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('wallet');
   const { user } = useAuth();
   const [allowed, setAllowed] = useState(null);
 
@@ -25,7 +27,7 @@ export default function Wallet() {
     check();
   }, [user]);
 
-  if (allowed === null) return <AppLayout title="Wallet Chogan" icon="💰"><div style={{padding:40,textAlign:'center',color:'var(--text-muted)'}}>Vérification...</div></AppLayout>;
+  if (allowed === null) return <AppLayout onHelp={resetTuto} title="Wallet Chogan" icon="💰"><div style={{padding:40,textAlign:'center',color:'var(--text-muted)'}}>Vérification...</div></AppLayout>;
 
   if (!allowed) return (
     <AppLayout title="Wallet Chogan" icon="💰">
@@ -42,6 +44,7 @@ export default function Wallet() {
       <div style={{ height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column' }}>
         <iframe src="/wallet-app.html" style={{ flex: 1, border: 'none', width: '100%' }} title="Wallet Chogan" />
       </div>
+          <Tutorial appId="wallet" show={showTuto} onClose={closeTuto} />
     </AppLayout>
   );
 }

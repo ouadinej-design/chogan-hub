@@ -1,4 +1,5 @@
 import AppLayout from '../../components/AppLayout';
+import Tutorial, { useTutorial } from '../../components/Tutorial';
 import { cloudSave } from '../../lib/cloudSync';
 import { useTeamFilter } from '../../lib/useTeamFilter.jsx';
 import { useAuth } from '../../context/AuthContext';
@@ -30,6 +31,7 @@ function cColor(name,ownerFirst){
 const CATS_V=['Toutes','Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 
 export default function Ventes() {
+  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('ventes');
   // Sync depuis serveur puis recharger
   useEffect(() => {
     syncFromServer().then(() => {
@@ -90,7 +92,7 @@ export default function Ventes() {
   const totalDa = filtered.filter(s=>(s.currency||s.cur)==='DA').reduce((t,s)=>t+(parseFloat(s.amount||s.amt)||0),0);
 
   if (editing) return (
-    <AppLayout title="Ventes" icon="💰">
+    <AppLayout onHelp={resetTuto} title="Ventes" icon="💰">
       <div style={{padding:16,maxWidth:500,margin:'0 auto'}}>
         <button onClick={()=>setEditing(null)} style={{background:'none',border:'none',color:'var(--taupe)',cursor:'pointer',marginBottom:16,fontSize:13}}>← Annuler</button>
         <h3 style={{color:'var(--taupe)',marginBottom:16}}>✏️ Modifier la vente</h3>
@@ -180,6 +182,7 @@ export default function Ventes() {
           );
         })}
       </div>
+          <Tutorial appId="ventes" show={showTuto} onClose={closeTuto} />
     </AppLayout>
   );
 }

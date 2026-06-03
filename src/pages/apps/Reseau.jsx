@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import Tutorial, { useTutorial } from '../../components/Tutorial';
 import { useCloudData } from '../../lib/useCloudData';
 import { cloudLoad } from '../../lib/cloudSync';
 import { getConsultantColor, OWNER_COLOR } from '../../lib/consultantColors';
@@ -7,6 +8,7 @@ import { dbSet, dbGet, isEnabled } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Reseau() {
+  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('reseau');
   const { user } = useAuth();
   const [activeTab, setActiveTab]           = useState('arbre');
   const [selectedMember, setSelectedMember] = useState(null);
