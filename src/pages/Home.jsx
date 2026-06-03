@@ -5,24 +5,24 @@ import { store } from '../utils/storage';
 import Logo from '../components/Logo';
 
 const ALL_APPS = [
-  { id:'commandes', label:'Commandes',    icon:'🛒', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/orders' },
-  { id:'ventes',    label:'Ventes',       icon:'💰', color:'#2d7a4a', bg:'rgba(45,122,74,0.12)',   path:'/app/ventes' },
-  { id:'inspirations',label:'Inspirations', icon:'🌹', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)', path:'/app/inspirations' },
-  { id:'clients',   label:'Clients',      icon:'👥', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/clients' },
-  { id:'fidelite',  label:'Fidélité',     icon:'🎁', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/fidelite' },
-  { id:'agenda',    label:'Agenda',       icon:'📅', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/agenda' },
-  { id:'planner',   label:'Planner',      icon:'🗓', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/planner' },
-  { id:'wallet',    label:'Wallet',       icon:'💰', color:'#9e7a3d', bg:'rgba(158,122,61,0.12)',  path:'/app/wallet' },
-  { id:'reseau',    label:'Mon Réseau',   icon:'🌐', color:'#6b4d8a', bg:'rgba(107,77,138,0.12)',  path:'/app/reseau' },
-  { id:'catalogue', label:'Chogan Élite', icon:'💎', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/catalogue' },
-  { id:'coach',     label:'Coach Vocal',  icon:'🎤', color:'#8a4d4d', bg:'rgba(138,77,77,0.12)',   path:'/app/coach-vocal' },
-  { id:'objections',label:'Coach Obj.',   icon:'💬', color:'#3d7a8a', bg:'rgba(61,122,138,0.12)',  path:'/app/objections' },
-  { id:'stats',     label:'Statistiques', icon:'📊', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/stats' },
-  { id:'settings',  label:'Paramètres',   icon:'⚙️', color:'#7a7069', bg:'rgba(122,112,105,0.12)', path:'/app/settings' },
-  { id:'formation',  label:'Formation',    icon:'🚀', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/formation' },
-  { id:'familles',   label:'Familles',     icon:'💐', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/familles' },
-  { id:'catalogues', label:'Catalogues',   icon:'📖', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/catalogues' },
-  { id:'checklist',  label:'Check-list',   icon:'✨', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/checklist' },
+  { id:'commandes',   label:'Commandes',     desc:'Bon de commande auto',     icon:'🛒', color:'#B89A6A', bg:'rgba(184,154,106,0.13)', path:'/app/orders' },
+  { id:'ventes',      label:'Ventes',        desc:"Suivi chiffre d'affaires", icon:'💰', color:'#2d7a4a', bg:'rgba(45,122,74,0.12)',   path:'/app/ventes' },
+  { id:'clients',     label:'Clients',       desc:'Fiches & historique',       icon:'👥', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/clients' },
+  { id:'fidelite',    label:'Fidélité',      desc:'Programme points Chogan',   icon:'⭐', color:'#9e7a3d', bg:'rgba(158,122,61,0.12)',  path:'/app/fidelite' },
+  { id:'agenda',      label:'Agenda',        desc:'Calendrier & événements',   icon:'📅', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/agenda' },
+  { id:'planner',     label:'Planner',       desc:'Organisation personnelle',  icon:'🗓', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/planner' },
+  { id:'stats',       label:'Statistiques',  desc:'Tableaux de bord & CA',     icon:'📊', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/stats' },
+  { id:'reseau',      label:'Mon Réseau',    desc:'Équipe & arbre Chogan',     icon:'🌳', color:'#6b4d8a', bg:'rgba(107,77,138,0.12)',  path:'/app/reseau' },
+  { id:'inspirations',label:'Inspirations',  desc:'Motivation & contenu',      icon:'🌹', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)', path:'/app/inspirations' },
+  { id:'formation',   label:'Formation',     desc:'Modules de formation',      icon:'🎓', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/formation' },
+  { id:'catalogue',   label:'Chogan Élite',  desc:'Collection exclusive',      icon:'💎', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/catalogue' },
+  { id:'catalogues',  label:'Catalogues',    desc:'Produits & références',     icon:'📖', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/catalogues' },
+  { id:'familles',    label:'Familles',      desc:'Familles olfactives',       icon:'💐', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/familles' },
+  { id:'checklist',   label:'Check-list',    desc:'Promotions & actions',      icon:'✅', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/checklist' },
+  { id:'wallet',      label:'Wallet',        desc:'Portefeuille financier',    icon:'💼', color:'#9e7a3d', bg:'rgba(158,122,61,0.12)',  path:'/app/wallet' },
+  { id:'coach',       label:'Coach Vocal',   desc:'Entraînement objections',   icon:'🎤', color:'#8a4d4d', bg:'rgba(138,77,77,0.12)',   path:'/app/coach-vocal' },
+  { id:'objections',  label:'Objections',    desc:'Réponses aux objections',   icon:'💬', color:'#3d7a8a', bg:'rgba(61,122,138,0.12)',  path:'/app/objections' },
+  { id:'settings',    label:'Paramètres',    desc:'Comptes & configuration',   icon:'⚙️', color:'#7a7069', bg:'rgba(122,112,105,0.12)', path:'/app/settings' },
 ];
 
 const DEFAULT_ANNS = [
@@ -211,16 +211,57 @@ export default function Home() {
 function AppIcon({ app, delay, onClick }) {
   const [pressed, setPressed] = useState(false);
   return (
-    <div style={{ ...S.appWrap, animation: `fadeIn 0.4s ease ${delay}ms both`, transform: pressed ? 'scale(0.9)' : 'scale(1)', transition: 'transform 0.15s' }}
+    <div
+      style={{
+        animation: `fadeIn 0.4s ease ${delay}ms both`,
+        transform: pressed ? 'scale(0.93)' : 'scale(1)',
+        transition: 'transform 0.15s ease',
+        cursor: 'pointer',
+        userSelect: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        borderRadius: 20,
+        overflow: 'hidden',
+        background: 'rgba(255,255,255,0.9)',
+        border: `1.5px solid ${app.color}33`,
+        boxShadow: `0 3px 14px rgba(78,70,63,0.08)`,
+        position: 'relative',
+      }}
       onClick={onClick}
       onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
     >
-      <div style={{ ...S.appIcon, background: app.bg, borderColor: app.color + '55' }}>
-        <span style={{ fontSize: 26 }}>{app.icon}</span>
+      {/* Bande colorée top */}
+      <div style={{
+        height: 3,
+        background: `linear-gradient(90deg, ${app.color}88, ${app.color})`,
+      }} />
+      {/* Corps */}
+      <div style={{ padding: '14px 10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
+        {/* Icône */}
+        <div style={{
+          width: 52, height: 52, borderRadius: 16,
+          background: app.bg,
+          border: `1px solid ${app.color}44`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: `0 2px 8px ${app.color}22`,
+        }}>
+          <span style={{ fontSize: 24 }}>{app.icon}</span>
+        </div>
+        {/* Nom */}
+        <div style={{
+          fontSize: 11, fontWeight: 700, color: '#4E463F',
+          textAlign: 'center', lineHeight: 1.2, letterSpacing: '0.02em',
+        }}>{app.label}</div>
+        {/* Description */}
+        {app.desc && (
+          <div style={{
+            fontSize: 9, color: '#9A8E85', textAlign: 'center',
+            lineHeight: 1.3, letterSpacing: '0.01em',
+          }}>{app.desc}</div>
+        )}
       </div>
-      <div style={S.appLabel}>{app.label}</div>
     </div>
   );
 }
@@ -252,7 +293,7 @@ const S = {
   sucAch: { fontSize: 12, color: 'var(--text-muted)', marginTop: 2 },
   appsPage: { flex: 1, overflowY: 'auto', padding: '18px 16px 0' },
   appsTitle: { fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.12em', color: 'var(--taupe)', marginBottom: 18, textAlign: 'center' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px 8px' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 },
   appWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', userSelect: 'none' },
   appIcon: { width: 60, height: 60, borderRadius: 18, border: '1px solid', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 7, boxShadow: '0 2px 10px rgba(78,70,63,0.08)' },
   appLabel: { fontSize: 9.5, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3, maxWidth: 62 },
