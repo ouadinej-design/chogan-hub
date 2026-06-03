@@ -38,6 +38,13 @@ export default function Home() {
   const { user, logout, canAccess } = useAuth();
   const navigate = useNavigate();
   const [page, setPage] = useState('news');
+
+  // Écouter l'event du LmsShell (bouton Apps dans bottom nav)
+  useEffect(() => {
+    const handler = () => setPage('apps');
+    window.addEventListener('lms-goto-apps', handler);
+    return () => window.removeEventListener('lms-goto-apps', handler);
+  }, []);
   const roleInfo = ROLES[user?.role];
   const canEdit = user?.role === 'admin' || user?.role === 'marraine';
   const authorName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.displayName || 'Marraine';
@@ -72,18 +79,7 @@ export default function Home() {
 
   return (
     <div style={S.root}>
-      {/* Header */}
-      <div style={S.header}>
-        <Logo size={30} />
-        <div style={{ flex: 1 }}>
-          <div style={S.brand}>CHOGAN HUB</div>
-        </div>
-        <div style={{ ...S.userPill, background: roleInfo.bg, borderColor: roleInfo.border }}>
-          <span>{roleInfo.icon}</span>
-          <span style={{ fontSize: 11, color: roleInfo.color, fontWeight: 700 }}>{roleInfo.label}</span>
-        </div>
-        <button onClick={logout} style={S.logoutBtn}>⎋</button>
-      </div>
+      {/* Header géré par LmsShell */}
 
       {/* PAGE NEWS */}
       {page === 'news' && (
