@@ -34,6 +34,39 @@ const DEFAULT_SUCS = [
   { id:2, name:"Nour K.",    ach:"Statut Or atteint 🥇", date: new Date().toLocaleDateString('fr-FR'), author: "Admin" },
 ];
 
+const MONTHLY_TARGET = 500; // Objectif € mensuel configurable
+
+const APP_GROUPS = [
+  { label: '💼 Gestion commerciale', items: [
+    { id:'commandes', label:'Commandes',    desc:'Bon de commande auto',      icon:'🛒', color:'#B89A6A', bg:'rgba(184,154,106,0.13)', path:'/app/orders' },
+    { id:'ventes',    label:'Ventes',       desc:"Chiffre d'affaires",        icon:'💰', color:'#2d7a4a', bg:'rgba(45,122,74,0.12)',   path:'/app/ventes' },
+    { id:'clients',   label:'Clients',      desc:'Fiches & historique',        icon:'👥', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/clients' },
+    { id:'fidelite',  label:'Fidélité',     desc:'Programme points Chogan',    icon:'⭐', color:'#9e7a3d', bg:'rgba(158,122,61,0.12)',  path:'/app/fidelite' },
+  ]},
+  { label: '📅 Organisation', items: [
+    { id:'agenda',    label:'Agenda',       desc:'Calendrier & événements',    icon:'📅', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/agenda' },
+    { id:'planner',   label:'Planner',      desc:'Organisation personnelle',   icon:'🗓', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/planner' },
+    { id:'stats',     label:'Statistiques', desc:'Tableaux de bord & CA',      icon:'📊', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/stats' },
+    { id:'reseau',    label:'Mon Réseau',   desc:'Équipe & arbre Chogan',      icon:'🌳', color:'#6b4d8a', bg:'rgba(107,77,138,0.12)',  path:'/app/reseau' },
+  ]},
+  { label: '🎓 Apprentissage', items: [
+    { id:'formation',   label:'Formation',    desc:'Modules de formation',     icon:'🎓', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/formation',   duration:'~15 min' },
+    { id:'inspirations',label:'Inspirations', desc:'Motivation & contenu',     icon:'🌹', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/inspirations' },
+    { id:'catalogues',  label:'Catalogues',   desc:'Produits & références',    icon:'📖', color:'#3d6b9e', bg:'rgba(61,107,158,0.12)',  path:'/app/catalogues' },
+    { id:'familles',    label:'Familles',     desc:'Familles olfactives',      icon:'💐', color:'#9e5a7a', bg:'rgba(158,90,122,0.12)',  path:'/app/familles' },
+    { id:'checklist',   label:'Check-list',   desc:'Promotions & actions',     icon:'✅', color:'#4a7c59', bg:'rgba(74,124,89,0.12)',   path:'/app/checklist' },
+    { id:'catalogue',   label:'Chogan Élite', desc:'Collection exclusive',     icon:'💎', color:'#B89A6A', bg:'rgba(184,154,106,0.12)', path:'/app/catalogue' },
+  ]},
+  { label: '★ Premium VIP', items: [
+    { id:'wallet',     label:'Wallet',       desc:'Portefeuille financier',    icon:'💼', color:'#9e7a3d', bg:'rgba(158,122,61,0.12)',  path:'/app/wallet',      vip:true },
+    { id:'coach',      label:'Coach Vocal',  desc:'Entraînement objections',   icon:'🎤', color:'#8a4d4d', bg:'rgba(138,77,77,0.12)',   path:'/app/coach-vocal', vip:true, duration:'30 sec' },
+    { id:'objections', label:'Objections',   desc:'Réponses aux objections',   icon:'💬', color:'#3d7a8a', bg:'rgba(61,122,138,0.12)',  path:'/app/objections',  vip:true },
+  ]},
+  { label: '⚙️ Compte', items: [
+    { id:'settings',   label:'Paramètres',   desc:'Comptes & configuration',   icon:'⚙️', color:'#7a7069', bg:'rgba(122,112,105,0.12)', path:'/app/settings' },
+  ]},
+];
+
 export default function Home() {
   const { user, logout, canAccess } = useAuth();
   const navigate = useNavigate();
@@ -47,6 +80,40 @@ export default function Home() {
   }, []);
   const roleInfo = ROLES[user?.role];
   const canEdit = user?.role === 'admin' || user?.role === 'marraine';
+
+  // Stats pour hero
+  const monthlySales = (() => {
+    try {
+      const now = new Date();
+      const sales = JSON.parse(localStorage.getItem('le_sales') || '[]');
+      const myFirst = (user?.firstName||'').toLowerCase();
+      return sales
+        .filter(s => {
+          const d = new Date(s.date || s.createdAt || '');
+          if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return false;
+          if (user?.role === 'marraine' || user?.role === 'admin') return true;
+          const cons = (s.consultant||'').toLowerCase();
+          return cons.split(' ').some(w => w === myFirst);
+        })
+        .filter(s => (s.currency||s.cur||'€') === '€')
+        .reduce((t,s) => t + (parseFloat(s.amount||s.amt)||0), 0);
+    } catch { return 0; }
+  })();
+
+  const totalPoints = (() => {
+    try {
+      const sales = JSON.parse(localStorage.getItem('le_sales') || '[]');
+      const myFirst = (user?.firstName||'').toLowerCase();
+      return sales
+        .filter(s => {
+          if (user?.role === 'marraine' || user?.role === 'admin') return true;
+          const cons = (s.consultant||'').toLowerCase();
+          return cons.split(' ').some(w => w === myFirst);
+        })
+        .filter(s => (s.currency||s.cur||'€') === '€')
+        .reduce((t,s) => t + Math.floor((parseFloat(s.amount||s.amt)||0) * 10), 0);
+    } catch { return 0; }
+  })();
   const authorName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.displayName || 'Marraine';
 
   const [anns, setAnns] = useState(() => store.get('mur_anns', DEFAULT_ANNS));
@@ -204,6 +271,79 @@ export default function Home() {
   );
 }
 
+/* ── Section component ── */
+function Section({ label, children, onAdd, addOpen }) {
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 16px 10px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ width:3, height:16, background:'linear-gradient(to bottom, var(--or), var(--or-deep))', borderRadius:2 }} />
+          <span style={{ fontSize:12, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--taupe)' }}>{label}</span>
+        </div>
+        {onAdd && (
+          <button onClick={onAdd} style={{ width:28,height:28,borderRadius:8,background:'var(--or-pale)',border:'1px solid var(--or-border)',color:'var(--or-deep)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontWeight:700 }}>
+            {addOpen ? '✕' : '＋'}
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/* ── App Capsule card ── */
+function AppCapsule({ app, delay, onClick }) {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
+      style={{
+        minWidth: 130, maxWidth: 130,
+        borderRadius: 16,
+        background: 'rgba(255,255,255,0.92)',
+        border: `1.5px solid ${app.color}33`,
+        overflow: 'hidden',
+        cursor: 'pointer',
+        userSelect: 'none',
+        transform: pressed ? 'scale(0.95)' : 'scale(1)',
+        transition: 'transform 0.15s ease',
+        animation: `fadeIn 0.35s ease ${delay}ms both`,
+        boxShadow: `0 2px 12px rgba(78,70,63,0.07)`,
+        flexShrink: 0,
+      }}
+    >
+      {/* Bande colorée */}
+      <div style={{ height: 3, background: `linear-gradient(90deg, ${app.color}66, ${app.color})` }} />
+      {/* Thumbnail */}
+      <div style={{
+        height: 72,
+        background: app.bg,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 32,
+        position: 'relative',
+      }}>
+        {app.icon}
+        {app.vip && (
+          <div style={{ position:'absolute',top:6,right:6,background:'linear-gradient(135deg,var(--or),var(--or-deep))',borderRadius:6,padding:'2px 6px',fontSize:8,fontWeight:700,color:'#fff',letterSpacing:'0.05em' }}>VIP</div>
+        )}
+      </div>
+      {/* Info */}
+      <div style={{ padding: '10px 10px 12px' }}>
+        <div style={{ fontSize:11,fontWeight:700,color:'#4E463F',lineHeight:1.2,marginBottom:4 }}>{app.label}</div>
+        <div style={{ fontSize:9,color:'#9A8E85',lineHeight:1.3 }}>{app.desc}</div>
+        {app.duration && (
+          <div style={{ display:'flex',alignItems:'center',gap:4,marginTop:6 }}>
+            <div style={{ width:14,height:14,borderRadius:'50%',border:'1.5px solid var(--or)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,color:'var(--or-deep)' }}>⏱</div>
+            <span style={{ fontSize:9,color:'var(--or-deep)',fontWeight:600 }}>{app.duration}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 function AppIcon({ app, delay, onClick }) {
   const [pressed, setPressed] = useState(false);
   return (
@@ -263,36 +403,42 @@ function AppIcon({ app, delay, onClick }) {
 }
 
 const S = {
-  root: { minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', position: 'relative' },
-  header: { display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'rgba(247,235,225,0.95)', borderBottom: '1px solid var(--or-border)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 20 },
-  brand: { fontFamily: 'var(--font-display)', fontSize: 13, letterSpacing: '0.2em', color: 'var(--taupe)' },
-  userPill: { display: 'flex', alignItems: 'center', gap: 5, border: '1px solid', borderRadius: 20, padding: '4px 10px', flexShrink: 0 },
-  logoutBtn: { background: 'none', color: 'var(--text-muted)', fontSize: 17, padding: '4px 6px', flexShrink: 0, border: 'none', cursor: 'pointer' },
-  newsPage: { flex: 1, overflowY: 'auto' },
-  greetBlock: { padding: '20px 18px 16px', borderBottom: '1px solid var(--or-border)' },
-  greetLine: { fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--taupe)', letterSpacing: '0.05em' },
-  section: { padding: '18px 16px 0' },
-  sectionRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  sectionLabel: { fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--or-deep)' },
-  addBtn: { width: 30, height: 30, borderRadius: 8, background: 'var(--or-pale)', border: '1px solid var(--or-border)', color: 'var(--or-deep)', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: 700 },
-  form: { background: 'rgba(255,255,255,0.85)', border: '1px solid var(--or-border)', borderRadius: 14, padding: 14, marginBottom: 12 },
-  annZone: { display: 'flex', flexDirection: 'column', gap: 10 },
-  annCard: { position: 'relative', background: 'rgba(255,255,255,0.85)', border: '1px solid var(--or-border)', borderRadius: 14, padding: '14px 14px 12px', boxShadow: '0 2px 10px rgba(78,70,63,0.06)' },
-  annText: { fontSize: 14, lineHeight: 1.7, color: 'var(--text)', paddingRight: 20 },
-  cardMeta: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' },
-  authorTag: { fontSize: 11, color: 'var(--or-deep)', fontWeight: 600 },
-  deleteBtn: { position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: 13, cursor: 'pointer', padding: '2px 5px' },
-  sucZone: { display: 'flex', flexDirection: 'column', gap: 8 },
-  sucCard: { position: 'relative', display: 'flex', alignItems: 'flex-start', gap: 12, background: 'rgba(255,255,255,0.75)', border: '1px solid var(--or-border)', borderRadius: 12, padding: '12px 14px' },
-  sucStar: { fontSize: 22, flexShrink: 0, marginTop: 2 },
-  sucName: { fontSize: 14, fontWeight: 700, color: 'var(--taupe)', paddingRight: 20 },
-  sucAch: { fontSize: 12, color: 'var(--text-muted)', marginTop: 2 },
-  appsPage: { flex: 1, overflowY: 'auto', padding: '18px 16px 0' },
-  appsTitle: { fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.12em', color: 'var(--taupe)', marginBottom: 18, textAlign: 'center' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 },
-  appWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', userSelect: 'none' },
-  appIcon: { width: 60, height: 60, borderRadius: 18, border: '1px solid', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 7, boxShadow: '0 2px 10px rgba(78,70,63,0.08)' },
-  appLabel: { fontSize: 9.5, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3, maxWidth: 62 },
-  fab: { position: 'fixed', bottom: 28, right: 20, width: 62, height: 62, borderRadius: 20, border: 'none', cursor: 'pointer', boxShadow: '0 6px 24px rgba(184,154,106,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  fabInner: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, color: '#fff' },
+  root: { minHeight:'100%', background:'var(--bg)', display:'flex', flexDirection:'column', position:'relative' },
+  page: { flex:1, overflowY:'auto', paddingBottom:20 },
+
+  /* Hero */
+  hero: { background:'linear-gradient(135deg, var(--taupe) 0%, #2E2822 100%)', padding:'20px 16px 18px', margin:'0 0 4px' },
+  heroInner: { display:'flex', alignItems:'center', gap:14, marginBottom:16 },
+  heroPoints: { background:'linear-gradient(135deg,var(--or),var(--or-deep))', borderRadius:14, padding:'10px 14px', textAlign:'center', flexShrink:0, minWidth:64 },
+  heroPointsNum: { display:'block', fontSize:22, fontWeight:700, color:'#fff', lineHeight:1 },
+  heroPointsLabel: { fontSize:9, color:'rgba(255,255,255,0.75)', letterSpacing:'0.1em', textTransform:'uppercase' },
+  heroName: { fontFamily:'var(--font-display)', fontSize:20, color:'var(--champagne)', fontWeight:600 },
+  heroSub: { fontSize:11, color:'rgba(210,183,149,0.7)', marginTop:2 },
+  progressWrap: { background:'rgba(255,255,255,0.05)', borderRadius:12, padding:'10px 12px' },
+  progressRow: { display:'flex', justifyContent:'space-between', marginBottom:6 },
+  progressLabel: { fontSize:10, color:'rgba(210,183,149,0.7)', fontWeight:500 },
+  progressVal: { fontSize:10, color:'var(--or)', fontWeight:700 },
+  progressBar: { height:6, background:'rgba(255,255,255,0.1)', borderRadius:3, overflow:'hidden' },
+  progressFill: { height:'100%', background:'linear-gradient(90deg,var(--or),var(--or-deep))', borderRadius:3, transition:'width 0.5s ease' },
+
+  /* Horizontal scroll */
+  hScroll: { display:'flex', gap:10, overflowX:'auto', paddingLeft:16, paddingRight:16, paddingBottom:8, scrollbarWidth:'none', WebkitOverflowScrolling:'touch' },
+
+  /* Capsule card (annonces/succès) */
+  capsule: { minWidth:240, maxWidth:280, background:'rgba(255,255,255,0.9)', border:'1px solid var(--or-border)', borderRadius:14, overflow:'hidden', flexShrink:0, position:'relative' },
+  capThumb: { height:44, background:'var(--or-pale)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 },
+  capBody: { padding:'10px 12px 12px' },
+  capText: { fontSize:12, color:'var(--text)', lineHeight:1.5 },
+  capMeta: { display:'flex', alignItems:'center', gap:8, marginTop:6 },
+  capDate: { fontSize:10, color:'var(--text-dim)' },
+  capAuthor: { fontSize:10, color:'var(--or-deep)', fontWeight:600 },
+  capDel: { position:'absolute', top:6, right:8, background:'none', border:'none', color:'var(--text-dim)', fontSize:11, cursor:'pointer' },
+
+  /* Form */
+  formCard: { margin:'0 16px 10px', background:'rgba(255,255,255,0.85)', border:'1px solid var(--or-border)', borderRadius:14, padding:14 },
+  empty: { fontSize:12, color:'var(--text-dim)', fontStyle:'italic', paddingLeft:4, paddingBottom:4 },
+
+  /* FAB */
+  fab: { position:'fixed', bottom:24, right:18, width:58, height:58, borderRadius:18, border:'none', cursor:'pointer', background:'linear-gradient(135deg,var(--taupe),#2E2822)', boxShadow:'0 6px 24px rgba(78,70,63,0.3)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center' },
+  fabIn: { display:'flex', flexDirection:'column', alignItems:'center', gap:2, color:'var(--or)' },
 };
