@@ -222,6 +222,27 @@ export default function Home() {
         </div>
       )}
 
+      {/* ══ BOUTON QUITTER ══ */}
+      <button
+        onClick={() => {
+          if (window.confirm('Quitter Chogan Hub ?\nVos données sont automatiquement sauvegardées.')) {
+            logout();
+          }
+        }}
+        style={{
+          position:'fixed', bottom:24, left:18,
+          height:44, borderRadius:14, border:'1px solid rgba(192,57,43,0.25)',
+          background:'rgba(255,255,255,0.92)',
+          boxShadow:'0 4px 16px rgba(78,70,63,0.1)',
+          zIndex:100, cursor:'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center', gap:7,
+          padding:'0 16px',
+        }}
+      >
+        <span style={{ fontSize:16 }}>⎋</span>
+        <span style={{ fontSize:11, fontWeight:700, letterSpacing:'0.08em', color:'rgba(192,57,43,0.8)' }}>QUITTER</span>
+      </button>
+
       {/* ══ FAB ══ */}
       <button
         onClick={() => setPage(p => p === 'news' ? 'apps' : 'news')}
