@@ -58,6 +58,7 @@ export default function Home() {
   const [showTargetEdit, setShowTargetEdit] = useState(false);
   const [targetInput, setTargetInput] = useState('');
   const [showBudgetDetail, setShowBudgetDetail] = useState(false);
+  const [devise, setDevise] = useState(() => store.get('budget_devise', '€'));
   const authorName = `${user?.firstName||''} ${user?.lastName||''}`.trim() || 'Admin';
 
   const [anns, setAnns] = useState(() => store.get('mur_anns', DEFAULT_ANNS));
@@ -102,7 +103,7 @@ export default function Home() {
           if (user?.role === 'marraine' || user?.role === 'admin') return true;
           return (s.consultant||'').toLowerCase().split(' ').some(w => w === myFirst);
         })
-        .filter(s => (s.currency||s.cur||'€') === '€')
+        .filter(s => (s.currency||s.cur||'€') === devise)
         .reduce((t,s) => t + (parseFloat(s.amount||s.amt)||0), 0);
     } catch { return 0; }
   })();
@@ -169,9 +170,21 @@ export default function Home() {
               style={{ background:'rgba(255,255,255,0.05)', borderRadius:12, padding:'10px 14px', cursor:'pointer' }}
             >
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:7, alignItems:'center' }}>
-                <span style={{ fontSize:10, color:'rgba(210,183,149,0.7)', fontWeight:500 }}>🎯 Objectif mensuel</span>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <span style={{ fontSize:10, color:'rgba(210,183,149,0.7)', fontWeight:500 }}>🎯 Objectif mensuel</span>
+                  <div style={{ display:'flex', gap:3 }}>
+                    {['€','DA'].map(d => (
+                      <button key={d} onClick={e=>{e.stopPropagation();setDevise(d);store.set('budget_devise',d);}} style={{
+                        padding:'2px 7px', borderRadius:6, fontSize:9, fontWeight:700, cursor:'pointer',
+                        background: devise===d ? 'rgba(210,183,149,0.4)' : 'rgba(255,255,255,0.08)',
+                        border: devise===d ? '1px solid rgba(210,183,149,0.7)' : '1px solid rgba(255,255,255,0.1)',
+                        color: devise===d ? '#fff' : 'rgba(255,255,255,0.4)',
+                      }}>{d}</button>
+                    ))}
+                  </div>
+                </div>
                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                  <span style={{ fontSize:10, color:'#D2B795', fontWeight:700 }}>{monthlySales.toFixed(0)} € / {monthlyTarget} €</span>
+                  <span style={{ fontSize:10, color:'#D2B795', fontWeight:700 }}>{monthlySales.toFixed(0)} {devise} / {monthlyTarget} {devise}</span>
                   <span style={{ fontSize:9, color:'rgba(210,183,149,0.5)' }}>✏️</span>
                 </div>
               </div>
@@ -202,7 +215,7 @@ export default function Home() {
                       <div key={name} style={{ background:'#fff', border:'1px solid rgba(210,183,149,0.3)', borderRadius:12, padding:'11px 14px', boxShadow:'0 1px 6px rgba(78,70,63,0.05)' }}>
                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:7 }}>
                           <span style={{ fontSize:13, fontWeight:600, color:'#4E463F' }}>{name}</span>
-                          <span style={{ fontSize:13, fontWeight:700, color:'#2d7a4a' }}>{ca.toFixed(2)} €</span>
+                          <span style={{ fontSize:13, fontWeight:700, color:'#2d7a4a' }}>{ca.toFixed(2)} {devise}</span>
                         </div>
                         <div style={{ height:5, background:'rgba(210,183,149,0.2)', borderRadius:3, overflow:'hidden' }}>
                           <div style={{ height:'100%', width:`${pct.toFixed(1)}%`, background:'linear-gradient(90deg,#D2B795,#B89A6A)', borderRadius:3, transition:'width 0.5s ease' }} />
@@ -300,7 +313,7 @@ export default function Home() {
             </div>
             <p style={{ fontSize:12, color:'rgba(78,70,63,0.5)', marginBottom:16 }}>Définis ton objectif de chiffre d'affaires pour ce mois.</p>
             <div style={{ marginBottom:16 }}>
-              <label style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#B89A6A', display:'block', marginBottom:8 }}>Objectif en €</label>
+              <label style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#B89A6A', display:'block', marginBottom:8 }}>Objectif en {devise}</label>
               <input
                 type="number" value={targetInput} onChange={e=>setTargetInput(e.target.value)}
                 placeholder="ex: 500" autoFocus
@@ -331,7 +344,7 @@ export default function Home() {
             {/* Total */}
             <div style={{ background:'linear-gradient(135deg,#4E463F,#2E2822)', borderRadius:16, padding:'16px 18px', marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span style={{ fontSize:13, color:'rgba(247,235,225,0.7)', fontWeight:500 }}>Total équipe</span>
-              <span style={{ fontSize:22, fontWeight:700, color:'#D2B795', fontFamily:'Cormorant Garamond,serif' }}>{teamBudget.total.toFixed(2)} €</span>
+              <span style={{ fontSize:22, fontWeight:700, color:'#D2B795', fontFamily:'Cormorant Garamond,serif' }}>{teamBudget.total.toFixed(2)} {devise}</span>
             </div>
 
             {/* Liste par consultante */}
@@ -348,14 +361,14 @@ export default function Home() {
                           <span style={{ fontSize:18 }}>{medals[idx] || '👤'}</span>
                           <span style={{ fontSize:14, fontWeight:700, color:'#4E463F' }}>{name}</span>
                         </div>
-                        <span style={{ fontSize:15, fontWeight:700, color:'#2d7a4a' }}>{ca.toFixed(2)} €</span>
+                        <span style={{ fontSize:15, fontWeight:700, color:'#2d7a4a' }}>{ca.toFixed(2)} {devise}</span>
                       </div>
                       <div style={{ height:6, background:'rgba(210,183,149,0.15)', borderRadius:3, overflow:'hidden', marginBottom:5 }}>
                         <div style={{ height:'100%', width:`${pct.toFixed(1)}%`, background:'linear-gradient(90deg,#D2B795,#B89A6A)', borderRadius:3 }} />
                       </div>
                       <div style={{ display:'flex', justifyContent:'space-between' }}>
                         <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{pct.toFixed(0)}% du CA équipe</span>
-                        <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{ca.toFixed(0)} € / {monthlyTarget} € objectif</span>
+                        <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{ca.toFixed(0)} {devise} / {monthlyTarget} {devise} objectif</span>
                       </div>
                     </div>
                   );
