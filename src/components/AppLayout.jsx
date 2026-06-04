@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function AppLayout({ title, icon, children, actions, onHelp }) {
+export default function AppLayout({ title, icon, children, actions }) {
   const navigate = useNavigate();
 
   // Injecter le titre dans la topbar LMS
@@ -21,17 +21,7 @@ export default function AppLayout({ title, icon, children, actions, onHelp }) {
         </button>
         <span style={{ fontSize: 20, flexShrink: 0 }}>{icon}</span>
         <span className="app-header-title">{title}</span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-        {actions}
-        {onHelp && (
-          <button onClick={onHelp} style={{
-            width:30, height:30, borderRadius:'50%',
-            background:'rgba(210,183,149,0.2)', border:'1.5px solid rgba(210,183,149,0.4)',
-            color:'#B89A6A', fontSize:14, fontWeight:700,
-            display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
-          }}>?</button>
-        )}
-      </div>
+        {actions && <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>{actions}</div>}
       </div>
       <div style={{ flex: 1 }}>{children}</div>
     </div>

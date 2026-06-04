@@ -1,10 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-
 import { useEffect, useState } from 'react';
 import { useAuth, ROLES } from '../context/AuthContext';
 import { store } from '../utils/storage';
 import Logo from '../components/Logo';
-import { OnboardingTutorial, useOnboarding } from '../components/Tutorial';
 
 const MONTHLY_TARGET = 500;
 
@@ -56,7 +54,6 @@ export default function Home() {
   const [page, setPage] = useState('news');
   const roleInfo = ROLES[user?.role] || {};
   const canEdit = user?.role === 'admin' || user?.role === 'marraine';
-  const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
   const authorName = `${user?.firstName||''} ${user?.lastName||''}`.trim() || 'Admin';
 
   const [anns, setAnns] = useState(() => store.get('mur_anns', DEFAULT_ANNS));
@@ -110,7 +107,7 @@ export default function Home() {
   const progressPct = Math.min(100, (monthlySales / MONTHLY_TARGET) * 100);
 
   // Apps filtrées par rôle
-  const accessibleIds = new Set(canAccess ? ALL_IDS.filter(id => canAccess(id)) : ALL_IDS);
+  const accessibleIds = new Set(ALL_IDS.filter(id => canAccess(id)));
 
   return (
     <div style={{ minHeight:'100%', background:'#F7EBE1', display:'flex', flexDirection:'column', position:'relative' }}>
@@ -225,9 +222,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* ══ ONBOARDING ══ */}
-
-      {showOnboarding && <OnboardingTutorial onDone={completeOnboarding} />}
       {/* ══ BOUTON QUITTER ══ */}
       <button
         onClick={() => {

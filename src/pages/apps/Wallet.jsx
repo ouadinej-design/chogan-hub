@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-
 import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
@@ -26,7 +25,7 @@ export default function Wallet() {
     check();
   }, [user]);
 
-  if (allowed === null) return <AppLayout onHelp={resetTuto} title="Wallet Chogan" icon="💰"><div style={{padding:40,textAlign:'center',color:'var(--text-muted)'}}>Vérification...</div></AppLayout>;
+  if (allowed === null) return <AppLayout title="Wallet Chogan" icon="💰"><div style={{padding:40,textAlign:'center',color:'var(--text-muted)'}}>Vérification...</div></AppLayout>;
 
   if (!allowed) return (
     <AppLayout title="Wallet Chogan" icon="💰">

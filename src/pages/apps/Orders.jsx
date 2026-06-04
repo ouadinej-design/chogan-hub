@@ -1,5 +1,4 @@
 import { useAuth } from '../../context/AuthContext';
-
 import { useState, useEffect } from 'react';
 import { PERFUMES } from '../../utils/choganData';
 import { useData } from '../../context/DataContext';
@@ -55,7 +54,7 @@ export default function Orders() {
   });
   const [tab, setTab] = useState('bon');
   return (
-    <AppLayout onHelp={resetTuto} title="Commandes" icon="🛒">
+    <AppLayout title="Commandes" icon="🛒">
       <div style={S.tabsWrap}>
         {visibleTabs.map(t => (
           <button key={t.id} style={{ ...S.tab, ...(tab===t.id?S.tabActive:{}) }} onClick={() => setTab(t.id)}>

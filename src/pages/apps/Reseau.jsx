@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-
 import { useCloudData } from '../../lib/useCloudData';
 import { cloudLoad } from '../../lib/cloudSync';
 import { getConsultantColor, OWNER_COLOR } from '../../lib/consultantColors';
