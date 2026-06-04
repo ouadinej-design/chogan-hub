@@ -54,9 +54,11 @@ export default function Home() {
   const [page, setPage] = useState('news');
   const roleInfo = ROLES[user?.role] || {};
   const canEdit = user?.role === 'admin' || user?.role === 'marraine';
-  const [monthlyTarget, setMonthlyTarget] = useState(() => store.get('monthly_target', DEFAULT_TARGET));
+  const [targetEur, setTargetEur] = useState(() => store.get('monthly_target_eur', DEFAULT_TARGET));
+  const [targetDa,  setTargetDa]  = useState(() => store.get('monthly_target_da',  130000));
   const [showTargetEdit, setShowTargetEdit] = useState(false);
-  const [targetInput, setTargetInput] = useState('');
+  const [targetInput,   setTargetInput]   = useState('');
+  const [targetDaInput, setTargetDaInput] = useState('');
   const [showBudgetDetail, setShowBudgetDetail] = useState(false);
   const [devise, setDevise] = useState(() => store.get('budget_devise', '€'));
   const authorName = `${user?.firstName||''} ${user?.lastName||''}`.trim() || 'Admin';
@@ -109,7 +111,7 @@ export default function Home() {
   })();
 
   const totalPoints = Math.floor(monthlySales * 10);
-  const progressPct = Math.min(100, (monthlySales / monthlyTarget) * 100);
+  const progressPct = Math.min(100, (monthlySales / (devise==='€' ? targetEur : targetDa)) * 100);
 
   // Budget équipe (marraine voit son CA + celui de chaque consultante)
   const teamBudget = (() => {
@@ -166,7 +168,7 @@ export default function Home() {
             </div>
             {/* Barre objectif — cliquable pour modifier */}
             <div
-              onClick={() => { setTargetInput(String(monthlyTarget)); setShowTargetEdit(true); }}
+              onClick={() => { setTargetInput(String(targetEur)); setTargetDaInput(String(targetDa)); setShowTargetEdit(true); }}
               style={{ background:'rgba(255,255,255,0.05)', borderRadius:12, padding:'10px 14px', cursor:'pointer' }}
             >
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:7, alignItems:'center' }}>
@@ -184,7 +186,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                  <span style={{ fontSize:10, color:'#D2B795', fontWeight:700 }}>{monthlySales.toFixed(0)} {devise} / {monthlyTarget} {devise}</span>
+                  <span style={{ fontSize:10, color:'#D2B795', fontWeight:700 }}>{monthlySales.toFixed(0)} {devise} / {(devise==='€' ? targetEur : targetDa).toLocaleString('fr-FR')} {devise}</span>
                   <span style={{ fontSize:9, color:'rgba(210,183,149,0.5)' }}>✏️</span>
                 </div>
               </div>
@@ -311,20 +313,30 @@ export default function Home() {
               <h3 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:20, color:'#4E463F', fontWeight:600 }}>🎯 Mon objectif mensuel</h3>
               <button onClick={()=>setShowTargetEdit(false)} style={{ background:'none', border:'none', fontSize:20, color:'rgba(78,70,63,0.3)', cursor:'pointer' }}>✕</button>
             </div>
-            <p style={{ fontSize:12, color:'rgba(78,70,63,0.5)', marginBottom:16 }}>Définis ton objectif de chiffre d'affaires pour ce mois.</p>
-            <div style={{ marginBottom:16 }}>
-              <label style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#B89A6A', display:'block', marginBottom:8 }}>Objectif en {devise}</label>
+            <p style={{ fontSize:12, color:'rgba(78,70,63,0.5)', marginBottom:20 }}>Définis tes objectifs de chiffre d'affaires pour ce mois.</p>
+            <div style={{ marginBottom:14 }}>
+              <label style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#B89A6A', display:'block', marginBottom:8 }}>🇪🇺 Objectif en €</label>
               <input
                 type="number" value={targetInput} onChange={e=>setTargetInput(e.target.value)}
-                placeholder="ex: 500" autoFocus
-                style={{ fontSize:18, fontWeight:700, textAlign:'center', padding:'14px', borderRadius:12, border:'1.5px solid rgba(210,183,149,0.4)', background:'rgba(247,235,225,0.5)', color:'#4E463F', width:'100%' }}
+                placeholder="ex: 500"
+                style={{ fontSize:16, fontWeight:700, textAlign:'center', padding:'13px', borderRadius:12, border:'1.5px solid rgba(210,183,149,0.4)', background:'rgba(247,235,225,0.5)', color:'#4E463F', width:'100%' }}
+              />
+            </div>
+            <div style={{ marginBottom:20 }}>
+              <label style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#B89A6A', display:'block', marginBottom:8 }}>🇩🇿 Objectif en DA</label>
+              <input
+                type="number" value={targetDaInput} onChange={e=>setTargetDaInput(e.target.value)}
+                placeholder="ex: 130000"
+                style={{ fontSize:16, fontWeight:700, textAlign:'center', padding:'13px', borderRadius:12, border:'1.5px solid rgba(210,183,149,0.4)', background:'rgba(247,235,225,0.5)', color:'#4E463F', width:'100%' }}
               />
             </div>
             <button onClick={()=>{
-              const val = parseFloat(targetInput);
-              if (val > 0) { setMonthlyTarget(val); store.set('monthly_target', val); }
+              const eur = parseFloat(targetInput);
+              const da  = parseFloat(targetDaInput);
+              if (eur > 0) { setTargetEur(eur); store.set('monthly_target_eur', eur); }
+              if (da  > 0) { setTargetDa(da);   store.set('monthly_target_da',  da); }
               setShowTargetEdit(false);
-            }} className="btn-gold">ENREGISTRER MON OBJECTIF</button>
+            }} className="btn-gold">ENREGISTRER MES OBJECTIFS</button>
           </div>
         </div>
       )}
@@ -368,7 +380,7 @@ export default function Home() {
                       </div>
                       <div style={{ display:'flex', justifyContent:'space-between' }}>
                         <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{pct.toFixed(0)}% du CA équipe</span>
-                        <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{ca.toFixed(0)} {devise} / {monthlyTarget} {devise} objectif</span>
+                        <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{ca.toFixed(0)} {devise} / {(devise==='€' ? targetEur : targetDa).toLocaleString('fr-FR')} {devise} objectif</span>
                       </div>
                     </div>
                   );
