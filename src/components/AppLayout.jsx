@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { HelpButton } from './Tutorial';
 import { useNavigate } from 'react-router-dom';
 
 export default function AppLayout({ title, icon, children, actions, onHelp }) {

@@ -40,7 +40,6 @@ function ColorBadge({ consultant, ownerFirst }) {
 const COLORS = ['#B89A6A','#9e5a7a','#3d6b9e','#4a7c59','#6b4d8a','#8a4d4d','#3d7a8a'];
 
 export default function Clients() {
-  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('clients');
   // Sync depuis serveur puis forcer rechargement
   const [syncKey, setSyncKey] = useState(0);
   useEffect(() => {
@@ -185,7 +184,7 @@ export default function Clients() {
   };
 
   return (
-    <AppLayout title="Clients" icon="👥" appId="clients">
+    <AppLayout title="Clients" icon="👥">
       <div style={S.pad}>
         <FilterDropdown />
         {/* Stats rapides */}
@@ -212,7 +211,6 @@ export default function Clients() {
         ) : clients.map((c,i) => <ClientRow key={c.name} c={c} i={i}/>)}
         {!clients.length && <div style={S.empty}>Aucun client trouvé. Les clients apparaissent automatiquement après une vente dans l'Agenda.</div>}
       </div>
-          <Tutorial appId="clients" show={showTuto} onClose={closeTuto} />
     </AppLayout>
   );
 }

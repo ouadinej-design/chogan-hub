@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useAuth, ROLES } from '../context/AuthContext';
 import { store } from '../utils/storage';
 import Logo from '../components/Logo';
-import { OnboardingTutorial, useOnboarding } from '../components/Tutorial';
 
 const MONTHLY_TARGET = 500;
 
@@ -51,13 +50,11 @@ const DEFAULT_SUCS = [
 ];
 
 export default function Home() {
-  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('home');
   const { user, logout, canAccess } = useAuth();
   const navigate = useNavigate();
   const [page, setPage] = useState('news');
   const roleInfo = ROLES[user?.role] || {};
   const canEdit = user?.role === 'admin' || user?.role === 'marraine';
-  const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
   const authorName = `${user?.firstName||''} ${user?.lastName||''}`.trim() || 'Admin';
 
   const [anns, setAnns] = useState(() => store.get('mur_anns', DEFAULT_ANNS));
@@ -227,7 +224,6 @@ export default function Home() {
       )}
 
       {/* ══ ONBOARDING ══ */}
-      {showOnboarding && <OnboardingTutorial onDone={completeOnboarding} />}
 
       {/* ══ BOUTON QUITTER ══ */}
       <button
@@ -331,7 +327,6 @@ function AppCard({ app, delay, onClick }) {
           </div>
         )}
       </div>
-      <Tutorial appId="home" show={showTuto} onClose={closeTuto} />
     </div>
   );
 }

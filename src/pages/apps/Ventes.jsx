@@ -31,7 +31,6 @@ function cColor(name,ownerFirst){
 const CATS_V=['Toutes','Parfum','Soin visage','Soin corps','Maquillage','Coffret','Autre'];
 
 export default function Ventes() {
-  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('ventes');
   // Sync depuis serveur puis recharger
   useEffect(() => {
     syncFromServer().then(() => {
@@ -117,7 +116,7 @@ export default function Ventes() {
   );
 
   return (
-    <AppLayout title="Ventes" icon="💰" appId="ventes">
+    <AppLayout title="Ventes" icon="💰">
       <div style={{padding:16,maxWidth:700,margin:'0 auto'}}>
 
         {/* Totaux */}
@@ -182,7 +181,6 @@ export default function Ventes() {
           );
         })}
       </div>
-          <Tutorial appId="ventes" show={showTuto} onClose={closeTuto} />
     </AppLayout>
   );
 }

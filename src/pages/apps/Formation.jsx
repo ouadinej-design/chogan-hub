@@ -17,7 +17,6 @@ const QUIZ = [
 ];
 
 export default function Formation() {
-  const { show: showTuto, close: closeTuto, reset: resetTuto } = useTutorial('formation');
   const [tab, setTab]       = useState('modules');
   const [openSc, setOpenSc] = useState(null);
   const [qa, setQa]         = useState({});
@@ -25,7 +24,7 @@ export default function Formation() {
   const score = QUIZ.filter(q => qa[q.id] === q.correct).length;
 
   return (
-    <AppLayout onHelp={resetTuto} title="Formation" icon="🚀" appId="formation">
+    <AppLayout onHelp={resetTuto} title="Formation" icon="🚀">
       <div style={S.tabs}>
         {[['modules','📚 Modules'],['scripts','💬 Scripts'],['quiz','📝 Quiz']].map(([v,l]) => (
           <button key={v} style={{ ...S.tab, ...(tab===v?S.tabActive:{}) }} onClick={() => setTab(v)}>{l}</button>
@@ -153,7 +152,6 @@ export default function Formation() {
           )}
         </div>
       )}
-          <Tutorial appId="formation" show={showTuto} onClose={closeTuto} />
     </AppLayout>
   );
 }
