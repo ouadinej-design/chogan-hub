@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth, ROLES } from '../context/AuthContext';
 import { store } from '../utils/storage';
+import { syncFromServer } from '../lib/syncAll';
 import Logo from '../components/Logo';
 
 const DEFAULT_TARGET = 500;
@@ -60,6 +61,7 @@ export default function Home() {
   const [targetInput,   setTargetInput]   = useState('');
   const [targetDaInput, setTargetDaInput] = useState('');
   const [showBudgetDetail, setShowBudgetDetail] = useState(false);
+  const [syncDone, setSyncDone] = useState(false);
   const [devise, setDevise] = useState(() => store.get('budget_devise', '€'));
   const authorName = `${user?.firstName||''} ${user?.lastName||''}`.trim() || 'Admin';
 
@@ -71,8 +73,11 @@ export default function Home() {
   const [showAnnForm, setShowAnnForm] = useState(false);
   const [showSucForm, setShowSucForm] = useState(false);
 
-  // Écouter l'event LMS pour switcher sur Apps
+  // Sync données + écouter event LMS
   useEffect(() => {
+    // Sync depuis Supabase au montage
+    syncFromServer().then(() => setSyncDone(true)).catch(() => setSyncDone(true));
+    // Écouter l'event LMS pour switcher sur Apps
     const handler = () => setPage('apps');
     window.addEventListener('lms-goto-apps', handler);
     return () => window.removeEventListener('lms-goto-apps', handler);
@@ -92,7 +97,7 @@ export default function Home() {
     setNewSucName(''); setNewSucAch(''); setShowSucForm(false);
   };
 
-  // Stats hero
+  // Stats hero — recalculé après sync
   const monthlySales = (() => {
     try {
       const now = new Date();
@@ -113,7 +118,11 @@ export default function Home() {
   const totalPoints = Math.floor(monthlySales * 10);
   const progressPct = Math.min(100, (monthlySales / (devise==='€' ? targetEur : targetDa)) * 100);
 
+  // Budget équipe — recalculé après sync (syncDone force le re-render)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   // Budget équipe (marraine voit son CA + celui de chaque consultante)
+  // eslint-disable-next-line no-unused-expressions
+  void syncDone; // force recalcul après sync
   const teamBudget = (() => {
     if (user?.role !== 'marraine' && user?.role !== 'admin') return null;
     try {
