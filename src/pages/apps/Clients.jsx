@@ -102,7 +102,7 @@ export default function Clients() {
     const sL = d<30?'✅ Client récent':d<60?'⚠️ À relancer':'🚨 Relance urgente !';
     const top = Object.entries(c.topProd).sort((a,b)=>b[1]-a[1])[0];
     return (
-      <AppLayout onHelp={resetTuto} title="Clients" icon="👥">
+      <AppLayout appId="clients" onHelp={resetTuto} title="Clients" icon="👥">
         <div style={S.pad}>
           <button style={S.back} onClick={() => setSelected(null)}>← Retour</button>
           <div style={S.section}>

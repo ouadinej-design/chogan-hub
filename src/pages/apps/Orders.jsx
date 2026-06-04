@@ -55,7 +55,7 @@ export default function Orders() {
   });
   const [tab, setTab] = useState('bon');
   return (
-    <AppLayout onHelp={resetTuto} title="Commandes" icon="🛒">
+    <AppLayout appId="orders" onHelp={resetTuto} title="Commandes" icon="🛒">
       <div style={S.tabsWrap}>
         {visibleTabs.map(t => (
           <button key={t.id} style={{ ...S.tab, ...(tab===t.id?S.tabActive:{}) }} onClick={() => setTab(t.id)}>

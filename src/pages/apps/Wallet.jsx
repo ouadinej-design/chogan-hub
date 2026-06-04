@@ -26,7 +26,7 @@ export default function Wallet() {
     check();
   }, [user]);
 
-  if (allowed === null) return <AppLayout onHelp={resetTuto} title="Wallet Chogan" icon="💰"><div style={{padding:40,textAlign:'center',color:'var(--text-muted)'}}>Vérification...</div></AppLayout>;
+  if (allowed === null) return <AppLayout appId="wallet" onHelp={resetTuto} title="Wallet Chogan" icon="💰"><div style={{padding:40,textAlign:'center',color:'var(--text-muted)'}}>Vérification...</div></AppLayout>;
 
   if (!allowed) return (
     <AppLayout title="Wallet Chogan" icon="💰">

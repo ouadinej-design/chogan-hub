@@ -81,7 +81,7 @@ export default function Fidelite() {
   };
 
   return (
-    <AppLayout onHelp={resetTuto} title="Fidélité" icon="💳">
+    <AppLayout appId="fidelite" onHelp={resetTuto} title="Fidélité" icon="💳">
       <div style={S.tabs}>
         {[['clients','💳 Clients'],['agenda','📅 Agenda'],['design','🎨 Ma carte'],['qr','📱 QR Code'],['notifs','🔔 Notifs']].map(([k,l]) => (
           <button key={k} style={{ ...S.tab, ...(tab===k?S.tabActive:{}) }} onClick={() => setTab(k)}>{l}</button>
