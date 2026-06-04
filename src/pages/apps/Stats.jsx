@@ -8,7 +8,7 @@ export default function Stats() {
   const [tab, setTab] = useState('stats');
 
   return (
-    <AppLayout appId="stats" onHelp={resetTuto} title="Statistiques" icon="📊">
+    <AppLayout onHelp={resetTuto} title="Statistiques" icon="📊">
       <div style={{ display:'flex', borderBottom:'1px solid var(--or-border)', overflowX:'auto', scrollbarWidth:'none' }}>
         {[['stats','📈 Stats'],['dashboard','🏠 Dashboard'],['activite','📅 Activité']].map(([k,l]) => (
           <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:11, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>

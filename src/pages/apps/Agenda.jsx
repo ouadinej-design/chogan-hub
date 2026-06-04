@@ -55,7 +55,7 @@ const TL = { mus:'Islam', cath:'Chrétien', comm:'Commerce', saison:'Saison' };
 export function AgendaTabs({ appTitle = 'Agenda', appIcon = '📅', showIframe = false, hideVentes = false }) {
   const [tab, setTab] = useState('agenda');
   return (
-    <AppLayout appId="agenda" onHelp={resetTuto} title={appTitle} icon={appIcon}>
+    <AppLayout onHelp={resetTuto} title={appTitle} icon={appIcon}>
       <div style={{ display:'flex', borderBottom:'1px solid var(--or-border)', overflowX:'auto', scrollbarWidth:'none' }}>
         {[['agenda','📅 Agenda'],['evenements','📆 Événements'],['ventes','💰 Ventes']].filter(([k])=>!(hideVentes && k==='ventes')).map(([k,l]) => (
           <button key={k} style={{ flex:1, padding:'12px 6px', background:'none', color:tab===k?'var(--or-deep)':'var(--text-muted)', fontSize:12, borderBottom:tab===k?'2px solid var(--or-deep)':'2px solid transparent', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }} onClick={() => setTab(k)}>{l}</button>
