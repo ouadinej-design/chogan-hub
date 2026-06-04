@@ -106,6 +106,28 @@ export default function Home() {
   const totalPoints = Math.floor(monthlySales * 10);
   const progressPct = Math.min(100, (monthlySales / MONTHLY_TARGET) * 100);
 
+  // Budget équipe (marraine voit son CA + celui de chaque consultante)
+  const teamBudget = (() => {
+    if (user?.role !== 'marraine' && user?.role !== 'admin') return null;
+    try {
+      const now = new Date();
+      const sales = JSON.parse(localStorage.getItem('le_sales') || '[]');
+      const thisMonth = sales.filter(s => {
+        const d = new Date(s.date||s.createdAt||'');
+        return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear()
+          && (s.currency||s.cur||'€')==='€';
+      });
+      // Grouper par consultant
+      const byConsultant = {};
+      thisMonth.forEach(s => {
+        const name = (s.consultant||'Moi').trim() || 'Moi';
+        byConsultant[name] = (byConsultant[name]||0) + (parseFloat(s.amount||s.amt)||0);
+      });
+      const total = Object.values(byConsultant).reduce((a,b)=>a+b,0);
+      return { byConsultant, total };
+    } catch { return null; }
+  })();
+
   // Apps filtrées par rôle
   const accessibleIds = new Set(ALL_IDS.filter(id => canAccess(id)));
 
@@ -148,6 +170,38 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Budget marraine */}
+          {teamBudget && (
+            <div style={{ margin:'0 16px 4px' }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 0 8px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <div style={{ width:3, height:16, background:'linear-gradient(180deg,#D2B795,#B89A6A)', borderRadius:2 }} />
+                  <span style={{ fontSize:11, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#4E463F' }}>💼 Budget Équipe</span>
+                </div>
+                <span style={{ fontSize:12, fontWeight:700, color:'#B89A6A' }}>Total : {teamBudget.total.toFixed(2)} €</span>
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                {Object.entries(teamBudget.byConsultant)
+                  .sort((a,b) => b[1]-a[1])
+                  .map(([name, ca]) => {
+                    const pct = teamBudget.total > 0 ? (ca/teamBudget.total)*100 : 0;
+                    return (
+                      <div key={name} style={{ background:'#fff', border:'1px solid rgba(210,183,149,0.3)', borderRadius:12, padding:'11px 14px', boxShadow:'0 1px 6px rgba(78,70,63,0.05)' }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:7 }}>
+                          <span style={{ fontSize:13, fontWeight:600, color:'#4E463F' }}>{name}</span>
+                          <span style={{ fontSize:13, fontWeight:700, color:'#2d7a4a' }}>{ca.toFixed(2)} €</span>
+                        </div>
+                        <div style={{ height:5, background:'rgba(210,183,149,0.2)', borderRadius:3, overflow:'hidden' }}>
+                          <div style={{ height:'100%', width:`${pct.toFixed(1)}%`, background:'linear-gradient(90deg,#D2B795,#B89A6A)', borderRadius:3, transition:'width 0.5s ease' }} />
+                        </div>
+                        <div style={{ fontSize:10, color:'rgba(78,70,63,0.45)', marginTop:4, textAlign:'right' }}>{pct.toFixed(0)}% du CA équipe</div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
 
           {/* Annonces */}
           <RowSection label="📣 Annonces" onAdd={canEdit ? () => setShowAnnForm(v=>!v) : null} addOpen={showAnnForm}>
