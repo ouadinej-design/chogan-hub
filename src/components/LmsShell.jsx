@@ -64,7 +64,10 @@ export default function LmsShell({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const roleInfo = ROLES[user?.role] || {};
+  const roleInfo = ROLES[user?.role] || { label:'', icon:'', bg:'transparent', border:'transparent', color:'#4E463F' };
+  
+  // Guard — si pas de user, juste afficher les enfants
+  if (!user) return <>{children}</>;
 
   const initials = user
     ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()

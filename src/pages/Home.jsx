@@ -111,7 +111,7 @@ export default function Home() {
   const progressPct = Math.min(100, (monthlySales / MONTHLY_TARGET) * 100);
 
   // Apps filtrées par rôle
-  const accessibleIds = new Set(ALL_IDS.filter(id => canAccess(id)));
+  const accessibleIds = new Set(canAccess ? ALL_IDS.filter(id => canAccess(id)) : ALL_IDS);
 
   return (
     <div style={{ minHeight:'100%', background:'#F7EBE1', display:'flex', flexDirection:'column', position:'relative' }}>
