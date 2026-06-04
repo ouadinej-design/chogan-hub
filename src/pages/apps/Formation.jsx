@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Tutorial, { useTutorial } from '../../components/Tutorial';
+
 import AppLayout from '../../components/AppLayout';
 import { SCRIPTS } from '../../utils/choganData';
 
@@ -25,7 +25,7 @@ export default function Formation() {
   const score = QUIZ.filter(q => qa[q.id] === q.correct).length;
 
   return (
-    <AppLayout onHelp={resetTuto} title="Formation" icon="🚀">
+    <AppLayout onHelp={resetTuto} title="Formation" icon="🚀" appId="formation">
       <div style={S.tabs}>
         {[['modules','📚 Modules'],['scripts','💬 Scripts'],['quiz','📝 Quiz']].map(([v,l]) => (
           <button key={v} style={{ ...S.tab, ...(tab===v?S.tabActive:{}) }} onClick={() => setTab(v)}>{l}</button>

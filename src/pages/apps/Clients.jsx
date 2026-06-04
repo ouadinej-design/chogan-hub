@@ -1,5 +1,5 @@
 import { syncFromServer } from '../../lib/syncAll';
-import Tutorial, { useTutorial } from '../../components/Tutorial';
+
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { cloudSave } from '../../lib/cloudSync';
@@ -185,7 +185,7 @@ export default function Clients() {
   };
 
   return (
-    <AppLayout title="Clients" icon="👥">
+    <AppLayout title="Clients" icon="👥" appId="clients">
       <div style={S.pad}>
         <FilterDropdown />
         {/* Stats rapides */}

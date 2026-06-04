@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Tutorial, { useTutorial } from '../../components/Tutorial';
+
 import { useAuth } from '../../context/AuthContext';
 import AppLayout from '../../components/AppLayout';
 
@@ -30,7 +30,7 @@ export default function Wallet() {
   if (allowed === null) return <AppLayout onHelp={resetTuto} title="Wallet Chogan" icon="💰"><div style={{padding:40,textAlign:'center',color:'var(--text-muted)'}}>Vérification...</div></AppLayout>;
 
   if (!allowed) return (
-    <AppLayout title="Wallet Chogan" icon="💰">
+    <AppLayout title="Wallet Chogan" icon="💰" appId="wallet">
       <div style={{padding:40,textAlign:'center'}}>
         <p style={{fontSize:48,marginBottom:16}}>🔒</p>
         <p style={{fontWeight:700,fontSize:16,color:'var(--text)',marginBottom:8}}>Accès restreint</p>

@@ -1,5 +1,5 @@
 import AppLayout from '../../components/AppLayout';
-import Tutorial, { useTutorial } from '../../components/Tutorial';
+
 import { cloudSave } from '../../lib/cloudSync';
 import { useTeamFilter } from '../../lib/useTeamFilter.jsx';
 import { useAuth } from '../../context/AuthContext';
@@ -117,7 +117,7 @@ export default function Ventes() {
   );
 
   return (
-    <AppLayout title="Ventes" icon="💰">
+    <AppLayout title="Ventes" icon="💰" appId="ventes">
       <div style={{padding:16,maxWidth:700,margin:'0 auto'}}>
 
         {/* Totaux */}
