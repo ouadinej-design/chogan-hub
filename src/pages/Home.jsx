@@ -4,7 +4,7 @@ import { useAuth, ROLES } from '../context/AuthContext';
 import { store } from '../utils/storage';
 import Logo from '../components/Logo';
 
-const MONTHLY_TARGET = 500;
+const DEFAULT_TARGET = 500;
 
 const APP_GROUPS = [
   { label: '💼 Gestion commerciale', items: [
@@ -54,6 +54,10 @@ export default function Home() {
   const [page, setPage] = useState('news');
   const roleInfo = ROLES[user?.role] || {};
   const canEdit = user?.role === 'admin' || user?.role === 'marraine';
+  const [monthlyTarget, setMonthlyTarget] = useState(() => store.get('monthly_target', DEFAULT_TARGET));
+  const [showTargetEdit, setShowTargetEdit] = useState(false);
+  const [targetInput, setTargetInput] = useState('');
+  const [showBudgetDetail, setShowBudgetDetail] = useState(false);
   const authorName = `${user?.firstName||''} ${user?.lastName||''}`.trim() || 'Admin';
 
   const [anns, setAnns] = useState(() => store.get('mur_anns', DEFAULT_ANNS));
@@ -104,7 +108,7 @@ export default function Home() {
   })();
 
   const totalPoints = Math.floor(monthlySales * 10);
-  const progressPct = Math.min(100, (monthlySales / MONTHLY_TARGET) * 100);
+  const progressPct = Math.min(100, (monthlySales / monthlyTarget) * 100);
 
   // Budget équipe (marraine voit son CA + celui de chaque consultante)
   const teamBudget = (() => {
@@ -159,11 +163,17 @@ export default function Home() {
                 <div style={{ fontSize:11, color:'rgba(210,183,149,0.7)', marginTop:2 }}>Prêt·e pour aujourd'hui ?</div>
               </div>
             </div>
-            {/* Barre objectif */}
-            <div style={{ background:'rgba(255,255,255,0.05)', borderRadius:12, padding:'10px 14px' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:7 }}>
-                <span style={{ fontSize:10, color:'rgba(210,183,149,0.7)', fontWeight:500 }}>Objectif mensuel</span>
-                <span style={{ fontSize:10, color:'#D2B795', fontWeight:700 }}>{monthlySales.toFixed(0)} € / {MONTHLY_TARGET} €</span>
+            {/* Barre objectif — cliquable pour modifier */}
+            <div
+              onClick={() => { setTargetInput(String(monthlyTarget)); setShowTargetEdit(true); }}
+              style={{ background:'rgba(255,255,255,0.05)', borderRadius:12, padding:'10px 14px', cursor:'pointer' }}
+            >
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:7, alignItems:'center' }}>
+                <span style={{ fontSize:10, color:'rgba(210,183,149,0.7)', fontWeight:500 }}>🎯 Objectif mensuel</span>
+                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <span style={{ fontSize:10, color:'#D2B795', fontWeight:700 }}>{monthlySales.toFixed(0)} € / {monthlyTarget} €</span>
+                  <span style={{ fontSize:9, color:'rgba(210,183,149,0.5)' }}>✏️</span>
+                </div>
               </div>
               <div style={{ height:6, background:'rgba(255,255,255,0.1)', borderRadius:3, overflow:'hidden' }}>
                 <div style={{ height:'100%', width:`${progressPct.toFixed(1)}%`, background:'linear-gradient(90deg,#D2B795,#B89A6A)', borderRadius:3, transition:'width 0.6s ease' }} />
@@ -179,7 +189,9 @@ export default function Home() {
                   <div style={{ width:3, height:16, background:'linear-gradient(180deg,#D2B795,#B89A6A)', borderRadius:2 }} />
                   <span style={{ fontSize:11, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#4E463F' }}>💼 Budget Équipe</span>
                 </div>
-                <span style={{ fontSize:12, fontWeight:700, color:'#B89A6A' }}>Total : {teamBudget.total.toFixed(2)} €</span>
+                <button onClick={()=>setShowBudgetDetail(true)} style={{ fontSize:11, fontWeight:700, color:'#B89A6A', background:'rgba(210,183,149,0.12)', border:'1px solid rgba(210,183,149,0.3)', borderRadius:8, padding:'4px 10px', cursor:'pointer' }}>
+                  {teamBudget.total.toFixed(0)} € →
+                </button>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                 {Object.entries(teamBudget.byConsultant)
@@ -273,6 +285,83 @@ export default function Home() {
             );
           })}
           <div style={{ height:20 }} />
+        </div>
+      )}
+
+      {/* ══ MODAL OBJECTIF ══ */}
+      {showTargetEdit && (
+        <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(78,70,63,0.6)', display:'flex', alignItems:'flex-end', justifyContent:'center', backdropFilter:'blur(3px)' }}
+          onClick={()=>setShowTargetEdit(false)}>
+          <div style={{ width:'100%', maxWidth:480, background:'#fff', borderRadius:'24px 24px 0 0', padding:'28px 20px 44px' }}
+            onClick={e=>e.stopPropagation()}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+              <h3 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:20, color:'#4E463F', fontWeight:600 }}>🎯 Mon objectif mensuel</h3>
+              <button onClick={()=>setShowTargetEdit(false)} style={{ background:'none', border:'none', fontSize:20, color:'rgba(78,70,63,0.3)', cursor:'pointer' }}>✕</button>
+            </div>
+            <p style={{ fontSize:12, color:'rgba(78,70,63,0.5)', marginBottom:16 }}>Définis ton objectif de chiffre d'affaires pour ce mois.</p>
+            <div style={{ marginBottom:16 }}>
+              <label style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#B89A6A', display:'block', marginBottom:8 }}>Objectif en €</label>
+              <input
+                type="number" value={targetInput} onChange={e=>setTargetInput(e.target.value)}
+                placeholder="ex: 500" autoFocus
+                style={{ fontSize:18, fontWeight:700, textAlign:'center', padding:'14px', borderRadius:12, border:'1.5px solid rgba(210,183,149,0.4)', background:'rgba(247,235,225,0.5)', color:'#4E463F', width:'100%' }}
+              />
+            </div>
+            <button onClick={()=>{
+              const val = parseFloat(targetInput);
+              if (val > 0) { setMonthlyTarget(val); store.set('monthly_target', val); }
+              setShowTargetEdit(false);
+            }} className="btn-gold">ENREGISTRER MON OBJECTIF</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ MODAL BUDGET DÉTAIL ══ */}
+      {showBudgetDetail && teamBudget && (
+        <div style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(78,70,63,0.6)', display:'flex', alignItems:'flex-end', justifyContent:'center', backdropFilter:'blur(3px)' }}
+          onClick={()=>setShowBudgetDetail(false)}>
+          <div style={{ width:'100%', maxWidth:480, background:'#fff', borderRadius:'24px 24px 0 0', padding:'24px 20px 44px', maxHeight:'85vh', overflowY:'auto' }}
+            onClick={e=>e.stopPropagation()}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+              <h3 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:20, color:'#4E463F', fontWeight:600 }}>💼 Budget de l'équipe</h3>
+              <button onClick={()=>setShowBudgetDetail(false)} style={{ background:'none', border:'none', fontSize:20, color:'rgba(78,70,63,0.3)', cursor:'pointer' }}>✕</button>
+            </div>
+            <p style={{ fontSize:11, color:'rgba(78,70,63,0.4)', marginBottom:20 }}>CA du mois en cours — {new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</p>
+
+            {/* Total */}
+            <div style={{ background:'linear-gradient(135deg,#4E463F,#2E2822)', borderRadius:16, padding:'16px 18px', marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontSize:13, color:'rgba(247,235,225,0.7)', fontWeight:500 }}>Total équipe</span>
+              <span style={{ fontSize:22, fontWeight:700, color:'#D2B795', fontFamily:'Cormorant Garamond,serif' }}>{teamBudget.total.toFixed(2)} €</span>
+            </div>
+
+            {/* Liste par consultante */}
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {Object.entries(teamBudget.byConsultant)
+                .sort((a,b)=>b[1]-a[1])
+                .map(([name, ca], idx) => {
+                  const pct = teamBudget.total > 0 ? (ca/teamBudget.total)*100 : 0;
+                  const medals = ['🥇','🥈','🥉'];
+                  return (
+                    <div key={name} style={{ background:'#FDFAF7', border:'1px solid rgba(210,183,149,0.25)', borderRadius:14, padding:'14px 16px' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                          <span style={{ fontSize:18 }}>{medals[idx] || '👤'}</span>
+                          <span style={{ fontSize:14, fontWeight:700, color:'#4E463F' }}>{name}</span>
+                        </div>
+                        <span style={{ fontSize:15, fontWeight:700, color:'#2d7a4a' }}>{ca.toFixed(2)} €</span>
+                      </div>
+                      <div style={{ height:6, background:'rgba(210,183,149,0.15)', borderRadius:3, overflow:'hidden', marginBottom:5 }}>
+                        <div style={{ height:'100%', width:`${pct.toFixed(1)}%`, background:'linear-gradient(90deg,#D2B795,#B89A6A)', borderRadius:3 }} />
+                      </div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}>
+                        <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{pct.toFixed(0)}% du CA équipe</span>
+                        <span style={{ fontSize:10, color:'rgba(78,70,63,0.4)' }}>{ca.toFixed(0)} € / {monthlyTarget} € objectif</span>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
         </div>
       )}
 
