@@ -88,75 +88,7 @@ body{padding-top:0px}.started body,.body-started{padding-top:80px}#timer-bar{dis
 
 
 
-<div class="name-screen" id="name-screen">
-  <div class="name-box">
-    <div class="logo-icon">🎯</div>
-    <h2>Cible de prospection</h2>
-    <p>Entrez votre prénom pour commencer.<br>Vous aurez <strong>3 minutes</strong> pour placer vos prospects.</p>
-    <input class="name-input" id="stagiaire-name" type="text" placeholder="Votre prénom..." maxlength="40" autocomplete="given-name">
-    <button class="btn-start" id="btn-start" onclick="startExercise()" disabled>Commencer ⏱</button>
-  </div>
-</div>
 
-
-<div class="name-screen" id="name-screen">
-  <div class="name-box">
-    <div class="name-logo">🎯</div>
-    <h2>Cible de prospection</h2>
-    <p>Entrez votre prénom pour commencer.<br>Vous aurez <strong>3 minutes</strong> pour placer vos prospects.</p>
-    <input class="name-input" id="stagiaire-name" type="text" placeholder="Votre prénom..." maxlength="40"
-      oninput="document.getElementById('btn-start').disabled=!this.value.trim()"
-      onkeydown="if(event.key==='Enter')startExercise()">
-    <button class="btn-start" id="btn-start" onclick="startExercise()" disabled>Commencer ⏱</button>
-  </div>
-</div>
-
-<div class="timer-bar" id="timer-bar" style="display:none">
-  <svg class="timer-circle" viewBox="0 0 54 54">
-    <circle cx="27" cy="27" r="23" fill="none" stroke="#eee" stroke-width="4"/>
-    <circle id="timer-ring" cx="27" cy="27" r="23" fill="none" stroke="#E24B4A" stroke-width="4"
-      stroke-dasharray="144.51" stroke-dashoffset="0"
-      stroke-linecap="round" transform="rotate(-90 27 27)"
-      style="transition:stroke-dashoffset .9s linear,stroke .3s"/>
-    <text id="timer-text" x="27" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#E24B4A">3:00</text>
-  </svg>
-  <div class="timer-msg">
-    <strong id="timer-title">⏱ Vous avez 3 minutes !</strong>
-    <span id="timer-sub">Sélectionnez les prospects avec lesquels vous avez déjà eu une expérience</span>
-  </div>
-  <button class="btn-send" id="btn-send" onclick="openModal()">📤 Envoyer ma cible</button>
-</div>
-
-<div class="overlay-modal" id="result-modal" style="display:none">
-  <div class="modal-box">
-    <h3>🎯 Votre cible est prête !</h3>
-    <p>Copiez le résumé ci-dessous et envoyez-le à votre formatrice, ou téléchargez une capture d'écran.</p>
-    <div class="modal-summary" id="modal-summary"></div>
-    <div class="modal-btns">
-      <button class="btn-dl" onclick="downloadCapture()">📸 Télécharger capture</button>
-      <button class="btn-copy" id="btn-copy-text" onclick="copyText()">📋 Copier le résumé</button>
-    </div>
-    <button class="btn-close" onclick="document.getElementById('result-modal').style.display='none'">Fermer</button>
-  </div>
-</div>
-
-<div class="wrap">
-<div class="panel" id="left-panel">
-  <h2>👥 Prospects <span id="count-lbl" style="font-size:12px;color:#999;font-weight:400"></span></h2>
-  <div class="hint">👆 Clique sur un prospect pour le placer directement dans un cercle</div>
-  <div class="filter-row" id="filter-row"></div>
-  <div id="prospect-list"></div>
-</div>
-
-<div class="panel">
-  <h2>🎯 Ma cible de prospection</h2>
-  <div class="stats-row" id="stats-row"></div>
-  <div class="target-wrap" id="target-svg-wrap"></div>
-  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
-  <div style="font-size:11px;color:#999;margin-top:4px" id="prog-label">0 prospect placé</div>
-  <div id="placed-list"></div>
-</div>
-</div>
 
 <div class="zone-picker" id="zone-picker">
   <div class="picker-title">Placer dans...</div>
@@ -444,7 +376,7 @@ function openTagPicker(e,id){
   picker.style.left=left+'px';picker.style.top=top+'px';
 }
 
-window.setFilter=setFilter;window.assignZone=assignZone;window.removeFromZone=removeFromZone;window.openTagPicker=openTagPicker;window.openModal=openModal;window.startExercise=startExercise;window.copyText=copyText;window.downloadCapture=downloadCapture;
+window.setFilter=setFilter;window.assignZone=assignZone;window.removeFromZone=removeFromZone;window.openTagPicker=openTagPicker;window.openModal=openModal;window.startExercise=startExercise;window.copyText=copyText;window.downloadCapture=downloadCapture;window.onNameInput=onNameInput;
 function init(){renderFilters();renderProspects();renderStats();renderTarget();renderPlaced();}
 init();window.addEventListener('resize',renderTarget);
 
@@ -452,12 +384,8 @@ init();window.addEventListener('resize',renderTarget);
 // ── NAME SCREEN ──
 let stagiaireName = '';
 
-document.getElementById('stagiaire-name').addEventListener('input', function(){
-  document.getElementById('btn-start').disabled = this.value.trim().length < 2;
-});
-document.getElementById('stagiaire-name').addEventListener('keydown', function(e){
-  if(e.key==='Enter' && this.value.trim().length>=2) startExercise();
-});
+
+
 
 function startExercise(){
   const name = document.getElementById('stagiaire-name').value.trim();
@@ -472,18 +400,28 @@ function startExercise(){
 
 // ── NOM STAGIAIRE ──
 let stagName='';
+function onNameInput(val){
+  const btn=document.getElementById('btn-start');
+  const inp=document.getElementById('name-input');
+  if(val.trim().length>=2){
+    btn.style.background='#E24B4A';btn.style.color='#fff';btn.style.cursor='pointer';
+    inp.style.borderColor='#E24B4A';
+  } else {
+    btn.style.background='#ddd';btn.style.color='#aaa';btn.style.cursor='not-allowed';
+    inp.style.borderColor='#eee';
+  }
+}
 function startExercise(){
-  const input=document.getElementById('stagiaire-name');
-  stagName=input.value.trim();
-  if(!stagName) return;
+  const inp=document.getElementById('name-input');
+  stagName=(inp?inp.value:'').trim();
+  if(stagName.length<2) return;
   document.getElementById('name-screen').style.display='none';
   document.getElementById('timer-bar').style.display='flex';
   document.body.style.overflow='';
+  document.getElementById('timer-title').textContent='⏱ '+stagName+', vous avez 3 minutes !';
   timerInterval2=setInterval(tickTimer,1000);
 }
-document.addEventListener('DOMContentLoaded',()=>{
-  setTimeout(()=>document.getElementById('stagiaire-name').focus(),300);
-});
+
 
 // ── TIMER ──
 const TOTAL=180;
