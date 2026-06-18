@@ -52,16 +52,19 @@ body{background:#f8f7f5;padding:80px 16px 16px}
 .placed-zone-title{font-size:11px;font-weight:600;text-transform:uppercase;margin-bottom:3px}
 .placed-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;margin:2px;cursor:pointer;border:0.5px solid}
 
-/* ── POPOVER ── */
-#zone-picker{position:fixed;z-index:9999;background:#fff;border:0.5px solid #ccc;border-radius:12px;padding:8px;box-shadow:0 6px 24px rgba(0,0,0,.14);display:none;min-width:200px}
-#zone-picker.open{display:block}
-.picker-title{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;padding:0 4px}
-.zone-choice{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
-.zone-choice:hover{background:#f5f3f0}
-.zone-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.picker-sep{height:0.5px;background:#eee;margin:4px 0}
-.remove-btn{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:#999;transition:background .1s}
-.remove-btn:hover{background:#f5f3f0}
+/* ── BOTTOM SHEET PICKER ── */
+#sheet-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:none}
+#sheet-overlay.open{display:block}
+#zone-picker{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#fff;border-radius:20px 20px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -4px 24px rgba(0,0,0,.15);transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+#zone-picker.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:#ddd;margin:0 auto 16px}
+.picker-title{font-size:12px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;text-align:center}
+.zone-choice{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;cursor:pointer;font-size:15px;font-weight:500;transition:background .1s;margin-bottom:6px;border:1.5px solid transparent}
+.zone-choice:active{opacity:.8}
+.zone-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.picker-sep{height:0.5px;background:#eee;margin:8px 0}
+.remove-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:12px;cursor:pointer;font-size:14px;color:#999;background:#f5f3f0;margin-top:4px}
+.remove-btn:active{opacity:.8}
 
 /* ── MODAL ── */
 #result-modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px}
@@ -126,9 +129,11 @@ body{background:#f8f7f5;padding:80px 16px 16px}
 
 </div>
 
-<!-- POPOVER CHOIX CERCLE -->
+<!-- BOTTOM SHEET PICKER -->
+<div id="sheet-overlay" onclick="closePicker()"></div>
 <div id="zone-picker">
-  <div class="picker-title">Placer dans...</div>
+  <div class="sheet-handle"></div>
+  <div class="picker-title" id="picker-prospect-name">Placer dans...</div>
   <div id="zone-choices"></div>
   <div id="pick-sep" class="picker-sep" style="display:none"></div>
   <div id="pick-remove" class="remove-btn" style="display:none" onclick="removeProspect()">✕ Retirer de la cible</div>
@@ -386,11 +391,9 @@ function removeProspect(){
 }
 function closePicker(){
   document.getElementById('zone-picker').classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('open');
   state.activeId=null;
 }
-document.addEventListener('click',e=>{
-  if(!document.getElementById('zone-picker').contains(e.target)) closePicker();
-});
 
 // ── CIBLE SVG ──
 function renderTarget(){
@@ -448,13 +451,7 @@ function renderPlaced(){
 }
 function openTagPicker(e,id){
   e.stopPropagation();
-  openPicker({currentTarget:e.target,stopPropagation:()=>{}},id);
-  const rect=e.target.getBoundingClientRect();
-  const picker=document.getElementById('zone-picker');
-  let left=rect.left, top=rect.bottom+4;
-  if(left+210>window.innerWidth)left=window.innerWidth-218;
-  if(top+180>window.innerHeight)top=rect.top-190;
-  picker.style.left=left+'px'; picker.style.top=top+'px';
+  openPicker(e,id);
 }
 
 function render(){renderProspects();renderTarget();renderStats();renderPlaced();}
