@@ -2,170 +2,193 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Cible Prospection Chogan</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
-body{background:#f8f7f5;padding:80px 16px 16px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#f5f5f5;font-family:-apple-system,sans-serif;overflow-x:hidden}
 
-/* ── NAME SCREEN ── */
-#name-screen{position:fixed;inset:0;z-index:1000;background:#f8f7f5;display:flex;align-items:center;justify-content:center;padding:24px}
-.name-box{background:#fff;border-radius:18px;padding:40px 30px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1);border:0.5px solid #e0ddd8}
-.name-emoji{font-size:52px;margin-bottom:14px}
-.name-title{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
-.name-sub{font-size:13px;color:#888;line-height:1.6;margin-bottom:26px}
-#name-input{width:100%;padding:15px 16px;border-radius:12px;border:2px solid #e0ddd8;font-size:17px;text-align:center;outline:none;font-family:inherit;margin-bottom:14px;color:#1a1a1a;transition:border-color .2s}
+/* ── ÉCRAN NOM ── */
+#name-screen{position:fixed;inset:0;z-index:200;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.name-card{background:#fff;border-radius:20px;padding:36px 24px;width:100%;max-width:420px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.n-icon{font-size:56px;margin-bottom:16px}
+.n-title{font-size:24px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.n-sub{font-size:14px;color:#888;line-height:1.6;margin-bottom:28px}
+#name-input{width:100%;padding:16px;border-radius:14px;border:2px solid #eee;font-size:18px;text-align:center;outline:none;font-family:inherit;margin-bottom:14px;color:#1a1a1a;transition:border-color .2s}
 #name-input:focus{border-color:#E24B4A}
-#name-input::placeholder{color:#bbb}
-#btn-start{width:100%;padding:15px;border-radius:12px;border:none;font-size:15px;font-weight:700;font-family:inherit;background:#ddd;color:#aaa;cursor:not-allowed;transition:all .25s}
-#btn-start.active{background:#E24B4A;color:#fff;cursor:pointer}
-#btn-start.active:hover{opacity:.88}
+#name-input::placeholder{color:#ccc}
+#btn-start{width:100%;padding:16px;border-radius:14px;border:none;font-size:16px;font-weight:700;font-family:inherit;background:#eee;color:#bbb;cursor:not-allowed;transition:all .25s}
+#btn-start.ok{background:#E24B4A;color:#fff;cursor:pointer}
 
 /* ── TIMER BAR ── */
-#timer-bar{position:fixed;top:0;left:0;right:0;z-index:500;background:#fff;border-bottom:1px solid #eee;padding:8px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
-.t-msg{flex:1;font-size:13px;color:#555;line-height:1.4}
-.t-msg strong{color:#1a1a1a;display:block;font-size:14px;margin-bottom:1px}
-#btn-send{padding:9px 20px;border-radius:10px;border:none;background:#E24B4A;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
-#btn-send:hover{opacity:.88}
+#timer-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #eee;display:none;align-items:center;gap:10px;padding:10px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+#timer-bar.show{display:flex}
+.t-svg{flex-shrink:0;width:48px;height:48px}
+.t-info{flex:1;min-width:0}
+.t-name{font-size:14px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-hint{font-size:11px;color:#888;margin-top:1px}
+#btn-send{flex-shrink:0;padding:10px 14px;border-radius:10px;border:none;background:#E24B4A;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
 
-/* ── LAYOUT ── */
-.wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:600px}
-.panel{background:#fff;border:0.5px solid #e0ddd8;border-radius:12px;padding:14px;overflow-y:auto;max-height:740px}
-.panel h2{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #e8e5e0}
-.hint{font-size:11px;color:#888;margin-bottom:8px}
-.cat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:10px 0 4px;padding:2px 6px;background:#f5f3f0;border-radius:4px}
-.prospect-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:#1a1a1a;transition:background .12s;user-select:none}
-.prospect-item:hover{background:#f5f3f0}
-.prospect-item.placed{opacity:.38;text-decoration:line-through}
-.dot-ind{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:0.5px solid #ccc}
-.filter-row{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
-.filter-btn{padding:4px 10px;border-radius:10px;border:0.5px solid #ccc;font-size:11px;cursor:pointer;background:#fff;color:#666}
-.filter-btn.active{background:#e8f0fb;color:#185FA5;border-color:#378ADD}
-.stats-row{display:flex;gap:8px;margin-bottom:12px}
-.stat-box{flex:1;background:#f5f3f0;border-radius:8px;padding:8px;text-align:center}
-.stat-num{font-size:18px;font-weight:600;color:#1a1a1a}
-.stat-lbl{font-size:10px;color:#888;margin-top:1px}
-.target-wrap{position:relative;width:100%;aspect-ratio:1;max-width:320px;margin:0 auto}
-.progress-bar{height:5px;background:#eee;border-radius:3px;overflow:hidden;margin-top:8px}
-.progress-fill{height:100%;border-radius:3px;transition:width .4s;background:#378ADD}
-.sep{height:0.5px;background:#eee;margin:8px 0}
-.placed-zone-title{font-size:11px;font-weight:600;text-transform:uppercase;margin-bottom:3px}
-.placed-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;margin:2px;cursor:pointer;border:0.5px solid}
+/* ── LAYOUT MOBILE ── */
+#app{display:none;flex-direction:column;padding:0 0 20px}
+#app.show{display:flex}
+.section{background:#fff;margin:10px 12px 0;border-radius:16px;overflow:hidden}
+.section-head{font-size:13px;font-weight:700;color:#1a1a1a;padding:14px 16px 0}
 
-/* ── BOTTOM SHEET PICKER ── */
-#sheet-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:none}
-#sheet-overlay.open{display:block}
-#zone-picker{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#fff;border-radius:20px 20px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -4px 24px rgba(0,0,0,.15);transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
-#zone-picker.open{transform:translateY(0)}
-.sheet-handle{width:36px;height:4px;border-radius:2px;background:#ddd;margin:0 auto 16px}
-.picker-title{font-size:12px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;text-align:center}
-.zone-choice{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;cursor:pointer;font-size:15px;font-weight:500;transition:background .1s;margin-bottom:6px;border:1.5px solid transparent}
-.zone-choice:active{opacity:.8}
-.zone-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
-.picker-sep{height:0.5px;background:#eee;margin:8px 0}
-.remove-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:12px;cursor:pointer;font-size:14px;color:#999;background:#f5f3f0;margin-top:4px}
-.remove-btn:active{opacity:.8}
+/* ── CIBLE ── */
+#target-wrap{width:100%;aspect-ratio:1;max-width:300px;margin:10px auto}
+.legend-row{display:flex;justify-content:center;gap:16px;padding:8px 16px 14px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#555}
+.leg-dot{width:10px;height:10px;border-radius:50%}
 
-/* ── MODAL ── */
-#result-modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px}
-.modal-box{background:#fff;border-radius:16px;padding:28px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-summary{background:#f5f3f0;border-radius:10px;padding:14px;font-size:12px;line-height:1.8;margin-bottom:16px;white-space:pre-wrap;font-family:monospace;color:#333;max-height:200px;overflow-y:auto}
-.modal-btns{display:flex;gap:10px}
-.btn-dl{flex:1;padding:12px;border-radius:9px;border:1px solid #ccc;background:#fff;color:#333;font-size:13px;font-weight:600;cursor:pointer}
-.btn-copy{flex:1;padding:12px;border-radius:9px;border:none;background:#1a1a1a;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
-.btn-close{width:100%;padding:10px;border-radius:9px;border:1px solid #ddd;background:#fff;color:#888;font-size:12px;cursor:pointer;margin-top:8px}
+/* ── STATS ── */
+.stats-row{display:flex;gap:8px;padding:10px 12px}
+.stat{flex:1;background:#f5f5f5;border-radius:10px;padding:10px 6px;text-align:center}
+.stat-n{font-size:20px;font-weight:700;color:#1a1a1a}
+.stat-l{font-size:10px;color:#888;margin-top:2px}
+
+/* ── FILTRES ── */
+.filter-scroll{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none}
+.filter-scroll::-webkit-scrollbar{display:none}
+.f-btn{flex-shrink:0;padding:8px 16px;border-radius:20px;border:1.5px solid #eee;font-size:13px;font-weight:600;background:#fff;color:#888;cursor:pointer}
+.f-btn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+/* ── LISTE PROSPECTS ── */
+#prospect-list{padding:0 12px 12px}
+.cat-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#aaa;padding:10px 4px 4px;display:block}
+.p-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;margin-bottom:4px;background:#fafafa;border:1.5px solid #f0f0f0;cursor:pointer;transition:background .12s;-webkit-tap-highlight-color:rgba(0,0,0,.06)}
+.p-item:active{background:#f0f0f0}
+.p-item.placed{opacity:.4}
+.p-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1.5px solid #ddd}
+.p-name{flex:1;font-size:14px;color:#1a1a1a;font-weight:500}
+.p-zone{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px}
+.p-arr{font-size:16px;color:#ccc;margin-left:2px}
+
+/* ── BOTTOM SHEET ── */
+#overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.5);display:none;opacity:0;transition:opacity .25s}
+#overlay.show{display:block;opacity:1}
+#bottom-sheet{position:fixed;bottom:0;left:0;right:0;z-index:160;background:#fff;border-radius:24px 24px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom)+16px);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:75vh;overflow-y:auto}
+#bottom-sheet.show{transform:translateY(0)}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:#e0e0e0;margin:0 auto 16px}
+.sheet-title{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px;text-align:center}
+.sheet-sub{font-size:11px;color:#aaa;text-align:center;margin-bottom:16px}
+.zone-btn{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;margin-bottom:10px;cursor:pointer;border:2px solid #eee;background:#fafafa;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.zone-btn:active{transform:scale(.98)}
+.zone-btn.selected{border-width:2px}
+.z-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+.z-label{font-size:15px;font-weight:700;color:#1a1a1a}
+.z-sub{font-size:12px;color:#888;margin-top:2px}
+.z-check{margin-left:auto;font-size:20px}
+.sheet-remove{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:14px;background:#fff0f0;color:#cc3333;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;border:2px solid #ffdddd}
+.sheet-remove:active{opacity:.8}
+
+/* ── MODAL RÉSULTAT ── */
+#result-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
+#result-modal.show{display:flex}
+.modal-sheet{background:#fff;border-radius:24px 24px 0 0;padding:24px 20px calc(env(safe-area-inset-bottom)+20px);width:100%;max-height:85vh;overflow-y:auto}
+.modal-head{text-align:center;margin-bottom:18px}
+.modal-icon{font-size:42px;margin-bottom:8px}
+.modal-title{font-size:20px;font-weight:700;color:#1a1a1a}
+.modal-sub{font-size:13px;color:#888;margin-top:4px}
+.summary-box{background:#f5f5f5;border-radius:12px;padding:14px;font-size:12px;line-height:1.8;font-family:monospace;color:#333;margin-bottom:16px;max-height:180px;overflow-y:auto;white-space:pre-wrap}
+.m-btn{width:100%;padding:15px;border-radius:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:10px}
+.m-btn-primary{background:#1a1a1a;color:#fff;border:none}
+.m-btn-secondary{background:#fff;color:#1a1a1a;border:2px solid #eee}
+.m-btn-close{background:#f5f5f5;color:#888;border:none;font-size:14px}
 </style>
 </head>
 <body>
 
 <!-- ÉCRAN NOM -->
 <div id="name-screen">
-  <div class="name-box">
-    <div class="name-emoji">🎯</div>
-    <div class="name-title">Cible de prospection</div>
-    <div class="name-sub">Entrez votre prénom pour commencer.<br>Vous aurez <strong style="color:#E24B4A">3 minutes</strong> pour identifier vos prospects.</div>
+  <div class="name-card">
+    <div class="n-icon">🎯</div>
+    <div class="n-title">Cible de prospection</div>
+    <div class="n-sub">Entrez votre prénom.<br>Vous aurez <strong style="color:#E24B4A">3 minutes</strong> pour identifier vos prospects.</div>
     <input id="name-input" type="text" placeholder="Votre prénom..." maxlength="40" autocomplete="given-name">
     <button id="btn-start">Commencer ⏱</button>
   </div>
 </div>
 
-<!-- TIMER BAR -->
+<!-- TIMER -->
 <div id="timer-bar">
-  <svg width="52" height="52" viewBox="0 0 52 52" style="flex-shrink:0">
-    <circle cx="26" cy="26" r="22" fill="none" stroke="#eee" stroke-width="4"/>
-    <circle id="t-ring" cx="26" cy="26" r="22" fill="none" stroke="#378ADD" stroke-width="4"
-      stroke-dasharray="138.23" stroke-dashoffset="0"
-      stroke-linecap="round" transform="rotate(-90 26 26)"
-      style="transition:stroke-dashoffset .9s linear,stroke .5s"/>
-    <text id="t-txt" x="26" y="31" text-anchor="middle" font-size="12" font-weight="700" fill="#378ADD">3:00</text>
+  <svg class="t-svg" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="20" fill="none" stroke="#eee" stroke-width="4"/>
+    <circle id="t-ring" cx="24" cy="24" r="20" fill="none" stroke="#378ADD" stroke-width="4"
+      stroke-dasharray="125.66" stroke-dashoffset="0"
+      stroke-linecap="round" transform="rotate(-90 24 24)"
+      style="transition:stroke-dashoffset .9s linear,stroke .4s"/>
+    <text id="t-txt" x="24" y="28" text-anchor="middle" font-size="11" font-weight="700" fill="#378ADD">3:00</text>
   </svg>
-  <div class="t-msg">
-    <strong id="t-title">⏱ Vous avez 3 minutes !</strong>
-    <span id="t-sub">Cliquez sur un prospect pour le placer dans un cercle</span>
+  <div class="t-info">
+    <div class="t-name" id="t-name">⏱ Vous avez 3 minutes !</div>
+    <div class="t-hint">Touchez un prospect pour le placer</div>
   </div>
-  <button id="btn-send" onclick="openModal()">📤 Envoyer ma cible</button>
+  <button id="btn-send" onclick="openModal()">📤 Envoyer</button>
 </div>
 
-<!-- CONTENU PRINCIPAL -->
-<div class="wrap">
+<!-- APP -->
+<div id="app">
 
-  <!-- PANNEAU GAUCHE : LISTE -->
-  <div class="panel" id="left-panel">
-    <h2>👥 Prospects <span id="count-lbl" style="font-size:12px;color:#999;font-weight:400"></span></h2>
-    <div class="hint">👆 Cliquez sur un prospect pour le placer dans un cercle</div>
-    <div class="filter-row" id="filter-row"></div>
+  <!-- CIBLE -->
+  <div class="section" style="margin-top:72px">
+    <div class="section-head">🎯 Ma cible</div>
+    <div id="target-wrap"></div>
+    <div class="legend-row">
+      <div class="leg-item"><div class="leg-dot" style="background:#E24B4A"></div>Chaud</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#EF9F27"></div>Tiède</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#378ADD"></div>Froid</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section">
+    <div class="stats-row" id="stats-row"></div>
+  </div>
+
+  <!-- LISTE -->
+  <div class="section">
+    <div class="section-head">👥 Prospects</div>
+    <div class="filter-scroll" id="filter-row"></div>
     <div id="prospect-list"></div>
   </div>
 
-  <!-- PANNEAU DROIT : CIBLE -->
-  <div class="panel" id="right-panel">
-    <h2>🎯 Ma cible de prospection</h2>
-    <div class="stats-row" id="stats-row"></div>
-    <div class="target-wrap" id="target-wrap"></div>
-    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
-    <div style="font-size:11px;color:#999;margin-top:4px" id="prog-label">0 prospect placé</div>
-    <div id="placed-list"></div>
-  </div>
-
 </div>
 
-<!-- BOTTOM SHEET PICKER -->
-<div id="sheet-overlay" onclick="closePicker()"></div>
-<div id="zone-picker">
+<!-- OVERLAY -->
+<div id="overlay" onclick="closePicker()"></div>
+
+<!-- BOTTOM SHEET -->
+<div id="bottom-sheet">
   <div class="sheet-handle"></div>
-  <div class="picker-title" id="picker-prospect-name">Placer dans...</div>
-  <div id="zone-choices"></div>
-  <div id="pick-sep" class="picker-sep" style="display:none"></div>
-  <div id="pick-remove" class="remove-btn" style="display:none" onclick="removeProspect()">✕ Retirer de la cible</div>
+  <div class="sheet-title" id="sheet-pname">Placer dans...</div>
+  <div class="sheet-sub">Choisissez un cercle</div>
+  <div id="zone-btns"></div>
+  <div id="sheet-remove" class="sheet-remove" style="display:none" onclick="removeProspect()">✕ Retirer de la cible</div>
 </div>
 
 <!-- MODAL RÉSULTAT -->
-<div id="result-modal" style="display:none;align-items:center;justify-content:center">
-  <div class="modal-box">
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:36px;margin-bottom:8px">🎯</div>
-      <div style="font-size:18px;font-weight:700;color:#1a1a1a" id="modal-title">Cible envoyée !</div>
-      <div style="font-size:13px;color:#888;margin-top:4px" id="modal-sub">Voici votre résumé</div>
+<div id="result-modal">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-icon">🎯</div>
+      <div class="modal-title" id="modal-title">Votre cible</div>
+      <div class="modal-sub" id="modal-sub"></div>
     </div>
-    <div class="modal-summary" id="modal-summary"></div>
-    <div class="modal-btns">
-      <button class="btn-dl" onclick="downloadCapture()">📸 Télécharger ma cible</button>
-      <button class="btn-copy" id="btn-copy" onclick="copyText()">📋 Copier le résumé</button>
-    </div>
-    <button class="btn-close" onclick="document.getElementById('result-modal').style.display='none'">Fermer</button>
+    <div class="summary-box" id="modal-summary"></div>
+    <button class="m-btn m-btn-primary" onclick="downloadCapture()">📸 Télécharger ma cible</button>
+    <button class="m-btn m-btn-secondary" id="btn-copy" onclick="copyText()">📋 Copier le résumé</button>
+    <button class="m-btn m-btn-close" onclick="document.getElementById('result-modal').classList.remove('show')">Fermer</button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <script>
-// ── DATA ──
 const ZONES=[
-  {id:'chaud',label:'Cercle chaud',sub:'Famille & amis',color:'#E24B4A',bg:'rgba(226,75,74,.1)',text:'#A32D2D'},
-  {id:'tiede',label:'Cercle tiède',sub:'Connaissances',color:'#EF9F27',bg:'rgba(239,159,39,.1)',text:'#854F0B'},
-  {id:'froid',label:'Cercle froid',sub:'Prospects froids',color:'#378ADD',bg:'rgba(55,138,221,.1)',text:'#185FA5'},
+  {id:'chaud',label:'Cercle chaud',sub:'Famille & amis proches',color:'#E24B4A',bg:'#fff0f0',text:'#A32D2D'},
+  {id:'tiede',label:'Cercle tiède',sub:'Connaissances & collègues',color:'#EF9F27',bg:'#fff8ee',text:'#854F0B'},
+  {id:'froid',label:'Cercle froid',sub:'Prospects à démarcher',color:'#378ADD',bg:'#f0f6ff',text:'#185FA5'},
 ];
-
 const PROSPECTS=[
   {id:'p1',name:'Maman',cat:'b2c',type:'Famille'},
   {id:'p2',name:'Sœur / belle-sœur',cat:'b2c',type:'Famille'},
@@ -178,53 +201,53 @@ const PROSPECTS=[
   {id:'p9',name:'Amies proches',cat:'b2c',type:'Amis proches'},
   {id:'p10',name:'Amies du lycée',cat:'b2c',type:'Amis proches'},
   {id:'p11',name:'Amies de fac / études',cat:'b2c',type:'Amis proches'},
-  {id:'p12',name:'Amis de quartier (enfance)',cat:'b2c',type:'Amis proches'},
+  {id:'p12',name:'Amis de quartier',cat:'b2c',type:'Amis proches'},
   {id:'p13',name:'Collègues (femmes)',cat:'b2c',type:'Collègues'},
   {id:'p14',name:'Collègues (hommes)',cat:'b2c',type:'Collègues'},
   {id:'p15',name:'Ex-collègues',cat:'b2c',type:'Collègues'},
   {id:'p16',name:'Manager / responsable',cat:'b2c',type:'Collègues'},
   {id:'p17',name:'Collègues anciens emplois',cat:'b2c',type:'Collègues'},
   {id:'p18',name:'Voisines',cat:'b2c',type:'Voisinage & école'},
-  {id:'p19',name:'Mamans à l\'école',cat:'b2c',type:'Voisinage & école'},
+  {id:'p19',name:"Mamans à l'école",cat:'b2c',type:'Voisinage & école'},
   {id:'p20',name:'Copines des enfants',cat:'b2c',type:'Voisinage & école'},
-  {id:'p21',name:'Parents d\'élèves',cat:'b2c',type:'Voisinage & école'},
+  {id:'p21',name:"Parents d'élèves",cat:'b2c',type:'Voisinage & école'},
   {id:'p22',name:'Animateurs / profs de sport',cat:'b2c',type:'Voisinage & école'},
   {id:'p23',name:'Contacts sport / gym',cat:'b2c',type:'Clubs & associations'},
   {id:'p24',name:'Contacts association',cat:'b2c',type:'Clubs & associations'},
   {id:'p25',name:'Contacts mosquée / église',cat:'b2c',type:'Clubs & associations'},
-  {id:'p26',name:'Groupe de danse / zumba',cat:'b2c',type:'Clubs & associations'},
+  {id:'p26',name:'Groupe danse / zumba',cat:'b2c',type:'Clubs & associations'},
   {id:'p27',name:'Cours yoga / pilates',cat:'b2c',type:'Clubs & associations'},
   {id:'p28',name:'Club de lecture / couture',cat:'b2c',type:'Clubs & associations'},
   {id:'p29',name:'Contacts Instagram / TikTok',cat:'b2c',type:'Réseaux sociaux'},
   {id:'p30',name:'Contacts Facebook',cat:'b2c',type:'Réseaux sociaux'},
-  {id:'p31',name:'Contacts WhatsApp (groupes)',cat:'b2c',type:'Réseaux sociaux'},
+  {id:'p31',name:'Contacts WhatsApp',cat:'b2c',type:'Réseaux sociaux'},
   {id:'p32',name:'Communautés Facebook MLM',cat:'b2c',type:'Réseaux sociaux'},
-  {id:'p33',name:'Abonnés story / lives Instagram',cat:'b2c',type:'Réseaux sociaux'},
+  {id:'p33',name:'Abonnés story / lives',cat:'b2c',type:'Réseaux sociaux'},
   {id:'p34',name:'Groupes femmes entrepreneurs',cat:'b2c',type:'Réseaux sociaux'},
-  {id:'p35',name:'Clientes actuelles',cat:'b2c',type:'Clients & hôtesses'},
-  {id:'p36',name:'Clientes qui ont arrêté',cat:'b2c',type:'Clients & hôtesses'},
-  {id:'p37',name:'Hôtesses de réunions',cat:'b2c',type:'Clients & hôtesses'},
-  {id:'p38',name:'Participantes ateliers olfactifs',cat:'b2c',type:'Clients & hôtesses'},
-  {id:'p39',name:'Participants aux zooms Chogan',cat:'b2c',type:'Clients & hôtesses'},
-  {id:'p40',name:'Femmes enceintes',cat:'b2c',type:'Opportunités produits'},
-  {id:'p41',name:'Mamans de bébés',cat:'b2c',type:'Opportunités produits'},
-  {id:'p42',name:'Personnes cherchant à mincir',cat:'b2c',type:'Opportunités produits'},
-  {id:'p43',name:'Allergiques aux parfums classiques',cat:'b2c',type:'Opportunités produits'},
-  {id:'p44',name:'Hommes soignés / coquets',cat:'b2c',type:'Opportunités produits'},
-  {id:'p45',name:'Personnes éco-responsables',cat:'b2c',type:'Opportunités produits'},
-  {id:'p46',name:'Seniors soucieux de leur bien-être',cat:'b2c',type:'Opportunités produits'},
-  {id:'p47',name:'Ados / jeunes adultes',cat:'b2c',type:'Opportunités produits'},
-  {id:'p48',name:'Cadeaux Noël / anniversaires',cat:'b2c',type:'Occasions & événements'},
-  {id:'p49',name:'Mariages (cadeaux invités)',cat:'b2c',type:'Occasions & événements'},
-  {id:'p50',name:'Baby shower / naissance',cat:'b2c',type:'Occasions & événements'},
-  {id:'p51',name:'Fêtes de quartier / vide-greniers',cat:'b2c',type:'Occasions & événements'},
-  {id:'p52',name:'Marchés locaux / brocantes',cat:'b2c',type:'Occasions & événements'},
-  {id:'p53',name:'Personnes en reconversion pro',cat:'b2c',type:'Recrutement réseau'},
-  {id:'p54',name:'Mamans souhaitant travailler à domicile',cat:'b2c',type:'Recrutement réseau'},
-  {id:'p55',name:'Personnes au chômage',cat:'b2c',type:'Recrutement réseau'},
-  {id:'p56',name:'Étudiants cherchant complément de revenu',cat:'b2c',type:'Recrutement réseau'},
-  {id:'p57',name:'Retraités actifs',cat:'b2c',type:'Recrutement réseau'},
-  {id:'p58',name:'Auto-entrepreneurs beauté / bien-être',cat:'b2c',type:'Recrutement réseau'},
+  {id:'p35',name:'Clientes actuelles',cat:'b2c',type:'Clients'},
+  {id:'p36',name:"Clientes qui ont arrêté",cat:'b2c',type:'Clients'},
+  {id:'p37',name:'Hôtesses de réunions',cat:'b2c',type:'Clients'},
+  {id:'p38',name:'Participantes ateliers olfactifs',cat:'b2c',type:'Clients'},
+  {id:'p39',name:'Participants zooms Chogan',cat:'b2c',type:'Clients'},
+  {id:'p40',name:'Femmes enceintes',cat:'b2c',type:'Opportunités'},
+  {id:'p41',name:'Mamans de bébés',cat:'b2c',type:'Opportunités'},
+  {id:'p42',name:'Personnes cherchant à mincir',cat:'b2c',type:'Opportunités'},
+  {id:'p43',name:'Allergiques aux parfums classiques',cat:'b2c',type:'Opportunités'},
+  {id:'p44',name:'Hommes soignés / coquets',cat:'b2c',type:'Opportunités'},
+  {id:'p45',name:'Personnes éco-responsables',cat:'b2c',type:'Opportunités'},
+  {id:'p46',name:'Seniors bien-être',cat:'b2c',type:'Opportunités'},
+  {id:'p47',name:'Ados / jeunes adultes',cat:'b2c',type:'Opportunités'},
+  {id:'p48',name:'Cadeaux Noël / anniversaires',cat:'b2c',type:'Occasions'},
+  {id:'p49',name:'Mariages (cadeaux invités)',cat:'b2c',type:'Occasions'},
+  {id:'p50',name:'Baby shower / naissance',cat:'b2c',type:'Occasions'},
+  {id:'p51',name:'Fêtes de quartier / vide-greniers',cat:'b2c',type:'Occasions'},
+  {id:'p52',name:'Marchés locaux / brocantes',cat:'b2c',type:'Occasions'},
+  {id:'p53',name:'Personnes en reconversion pro',cat:'b2c',type:'Recrutement'},
+  {id:'p54',name:'Mamans travail à domicile',cat:'b2c',type:'Recrutement'},
+  {id:'p55',name:'Personnes au chômage',cat:'b2c',type:'Recrutement'},
+  {id:'p56',name:'Étudiants complément de revenu',cat:'b2c',type:'Recrutement'},
+  {id:'p57',name:'Retraités actifs',cat:'b2c',type:'Recrutement'},
+  {id:'p58',name:'Auto-entrepreneurs beauté',cat:'b2c',type:'Recrutement'},
   {id:'b1',name:'Salon de coiffure',cat:'b2b',type:'Beauté & soins'},
   {id:'b2',name:'Barbier',cat:'b2b',type:'Beauté & soins'},
   {id:'b3',name:'Institut de beauté',cat:'b2b',type:'Beauté & soins'},
@@ -233,28 +256,28 @@ const PROSPECTS=[
   {id:'b6',name:'Esthéticienne à domicile',cat:'b2b',type:'Beauté & soins'},
   {id:'b7',name:'Microblading / sourcils',cat:'b2b',type:'Beauté & soins'},
   {id:'b8',name:'Extension de cils',cat:'b2b',type:'Beauté & soins'},
-  {id:'b9',name:'Pharmacie / parapharmacie',cat:'b2b',type:'Santé & médical'},
-  {id:'b10',name:'Médecin / cabinet médical',cat:'b2b',type:'Santé & médical'},
-  {id:'b11',name:'Kiné / ostéo',cat:'b2b',type:'Santé & médical'},
-  {id:'b12',name:'Coach bien-être / naturopathe',cat:'b2b',type:'Santé & médical'},
-  {id:'b13',name:'Diététicienne / nutritionniste',cat:'b2b',type:'Santé & médical'},
-  {id:'b14',name:'Sage-femme',cat:'b2b',type:'Santé & médical'},
-  {id:'b15',name:'Salle de sport',cat:'b2b',type:'Sport & bien-être'},
-  {id:'b16',name:'Coach sportif indépendant',cat:'b2b',type:'Sport & bien-être'},
-  {id:'b17',name:'Studio yoga / pilates',cat:'b2b',type:'Sport & bien-être'},
-  {id:'b18',name:'Studio danse',cat:'b2b',type:'Sport & bien-être'},
-  {id:'b19',name:'Piscine / centre aquatique',cat:'b2b',type:'Sport & bien-être'},
-  {id:'b20',name:'Boutique de vêtements',cat:'b2b',type:'Commerce & retail'},
-  {id:'b21',name:'Boutique cadeaux',cat:'b2b',type:'Commerce & retail'},
-  {id:'b22',name:'Fleuriste',cat:'b2b',type:'Commerce & retail'},
-  {id:'b23',name:'Épicerie fine / bio',cat:'b2b',type:'Commerce & retail'},
-  {id:'b24',name:'Librairie / papeterie',cat:'b2b',type:'Commerce & retail'},
-  {id:'b25',name:'Boutique déco / maison',cat:'b2b',type:'Commerce & retail'},
-  {id:'b26',name:'Restaurant',cat:'b2b',type:'Restauration & hôtellerie'},
-  {id:'b27',name:'Café / boulangerie',cat:'b2b',type:'Restauration & hôtellerie'},
-  {id:'b28',name:'Hôtel',cat:'b2b',type:'Restauration & hôtellerie'},
-  {id:'b29',name:'Airbnb / locations saisonnières',cat:'b2b',type:'Restauration & hôtellerie'},
-  {id:'b30',name:'Traiteur / chef à domicile',cat:'b2b',type:'Restauration & hôtellerie'},
+  {id:'b9',name:'Pharmacie / parapharmacie',cat:'b2b',type:'Santé'},
+  {id:'b10',name:'Médecin / cabinet médical',cat:'b2b',type:'Santé'},
+  {id:'b11',name:'Kiné / ostéo',cat:'b2b',type:'Santé'},
+  {id:'b12',name:'Naturopathe / coach bien-être',cat:'b2b',type:'Santé'},
+  {id:'b13',name:'Diététicienne / nutritionniste',cat:'b2b',type:'Santé'},
+  {id:'b14',name:'Sage-femme',cat:'b2b',type:'Santé'},
+  {id:'b15',name:'Salle de sport',cat:'b2b',type:'Sport'},
+  {id:'b16',name:'Coach sportif indépendant',cat:'b2b',type:'Sport'},
+  {id:'b17',name:'Studio yoga / pilates',cat:'b2b',type:'Sport'},
+  {id:'b18',name:'Studio danse',cat:'b2b',type:'Sport'},
+  {id:'b19',name:'Piscine / centre aquatique',cat:'b2b',type:'Sport'},
+  {id:'b20',name:'Boutique de vêtements',cat:'b2b',type:'Commerce'},
+  {id:'b21',name:'Boutique cadeaux',cat:'b2b',type:'Commerce'},
+  {id:'b22',name:'Fleuriste',cat:'b2b',type:'Commerce'},
+  {id:'b23',name:'Épicerie fine / bio',cat:'b2b',type:'Commerce'},
+  {id:'b24',name:'Librairie / papeterie',cat:'b2b',type:'Commerce'},
+  {id:'b25',name:'Boutique déco / maison',cat:'b2b',type:'Commerce'},
+  {id:'b26',name:'Restaurant',cat:'b2b',type:'Restauration'},
+  {id:'b27',name:'Café / boulangerie',cat:'b2b',type:'Restauration'},
+  {id:'b28',name:'Hôtel',cat:'b2b',type:'Restauration'},
+  {id:'b29',name:'Airbnb / locations saisonnières',cat:'b2b',type:'Restauration'},
+  {id:'b30',name:'Traiteur / chef à domicile',cat:'b2b',type:'Restauration'},
   {id:'b31',name:'Agent immobilier',cat:'b2b',type:'Services'},
   {id:'b32',name:'Photographe / vidéaste',cat:'b2b',type:'Services'},
   {id:'b33',name:'Wedding planner',cat:'b2b',type:'Services'},
@@ -262,63 +285,57 @@ const PROSPECTS=[
   {id:'b35',name:'Coach de vie / développement perso',cat:'b2b',type:'Services'},
   {id:'b36',name:'Avocat / comptable',cat:'b2b',type:'Services'},
   {id:'b37',name:'Auto-école',cat:'b2b',type:'Services'},
-  {id:'b38',name:"Comité d'entreprise (CE)",cat:'b2b',type:'Entreprises & CE'},
-  {id:'b39',name:'PME locale',cat:'b2b',type:'Entreprises & CE'},
-  {id:'b40',name:'Agence de communication',cat:'b2b',type:'Entreprises & CE'},
-  {id:'b41',name:"Agence d'intérim",cat:'b2b',type:'Entreprises & CE'},
-  {id:'b42',name:'Influenceuses beauté locales',cat:'b2b',type:'Réseaux & digital'},
-  {id:'b43',name:'Blogueuses lifestyle',cat:'b2b',type:'Réseaux & digital'},
-  {id:'b44',name:"Organisatrices d'événements",cat:'b2b',type:'Réseaux & digital'},
-  {id:'b45',name:'Salons professionnels / expos',cat:'b2b',type:'Réseaux & digital'},
+  {id:'b38',name:"Comité d'entreprise (CE)",cat:'b2b',type:'Entreprises'},
+  {id:'b39',name:'PME locale',cat:'b2b',type:'Entreprises'},
+  {id:'b40',name:'Agence de communication',cat:'b2b',type:'Entreprises'},
+  {id:'b41',name:"Agence d'intérim",cat:'b2b',type:'Entreprises'},
+  {id:'b42',name:'Influenceuses beauté locales',cat:'b2b',type:'Digital'},
+  {id:'b43',name:'Blogueuses lifestyle',cat:'b2b',type:'Digital'},
+  {id:'b44',name:"Organisatrices d'événements",cat:'b2b',type:'Digital'},
+  {id:'b45',name:'Salons professionnels / expos',cat:'b2b',type:'Digital'},
 ];
 
-// ── STATE ──
 const state={placed:{},filter:'all',activeId:null};
 let stagName='';
 
-// ── NOM STAGIAIRE ──
-document.getElementById('name-input').addEventListener('input',function(){
-  const ok=this.value.trim().length>=2;
-  const btn=document.getElementById('btn-start');
-  btn.className=ok?'active':'';
-  this.style.borderColor=ok?'#E24B4A':'#e0ddd8';
+// ── NOM ──
+const nameInput=document.getElementById('name-input');
+const btnStart=document.getElementById('btn-start');
+nameInput.addEventListener('input',function(){
+  btnStart.className=this.value.trim().length>=2?'ok':'';
 });
-document.getElementById('name-input').addEventListener('keydown',function(e){
-  if(e.key==='Enter')startExercise();
-});
-document.getElementById('btn-start').addEventListener('click',startExercise);
-setTimeout(()=>document.getElementById('name-input').focus(),300);
+nameInput.addEventListener('keydown',function(e){if(e.key==='Enter')startExercise();});
+btnStart.addEventListener('click',startExercise);
+setTimeout(()=>nameInput.focus(),400);
 
 function startExercise(){
-  const val=document.getElementById('name-input').value.trim();
-  if(val.length<2)return;
-  stagName=val;
+  stagName=nameInput.value.trim();
+  if(stagName.length<2)return;
   document.getElementById('name-screen').style.display='none';
-  document.getElementById('timer-bar').style.display='flex';
-  document.getElementById('t-title').textContent='⏱ '+stagName+', vous avez 3 minutes !';
+  document.getElementById('timer-bar').classList.add('show');
+  document.getElementById('app').classList.add('show');
+  document.getElementById('t-name').textContent='⏱ '+stagName+', 3 minutes !';
+  render();
   startTimer();
 }
 
 // ── TIMER ──
-const TOTAL=180, CIRC=2*Math.PI*22;
-let remaining=TOTAL;
+const TOTAL=180,CIRC=125.66;
+let rem=TOTAL;
 function startTimer(){
   const iv=setInterval(()=>{
-    remaining--;
-    const m=Math.floor(remaining/60), s=remaining%60;
-    const pct=remaining/TOTAL;
-    const col=remaining>60?'#378ADD':remaining>30?'#EF9F27':'#E24B4A';
+    rem--;
+    const m=Math.floor(rem/60),s=rem%60;
+    const col=rem>60?'#378ADD':rem>30?'#EF9F27':'#E24B4A';
     const ring=document.getElementById('t-ring');
     const txt=document.getElementById('t-txt');
-    ring.style.strokeDashoffset=(CIRC*(1-pct))+'';
-    ring.style.stroke=col;
+    ring.setAttribute('stroke-dashoffset',String(CIRC*(1-rem/TOTAL)));
+    ring.setAttribute('stroke',col);
     txt.textContent=m+':'+(s<10?'0':'')+s;
     txt.setAttribute('fill',col);
-    if(remaining<=0){
+    if(rem<=0){
       clearInterval(iv);
-      document.getElementById('t-title').textContent='⏰ Temps écoulé, '+stagName+' !';
-      document.getElementById('t-sub').textContent='Envoyez maintenant votre cible à la formatrice';
-      document.getElementById('btn-send').style.background='#639922';
+      document.getElementById('t-name').textContent='⏰ Temps écoulé !';
       openModal();
     }
   },1000);
@@ -326,142 +343,113 @@ function startTimer(){
 
 // ── FILTRES ──
 function renderFilters(){
-  const f=[
+  const fs=[
     {id:'all',label:'Tous ('+PROSPECTS.length+')'},
     {id:'b2c',label:'B2C ('+PROSPECTS.filter(p=>p.cat==='b2c').length+')'},
     {id:'b2b',label:'B2B ('+PROSPECTS.filter(p=>p.cat==='b2b').length+')'},
   ];
-  document.getElementById('filter-row').innerHTML=f.map(x=>
-    '<button class="filter-btn'+(state.filter===x.id?' active':'')+'" onclick="setFilter(\''+x.id+'\')">'+x.label+'</button>'
+  document.getElementById('filter-row').innerHTML=fs.map(f=>
+    '<button class="f-btn'+(state.filter===f.id?' on':'')+'" onclick="setFilter(\''+f.id+'\')">'+f.label+'</button>'
   ).join('');
 }
-function setFilter(f){state.filter=f;closePicker();renderFilters();renderProspects();}
+function setFilter(f){state.filter=f;renderFilters();renderProspects();}
 
 // ── PROSPECTS ──
 function renderProspects(){
-  const filtered=PROSPECTS.filter(p=>state.filter==='all'||(p.cat===state.filter));
-  document.getElementById('count-lbl').textContent='— '+filtered.filter(p=>!state.placed[p.id]).length+' restants';
+  const list=PROSPECTS.filter(p=>state.filter==='all'||p.cat===state.filter);
   const byType={};
-  filtered.forEach(p=>{if(!byType[p.type])byType[p.type]=[];byType[p.type].push(p);});
+  list.forEach(p=>{if(!byType[p.type])byType[p.type]=[];byType[p.type].push(p);});
   document.getElementById('prospect-list').innerHTML=Object.entries(byType).map(([type,items])=>
-    '<div class="cat-label">'+type+'</div>'+
+    '<span class="cat-lbl">'+type+'</span>'+
     items.map(p=>{
       const z=state.placed[p.id];
       const zone=z?ZONES.find(zz=>zz.id===z):null;
-      return '<div class="prospect-item'+(z?' placed':'')+'" onclick="openPicker(event,\''+p.id+'\')">'+
-        '<div class="dot-ind" style="'+(zone?'background:'+zone.color+';border-color:'+zone.color:'')+'"></div>'+
-        '<span>'+p.name+'</span>'+
-        '<span style="margin-left:auto;font-size:10px;color:#999">'+(zone?zone.label:'')+'</span>'+
-        '<span style="font-size:11px;color:#bbb;margin-left:2px">›</span>'+
+      return'<div class="p-item'+(z?' placed':'')+'" onclick="openPicker(\''+p.id+'\')">'+
+        '<div class="p-dot" style="'+(zone?'background:'+zone.color+';border-color:'+zone.color:'')+'"></div>'+
+        '<div class="p-name">'+p.name+'</div>'+
+        (zone?'<div class="p-zone" style="background:'+zone.bg+';color:'+zone.text+'">'+zone.label+'</div>':'<div class="p-arr">›</div>')+
       '</div>';
     }).join('')
   ).join('');
 }
 
-// ── POPOVER ──
-function openPicker(e,id){
-  e.stopPropagation();
+// ── BOTTOM SHEET ──
+function openPicker(id){
   state.activeId=id;
+  const p=PROSPECTS.find(p=>p.id===id);
   const already=state.placed[id];
-  document.getElementById('zone-choices').innerHTML=ZONES.map(z=>
-    '<div class="zone-choice" onclick="assignZone(\''+z.id+'\')" style="'+(already===z.id?'background:'+z.bg:'')+'">'+
-      '<span class="zone-dot" style="background:'+z.color+'"></span>'+
-      '<span style="color:'+(already===z.id?z.text:'#1a1a1a')+'">'+z.label+'</span>'+
-      '<span style="font-size:10px;color:#999;margin-left:4px">'+z.sub+'</span>'+
-      (already===z.id?'<span style="margin-left:auto;color:'+z.text+'">✓</span>':'')+
-    '</div>'
-  ).join('');
-  document.getElementById('pick-sep').style.display=already?'block':'none';
-  document.getElementById('pick-remove').style.display=already?'flex':'none';
-  const picker=document.getElementById('zone-picker');
-  picker.classList.add('open');
-  const rect=e.currentTarget.getBoundingClientRect();
-  let left=rect.right+8, top=rect.top;
-  if(left+210>window.innerWidth) left=rect.left-218;
-  if(top+180>window.innerHeight) top=window.innerHeight-190;
-  picker.style.left=left+'px'; picker.style.top=top+'px';
+  document.getElementById('sheet-pname').textContent=p?p.name:'';
+  document.getElementById('zone-btns').innerHTML=ZONES.map(z=>{
+    const sel=already===z.id;
+    return'<div class="zone-btn'+(sel?' selected':'')+'" onclick="assignZone(\''+z.id+'\')" style="'+(sel?'border-color:'+z.color+';background:'+z.bg:'')+'">'+
+      '<div class="z-dot" style="background:'+z.color+'"></div>'+
+      '<div><div class="z-label" style="color:'+(sel?z.text:'#1a1a1a')+'">'+z.label+'</div>'+
+      '<div class="z-sub">'+z.sub+'</div></div>'+
+      (sel?'<div class="z-check" style="color:'+z.color+'">✓</div>':'')+
+    '</div>';
+  }).join('');
+  document.getElementById('sheet-remove').style.display=already?'flex':'none';
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('bottom-sheet').classList.add('show');
 }
 function assignZone(zoneId){
   if(state.activeId) state.placed[state.activeId]=zoneId;
-  closePicker(); render();
+  closePicker();render();
 }
 function removeProspect(){
   if(state.activeId) delete state.placed[state.activeId];
-  closePicker(); render();
+  closePicker();render();
 }
 function closePicker(){
-  document.getElementById('zone-picker').classList.remove('open');
-  document.getElementById('sheet-overlay').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('bottom-sheet').classList.remove('show');
   state.activeId=null;
 }
 
 // ── CIBLE SVG ──
 function renderTarget(){
   const wrap=document.getElementById('target-wrap');
-  const size=wrap.offsetWidth||300;
-  const cx=size/2, cy=size/2;
+  const size=Math.min(wrap.offsetWidth||280,280);
+  const cx=size/2,cy=size/2;
   const rings={chaud:{inner:0,outer:size*.14},tiede:{inner:size*.17,outer:size*.27},froid:{inner:size*.31,outer:size*.43}};
   const counts={chaud:0,tiede:0,froid:0};
   const colors={chaud:'#E24B4A',tiede:'#EF9F27',froid:'#378ADD'};
   let dots='';
   Object.entries(state.placed).forEach(([id,zone])=>{
-    const ring=rings[zone]; if(!ring) return;
-    const idx=counts[zone]||0; counts[zone]++;
+    const ring=rings[zone];if(!ring)return;
+    const idx=counts[zone]||0;counts[zone]++;
     const angle=idx*137.508*(Math.PI/180);
-    const t=((idx*0.618)%1);
+    const t=(idx*0.618)%1;
     const r=ring.inner+(ring.outer-ring.inner)*(0.2+t*0.7);
     const p=PROSPECTS.find(p=>p.id===id);
-    dots+='<circle cx="'+(cx+Math.cos(angle)*r)+'" cy="'+(cy+Math.sin(angle)*r)+'" r="4.5" fill="'+colors[zone]+'" opacity=".9" stroke="#fff" stroke-width="1"><title>'+(p?p.name:'')+'</title></circle>';
+    dots+='<circle cx="'+(cx+Math.cos(angle)*r)+'" cy="'+(cy+Math.sin(angle)*r)+'" r="5" fill="'+colors[zone]+'" stroke="#fff" stroke-width="1.5" opacity=".95"><title>'+(p?p.name:'')+'</title></circle>';
   });
   wrap.innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.46)+'" fill="rgba(55,138,221,.07)" stroke="#378ADD" stroke-width="1.5"/>'+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.30)+'" fill="rgba(239,159,39,.1)" stroke="#EF9F27" stroke-width="1.5"/>'+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.16)+'" fill="rgba(226,75,74,.18)" stroke="#E24B4A" stroke-width="2"/>'+
-    '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="10" fill="#A32D2D" font-weight="600">CHAUD</text>'+
-    '<text x="'+cx+'" y="'+(cy-size*.215)+'" text-anchor="middle" font-size="9" fill="#854F0B">TIÈDE</text>'+
-    '<text x="'+cx+'" y="'+(cy-size*.355)+'" text-anchor="middle" font-size="9" fill="#185FA5">FROID</text>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.46)+'" fill="rgba(55,138,221,.07)" stroke="#378ADD" stroke-width="2"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.30)+'" fill="rgba(239,159,39,.1)" stroke="#EF9F27" stroke-width="2"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.16)+'" fill="rgba(226,75,74,.15)" stroke="#E24B4A" stroke-width="2.5"/>'+
+    '<text x="'+cx+'" y="'+(cy+5)+'" text-anchor="middle" font-size="11" fill="#A32D2D" font-weight="700">CHAUD</text>'+
+    '<text x="'+cx+'" y="'+(cy-size*.215)+'" text-anchor="middle" font-size="10" fill="#854F0B">TIÈDE</text>'+
+    '<text x="'+cx+'" y="'+(cy-size*.36)+'" text-anchor="middle" font-size="10" fill="#185FA5">FROID</text>'+
     dots+'</svg>';
 }
 
-// ── STATS + PLACED ──
+// ── STATS ──
 function renderStats(){
-  const total=PROSPECTS.length, placed=Object.keys(state.placed).length;
-  const pct=Math.round(placed/total*100);
+  const total=PROSPECTS.length,placed=Object.keys(state.placed).length;
   document.getElementById('stats-row').innerHTML=
-    '<div class="stat-box"><div class="stat-num">'+total+'</div><div class="stat-lbl">Total</div></div>'+
-    '<div class="stat-box"><div class="stat-num" style="color:#378ADD">'+placed+'</div><div class="stat-lbl">Placés</div></div>'+
-    '<div class="stat-box"><div class="stat-num" style="color:#639922">'+(total-placed)+'</div><div class="stat-lbl">Restants</div></div>'+
-    '<div class="stat-box"><div class="stat-num">'+pct+'%</div><div class="stat-lbl">Avancement</div></div>';
-  document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-label').textContent=placed+' prospect'+(placed>1?'s':'')+' placé'+(placed>1?'s':'')+' sur '+total;
+    '<div class="stat"><div class="stat-n">'+total+'</div><div class="stat-l">Total</div></div>'+
+    '<div class="stat"><div class="stat-n" style="color:#378ADD">'+placed+'</div><div class="stat-l">Placés</div></div>'+
+    '<div class="stat"><div class="stat-n" style="color:#639922">'+(total-placed)+'</div><div class="stat-l">Restants</div></div>'+
+    '<div class="stat"><div class="stat-n">'+Math.round(placed/total*100)+'%</div><div class="stat-l">Avancement</div></div>';
 }
-function renderPlaced(){
-  const pl=document.getElementById('placed-list');
-  if(!Object.keys(state.placed).length){pl.innerHTML='';return;}
-  pl.innerHTML='<div class="sep"></div>'+ZONES.map(z=>{
-    const ids=Object.entries(state.placed).filter(([,v])=>v===z.id).map(([id])=>id);
-    if(!ids.length)return'';
-    return'<div style="margin-bottom:7px">'+
-      '<div class="placed-zone-title" style="color:'+z.text+'">'+z.label+' ('+ids.length+')</div>'+
-      '<div>'+ids.map(id=>{
-        const p=PROSPECTS.find(p=>p.id===id);
-        return'<span class="placed-tag" style="background:'+z.bg+';color:'+z.text+';border-color:'+z.color+'40" onclick="openTagPicker(event,\''+id+'\')">'+(p?p.name:id)+' ✎</span>';
-      }).join('')+'</div></div>';
-  }).join('');
-}
-function openTagPicker(e,id){
-  e.stopPropagation();
-  openPicker(e,id);
-}
-
-function render(){renderProspects();renderTarget();renderStats();renderPlaced();}
 
 // ── MODAL ──
 function buildSummary(){
-  const total=Object.keys(state.placed).length;
-  let txt='📊 CIBLE CHOGAN — '+stagName+'\n';
+  let txt='🎯 CIBLE CHOGAN — '+stagName+'\n';
   txt+='Date : '+new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+'\n';
   txt+='================================\n';
+  const total=Object.keys(state.placed).length;
   txt+=total+' prospect'+(total>1?'s':'')+' identifié'+(total>1?'s':'')+' sur '+PROSPECTS.length+'\n\n';
   ZONES.forEach(z=>{
     const ids=Object.entries(state.placed).filter(([,v])=>v===z.id).map(([id])=>id);
@@ -470,57 +458,53 @@ function buildSummary(){
     ids.forEach(id=>{const p=PROSPECTS.find(p=>p.id===id);txt+='  • '+(p?p.name:id)+'\n';});
     txt+='\n';
   });
-  if(total===0)txt+='Aucun prospect sélectionné.\n';
   return txt;
 }
 function openModal(){
+  const placed=Object.keys(state.placed).length;
   document.getElementById('modal-title').textContent='Cible de '+stagName;
-  document.getElementById('modal-sub').textContent=Object.keys(state.placed).length+' prospect(s) identifié(s)';
+  document.getElementById('modal-sub').textContent=placed+' prospect'+(placed>1?'s':'')+' identifié'+(placed>1?'s':'');
   document.getElementById('modal-summary').textContent=buildSummary();
-  document.getElementById('result-modal').style.display='flex';
+  document.getElementById('result-modal').classList.add('show');
 }
 function copyText(){
   navigator.clipboard.writeText(document.getElementById('modal-summary').textContent).then(()=>{
-    const btn=document.getElementById('btn-copy');
-    btn.textContent='✓ Copié !';
-    setTimeout(()=>btn.textContent='📋 Copier le résumé',2000);
+    const b=document.getElementById('btn-copy');
+    b.textContent='✓ Copié !';setTimeout(()=>b.textContent='📋 Copier le résumé',2000);
   });
 }
 function downloadCapture(){
-  document.getElementById('result-modal').style.display='none';
-  const panel=document.getElementById('right-panel');
+  document.getElementById('result-modal').classList.remove('show');
+  const panel=document.querySelector('.section');
   setTimeout(()=>{
-    html2canvas(panel,{scale:2,backgroundColor:'#fff',logging:false}).then(canvas=>{
-      // Ajouter le nom du stagiaire en haut de l'image
+    html2canvas(document.getElementById('target-wrap').parentElement,{scale:2,backgroundColor:'#fff',logging:false}).then(canvas=>{
       const final=document.createElement('canvas');
-      final.width=canvas.width;
-      final.height=canvas.height+80;
+      final.width=canvas.width;final.height=canvas.height+90;
       const ctx=final.getContext('2d');
-      // Header
-      ctx.fillStyle='#fff';
-      ctx.fillRect(0,0,final.width,final.height);
-      ctx.fillStyle='#E24B4A';
-      ctx.fillRect(0,0,final.width,6);
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,final.width,final.height);
+      ctx.fillStyle='#E24B4A';ctx.fillRect(0,0,final.width,5);
       ctx.fillStyle='#1a1a1a';
-      ctx.font='bold '+(canvas.width*0.055)+'px -apple-system,sans-serif';
+      ctx.font='bold '+(canvas.width*.07)+'px -apple-system,sans-serif';
       ctx.textAlign='center';
-      ctx.fillText('🎯 Cible — '+stagName, final.width/2, 44);
+      ctx.fillText('🎯 '+stagName,final.width/2,52);
       ctx.fillStyle='#888';
-      ctx.font=(canvas.width*0.03)+'px -apple-system,sans-serif';
-      ctx.fillText('Formation Chogan · '+new Date().toLocaleDateString('fr-FR'), final.width/2, 68);
-      ctx.drawImage(canvas,0,80);
+      ctx.font=(canvas.width*.038)+'px -apple-system,sans-serif';
+      ctx.fillText('Formation Chogan · '+new Date().toLocaleDateString('fr-FR'),final.width/2,76);
+      ctx.drawImage(canvas,0,90);
       const a=document.createElement('a');
       a.download='cible-'+stagName.replace(/ /g,'_')+'.png';
-      a.href=final.toDataURL('image/png');
-      a.click();
-      document.getElementById('result-modal').style.display='flex';
+      a.href=final.toDataURL('image/png');a.click();
+      document.getElementById('result-modal').classList.add('show');
     });
   },300);
 }
 
-// ── INIT ──
-renderFilters();render();
+function render(){renderFilters();renderProspects();renderStats();renderTarget();}
 window.addEventListener('resize',renderTarget);
+window.setFilter=setFilter;window.assignZone=assignZone;
+window.openPicker=openPicker;window.closePicker=closePicker;
+window.removeProspect=removeProspect;window.openModal=openModal;
+window.copyText=copyText;window.downloadCapture=downloadCapture;
 </script>
 </body>
 </html>
