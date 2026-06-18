@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Wallet Chogan">
-<meta name="theme-color" content="#F7EBE1">
+<meta name="theme-color" content="#ffffff">
 <title>Wallet Chogan</title>
 <script>
 const ACCESS_CODE = "CHOGAN2024";
@@ -18,22 +18,22 @@ const W3F_KEY     = "04e1ce0c-3c62-413d-ab06-7fdfe1afd91a";
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#F7EBE1;
-  --surface:#EADCC9;
-  --card:#e4d5bf;
-  --text:#4E463F;
-  --muted:rgba(78,70,63,.52);
-  --gold:#D2B795;
-  --gold2:#c9a87a;
-  --taupe:#4E463F;
-  --champagne:#F7EBE1;
-  --sable:#EADCC9;
+  --bg:#ffffff;
+  --surface:#f0f0f5;
+  --card:#e8e8ef;
+  --text:#1a1a1a;
+  --muted:rgba(0,0,0,.5);
+  --gold:#c9a84c;
+  --gold2:#e8c870;
+  --taupe:#1a1a1a;
+  --champagne:#ffffff;
+  --sable:#f0f0f5;
   --st:env(safe-area-inset-top,0px);
   --sb:env(safe-area-inset-bottom,0px);
 }
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@400;500;600;700;800&display=swap');
+
 html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
-  font-family:'Raleway',-apple-system,'Helvetica Neue',sans-serif;color:var(--text);
+  font-family:-apple-system,'Helvetica Neue',sans-serif;color:var(--text);
   -webkit-font-smoothing:antialiased}
 
 .screen{position:fixed;inset:0;display:flex;flex-direction:column;
@@ -42,24 +42,24 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
 
 /* ── SHARED FORM ── */
 .form-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:6px;display:block;font-family:'Cinzel',serif}
-.finput{width:100%;background:var(--card);border:0.5px solid rgba(78,70,63,.15);
+  color:var(--muted);margin-bottom:6px;display:block;font-family:inherit}
+.finput{width:100%;background:var(--card);border:0.5px solid rgba(0,0,0,.15);
   border-radius:12px;padding:14px 16px;color:var(--text);font-size:15px;
-  font-family:'Raleway',inherit;outline:none;transition:border-color .2s;margin-bottom:14px}
+  font-family:inherit;outline:none;transition:border-color .2s;margin-bottom:14px}
 .finput:focus{border-color:var(--gold2)}
-.finput::placeholder{color:rgba(78,70,63,.28)}
+.finput::placeholder{color:rgba(0,0,0,.28)}
 .btn-g{width:100%;padding:15px;border-radius:14px;
-  background:linear-gradient(135deg,#D2B795,#b89060);
+  background:linear-gradient(135deg,#c9a84c,#8b5e1a);
   border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;
-  font-family:'Cinzel',serif;box-shadow:0 4px 20px rgba(210,183,149,.35);
+  font-family:inherit;box-shadow:0 4px 20px rgba(210,183,149,.35);
   letter-spacing:.5px;transition:opacity .2s,transform .15s;margin-top:4px}
 .btn-g:active{opacity:.85;transform:scale(.98)}
 .btn-g:disabled{opacity:.5;cursor:default}
 .btn-o{width:100%;padding:14px;border-radius:14px;background:transparent;
-  border:0.5px solid rgba(78,70,63,.2);color:var(--text);font-size:14px;
-  font-weight:500;cursor:pointer;font-family:'Raleway',inherit;margin-top:10px}
-.btn-o:active{background:rgba(78,70,63,.06)}
-.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(78,70,63,.18);
+  border:0.5px solid rgba(0,0,0,.2);color:var(--text);font-size:14px;
+  font-weight:500;cursor:pointer;font-family:inherit;margin-top:10px}
+.btn-o:active{background:rgba(0,0,0,.06)}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.18);
   border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes sp{to{transform:rotate(360deg)}}
 
@@ -67,12 +67,12 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
 #main{background:var(--bg)}
 
 .wh{padding:6px 22px 4px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.wh-b{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-family:'Cinzel',serif}
-.wh-t{font-size:21px;font-weight:700;letter-spacing:-.01em;margin-top:2px;color:var(--taupe);font-family:'Cinzel',serif}
+.wh-b{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-family:inherit}
+.wh-t{font-size:21px;font-weight:700;letter-spacing:-.01em;margin-top:2px;color:var(--taupe);font-family:inherit}
 .wh-av{width:38px;height:38px;border-radius:50%;
-  background:linear-gradient(135deg,#D2B795,#b89060);
+  background:linear-gradient(135deg,#c9a84c,#8b5e1a);
   display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;cursor:pointer;position:relative;flex-shrink:0;color:#fff;font-family:'Cinzel',serif}
+  font-size:11px;font-weight:700;cursor:pointer;position:relative;flex-shrink:0;color:#fff;font-family:inherit}
 .av-dot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;
   border-radius:50%;background:#8fa88a;border:1.5px solid var(--bg)}
 
@@ -84,11 +84,11 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
 .pill-nav::-webkit-scrollbar{display:none}
 .pill{
   padding:8px 16px;border-radius:20px;
-  background:rgba(78,70,63,.07);
-  border:0.5px solid rgba(78,70,63,.12);
+  background:rgba(0,0,0,.07);
+  border:0.5px solid rgba(0,0,0,.12);
   color:var(--muted);font-size:12px;font-weight:600;
   white-space:nowrap;cursor:pointer;flex-shrink:0;
-  transition:all .2s;font-family:'Raleway',inherit;
+  transition:all .2s;font-family:inherit;
 }
 .pill.active{
   background:var(--taupe);
@@ -101,18 +101,18 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
 .wcard{position:absolute;left:14px;right:68px;height:186px;border-radius:22px;
   overflow:hidden;cursor:pointer;
   transition:top .42s cubic-bezier(.4,0,.2,1),transform .42s,opacity .32s;
-  will-change:transform,top;box-shadow:0 10px 40px rgba(78,70,63,.25)}
+  will-change:transform,top;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 .ci,.ci *{color:#fff}
 .ci{position:relative;width:100%;height:100%;padding:18px 20px;
   display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
 .cb1,.cb2{position:absolute;border-radius:50%}
 .ct{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2}
-.ct-c{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;opacity:.7;margin-bottom:3px;font-family:'Cinzel',serif}
-.ct-n{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.1;font-family:'Cinzel',serif}
+.ct-c{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;opacity:.7;margin-bottom:3px;font-family:inherit}
+.ct-n{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.1;font-family:inherit}
 .ct-i{width:42px;height:42px;border-radius:11px;background:rgba(0,0,0,.12);
   border:0.5px solid rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:21px}
 .cbx{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:2}
-.cb-sl{font-size:10px;opacity:.6;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;font-family:'Cinzel',serif}
+.cb-sl{font-size:10px;opacity:.6;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;font-family:inherit}
 .cb-sv{font-size:21px;font-weight:700;letter-spacing:-.03em}
 .cb-ch{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.12);
   border:0.5px solid rgba(0,0,0,.15);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:600}
@@ -127,7 +127,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
 
 /* ── DOTS ── */
 .dots{display:flex;gap:6px;justify-content:center;padding:8px 0 4px;flex-shrink:0}
-.dot{width:6px;height:6px;border-radius:3px;background:rgba(78,70,63,.18);transition:all .3s}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(0,0,0,.18);transition:all .3s}
 .dot.on{width:20px;background:var(--taupe)}
 
 /* ── ELEVATOR ── */
@@ -135,25 +135,25 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
   position:absolute;right:0;top:0;bottom:0;width:54px;
   display:flex;align-items:center;justify-content:center;
   z-index:20;touch-action:none;
-  background:linear-gradient(to left,rgba(78,70,63,.06),transparent);
+  background:linear-gradient(to left,rgba(0,0,0,.06),transparent);
 }
 .elev-track{
   width:5px;height:70%;
-  background:rgba(78,70,63,.12);border-radius:3px;position:relative;
+  background:rgba(0,0,0,.12);border-radius:3px;position:relative;
 }
 .elev-thumb{
   position:absolute;left:50%;transform:translateX(-50%);
   width:12px;height:46px;top:0;
-  background:rgba(78,70,63,.3);border-radius:6px;
-  transition:top .12s;box-shadow:0 2px 8px rgba(78,70,63,.3);
+  background:rgba(0,0,0,.3);border-radius:6px;
+  transition:top .12s;box-shadow:0 2px 8px rgba(0,0,0,.3);
 }
 
 /* ── BOTTOM NAV ── */
 .bnav{display:flex;justify-content:space-around;
   padding:8px 0 calc(8px + var(--sb));
-  border-top:0.5px solid rgba(78,70,63,.1);flex-shrink:0;background:var(--bg)}
+  border-top:0.5px solid rgba(0,0,0,.1);flex-shrink:0;background:var(--bg)}
 .ni{display:flex;flex-direction:column;align-items:center;gap:4px;
-  font-size:10px;font-weight:500;color:var(--muted);padding:4px 20px;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.04em}
+  font-size:10px;font-weight:500;color:var(--muted);padding:4px 20px;cursor:pointer;font-family:inherit;letter-spacing:.04em}
 .ni.on{color:var(--taupe)}
 .ni svg{width:22px;height:22px;stroke:currentColor;fill:none;
   stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -161,45 +161,45 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
 /* ── DETAIL FULL SCREEN ── */
 .shcard{border-radius:18px;overflow:hidden;padding:18px 20px 16px;position:relative;min-height:130px;margin-bottom:0}
 .sht{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;z-index:2}
-.shname{font-size:16px;font-weight:700;color:#fff;font-family:'Cinzel',serif}
+.shname{font-size:16px;font-weight:700;color:#fff;font-family:inherit}
 .shemo{font-size:24px}
-.shhv{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1;position:relative;z-index:2;color:#fff;font-family:'Cinzel',serif}
-.shhl{font-size:10px;opacity:.65;letter-spacing:.06em;text-transform:uppercase;margin-top:5px;position:relative;z-index:2;color:#fff;font-family:'Cinzel',serif}
+.shhv{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1;position:relative;z-index:2;color:#fff;font-family:inherit}
+.shhl{font-size:10px;opacity:.65;letter-spacing:.06em;text-transform:uppercase;margin-top:5px;position:relative;z-index:2;color:#fff;font-family:inherit}
 .fpills{display:flex;flex-wrap:wrap;gap:6px;padding:12px 18px 0}
-.fp{padding:5px 14px;border-radius:20px;background:rgba(78,70,63,.09);
-  border:0.5px solid rgba(78,70,63,.14);font-size:12px;font-weight:600;color:var(--taupe)}
+.fp{padding:5px 14px;border-radius:20px;background:rgba(0,0,0,.09);
+  border:0.5px solid rgba(0,0,0,.14);font-size:12px;font-weight:600;color:var(--taupe)}
 .fa{opacity:.28;font-size:14px;align-self:center;color:var(--gold2)}
 .si{display:flex;align-items:flex-start;gap:13px;padding:13px 0;
-  border-bottom:0.5px solid rgba(78,70,63,.08);animation:up .3s both}
+  border-bottom:0.5px solid rgba(0,0,0,.08);animation:up .3s both}
 .si:last-child{border-bottom:none}
 @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .sii{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;
-  justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:'Cinzel',serif}
+  justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:inherit}
 .sit{font-size:14px;font-weight:600;margin-bottom:3px;color:var(--taupe)}
 .sid{font-size:12px;color:var(--muted);line-height:1.55}
 .siq{display:inline-block;margin-top:6px;font-size:11px;font-style:italic;
-  padding:4px 10px;border-radius:8px;background:rgba(78,70,63,.06);
+  padding:4px 10px;border-radius:8px;background:rgba(0,0,0,.06);
   border-left:2px solid currentColor;color:var(--muted)}
 
 /* ── ADMIN PW ── */
-#apov{position:fixed;inset:0;z-index:200;background:rgba(78,70,63,.75);
+#apov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);
   backdrop-filter:blur(10px);display:flex;align-items:flex-end;
   justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
 #apov.show{opacity:1;pointer-events:all}
 .pw-box{background:var(--surface);border-radius:26px 26px 0 0;
-  border-top:0.5px solid rgba(78,70,63,.1);
+  border-top:0.5px solid rgba(0,0,0,.1);
   padding:24px 22px calc(28px + var(--sb));width:100%;max-width:480px}
-.pw-hdl{width:36px;height:4px;border-radius:2px;background:rgba(78,70,63,.15);margin:0 auto 18px}
+.pw-hdl{width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,.15);margin:0 auto 18px}
 
 /* ── TOAST ── */
 #toast{position:fixed;top:calc(var(--st) + 12px);left:16px;right:16px;
   border-radius:14px;padding:14px 18px;font-size:14px;font-weight:500;
   text-align:center;transform:translateY(-110px);opacity:0;
-  transition:all .35s cubic-bezier(.4,0,.2,1);z-index:999;font-family:'Raleway',inherit}
+  transition:all .35s cubic-bezier(.4,0,.2,1);z-index:999;font-family:inherit}
 #toast.show{transform:translateY(0);opacity:1}
 .t-ok{background:rgba(130,165,130,.92);color:#fff}
 .t-er{background:rgba(180,80,60,.88);color:#fff}
-.t-in{background:rgba(78,70,63,.95);border:0.5px solid rgba(210,183,149,.2);color:var(--champagne)}
+.t-in{background:rgba(0,0,0,.95);border:0.5px solid rgba(210,183,149,.2);color:var(--champagne)}
 </style>
 </head>
 <body>
@@ -248,7 +248,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);
 <div id="apov">
   <div class="pw-box">
     <div class="pw-hdl"></div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:4px;font-family:'Cinzel',serif;color:var(--taupe)">🔐 Accès Admin</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;font-family:inherit;color:var(--taupe)">🔐 Accès Admin</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Entrez le code admin.</div>
     <input class="finput" id="apw" type="password" placeholder="Code admin">
     <button class="btn-g" onclick="checkAdminPw()">Accéder</button>
@@ -303,23 +303,23 @@ function showAdminPanel(){
   ov.id='admin-ov';
   ov.style.cssText='position:fixed;inset:0;z-index:300;background:var(--bg);overflow-y:auto';
   ov.innerHTML=`
-    <div style="padding:calc(20px + var(--st)) 22px 16px;display:flex;align-items:center;gap:14px;border-bottom:0.5px solid rgba(78,70,63,.1);position:sticky;top:0;background:var(--bg);z-index:5">
-      <button onclick="document.getElementById('admin-ov').remove()" style="width:36px;height:36px;border-radius:50%;background:rgba(78,70,63,.09);border:none;color:var(--taupe);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
-      <div style="font-size:18px;font-weight:700;font-family:'Cinzel',serif;color:var(--taupe)">Panneau Admin</div>
-      <div style="margin-left:auto;padding:4px 12px;border-radius:20px;background:rgba(210,183,149,.2);border:0.5px solid rgba(210,183,149,.4);font-size:11px;font-weight:600;color:var(--gold2);font-family:'Cinzel',serif">ADMIN</div>
+    <div style="padding:calc(20px + var(--st)) 22px 16px;display:flex;align-items:center;gap:14px;border-bottom:0.5px solid rgba(0,0,0,.1);position:sticky;top:0;background:var(--bg);z-index:5">
+      <button onclick="document.getElementById('admin-ov').remove()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.09);border:none;color:var(--taupe);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
+      <div style="font-size:18px;font-weight:700;font-family:inherit;color:var(--taupe)">Panneau Admin</div>
+      <div style="margin-left:auto;padding:4px 12px;border-radius:20px;background:rgba(210,183,149,.2);border:0.5px solid rgba(210,183,149,.4);font-size:11px;font-weight:600;color:var(--gold2);font-family:inherit">ADMIN</div>
     </div>
     <div style="padding:22px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-family:'Cinzel',serif">Code d'accès consultantes</div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-family:inherit">Code d'accès consultantes</div>
       <div style="background:rgba(210,183,149,.12);border:0.5px solid rgba(210,183,149,.3);border-radius:16px;padding:16px 20px;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--gold2);margin-bottom:6px;font-family:'Cinzel',serif">Code à partager</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--gold2);margin-bottom:6px;font-family:inherit">Code à partager</div>
         <div style="font-size:28px;font-weight:700;font-family:monospace;letter-spacing:.12em;color:var(--taupe)">${ACCESS_CODE}</div>
       </div>
-      <button onclick="navigator.clipboard.writeText('${ACCESS_CODE}').then(()=>{this.textContent='✓ Copié !';setTimeout(()=>this.textContent='Copier le code',2000)})" style="width:100%;padding:12px;border-radius:12px;background:rgba(78,70,63,.07);border:0.5px solid rgba(78,70,63,.15);color:var(--taupe);font-size:14px;cursor:pointer;font-family:'Raleway',inherit;margin-bottom:24px">Copier le code</button>
-      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-family:'Cinzel',serif">Rapports automatiques</div>
+      <button onclick="navigator.clipboard.writeText('${ACCESS_CODE}').then(()=>{this.textContent='✓ Copié !';setTimeout(()=>this.textContent='Copier le code',2000)})" style="width:100%;padding:12px;border-radius:12px;background:rgba(0,0,0,.07);border:0.5px solid rgba(0,0,0,.15);color:var(--taupe);font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:24px">Copier le code</button>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-family:inherit">Rapports automatiques</div>
       <div style="background:rgba(210,183,149,.1);border:0.5px solid rgba(210,183,149,.22);border-radius:16px;padding:16px 18px;margin-bottom:24px;font-size:13px;color:var(--muted);line-height:1.8">
         📬 Un email est envoyé à <strong style="color:var(--taupe)">${ADMIN_EMAIL}</strong> à chaque fin de session avec le nom de la consultante et les cartes consultées.
       </div>
-      <button onclick="if(confirm('Réinitialiser ?')){LS.d('ok');LS.d('consultant_name');document.getElementById('admin-ov').remove();toast('Réinitialisé','in')}" style="width:100%;padding:14px;border-radius:14px;background:transparent;border:0.5px solid rgba(180,80,60,.3);color:rgba(180,80,60,.85);font-size:14px;cursor:pointer;font-family:'Raleway',inherit;margin-bottom:40px">
+      <button onclick="if(confirm('Réinitialiser ?')){LS.d('ok');LS.d('consultant_name');document.getElementById('admin-ov').remove();toast('Réinitialisé','in')}" style="width:100%;padding:14px;border-radius:14px;background:transparent;border:0.5px solid rgba(180,80,60,.3);color:rgba(180,80,60,.85);font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:40px">
         Réinitialiser l'accès
       </button>
     </div>`;
@@ -547,9 +547,9 @@ function openCard(c){
     </div>`).join('');
 
   document.getElementById('detail-content').innerHTML=`
-    <div style="position:sticky;top:0;background:var(--bg);z-index:10;padding:calc(12px + var(--st)) 18px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid rgba(78,70,63,.1)">
-      <button onclick="cls()" style="display:flex;align-items:center;gap:8px;background:rgba(78,70,63,.09);border:0.5px solid rgba(78,70,63,.15);border-radius:20px;padding:8px 16px;color:var(--taupe);font-size:14px;font-weight:500;cursor:pointer;font-family:'Raleway',inherit">← Retour</button>
-      <button onclick="cls()" style="width:36px;height:36px;border-radius:50%;background:rgba(78,70,63,.09);border:0.5px solid rgba(78,70,63,.12);color:var(--taupe);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="position:sticky;top:0;background:var(--bg);z-index:10;padding:calc(12px + var(--st)) 18px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid rgba(0,0,0,.1)">
+      <button onclick="cls()" style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.09);border:0.5px solid rgba(0,0,0,.15);border-radius:20px;padding:8px 16px;color:var(--taupe);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">← Retour</button>
+      <button onclick="cls()" style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.09);border:0.5px solid rgba(0,0,0,.12);color:var(--taupe);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
     <div class="shcard ${c.th}" style="margin:14px 18px 0">
       <div class="cb1" style="width:130px;height:130px;background:rgba(${r},${g},${b},.7);top:-30px;right:-30px"></div>
@@ -587,14 +587,14 @@ function showInfo(){
   const old=document.getElementById('info-ov'); if(old){old.remove();return;}
   const ov=document.createElement('div');
   ov.id='info-ov';
-  ov.style.cssText='position:fixed;inset:0;z-index:50;background:rgba(78,70,63,.7);backdrop-filter:blur(12px);display:flex;align-items:flex-end;justify-content:center';
+  ov.style.cssText='position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);display:flex;align-items:flex-end;justify-content:center';
   ov.onclick=e=>{if(e.target===ov)ov.remove();};
-  ov.innerHTML=`<div style="background:var(--surface);border-radius:26px 26px 0 0;padding:26px 22px calc(32px + var(--sb));width:100%;max-width:480px;border-top:0.5px solid rgba(78,70,63,.1)">
-    <div style="width:36px;height:4px;background:rgba(78,70,63,.14);border-radius:2px;margin:0 auto 22px"></div>
+  ov.innerHTML=`<div style="background:var(--surface);border-radius:26px 26px 0 0;padding:26px 22px calc(32px + var(--sb));width:100%;max-width:480px;border-top:0.5px solid rgba(0,0,0,.1)">
+    <div style="width:36px;height:4px;background:rgba(0,0,0,.14);border-radius:2px;margin:0 auto 22px"></div>
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:42px;margin-bottom:10px">💼</div>
-      <div style="font-size:20px;font-weight:700;margin-bottom:4px;font-family:'Cinzel',serif;color:var(--taupe)">Wallet Chogan</div>
-      <div style="font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-family:'Cinzel',serif">Guide de vente professionnel</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px;font-family:inherit;color:var(--taupe)">Wallet Chogan</div>
+      <div style="font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-family:inherit">Guide de vente professionnel</div>
     </div>
     <div style="background:rgba(210,183,149,.12);border:0.5px solid rgba(210,183,149,.25);border-radius:14px;padding:14px 16px;font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7">
       7 catégories · 6 cartes chacune<br>
@@ -602,7 +602,7 @@ function showInfo(){
       L'<strong style="color:var(--taupe)">ascenseur droit</strong> fait défiler les cartes.<br>
       Appuyez sur une carte pour voir le détail.
     </div>
-    <button onclick="document.getElementById('info-ov').remove()" style="width:100%;padding:14px;border-radius:14px;background:var(--taupe);border:none;color:var(--champagne);font-size:14px;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.5px">Fermer</button>
+    <button onclick="document.getElementById('info-ov').remove()" style="width:100%;padding:14px;border-radius:14px;background:var(--taupe);border:none;color:var(--champagne);font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:.5px">Fermer</button>
   </div>`;
   document.getElementById('main').appendChild(ov);
 }
