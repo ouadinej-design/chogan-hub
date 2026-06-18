@@ -71,6 +71,17 @@ body{padding-top:0px}.started body,.body-started{padding-top:80px}#timer-bar{dis
 .btn-start:hover{opacity:.88}
 .btn-start:disabled{background:#ccc;cursor:default}
 .logo-icon{font-size:48px;margin-bottom:16px}
+
+.name-screen{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+.name-box{background:#fff;border-radius:18px;padding:36px 28px;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.name-box h2{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.name-box p{font-size:13px;color:#888;margin-bottom:24px;line-height:1.5}
+.name-input{width:100%;padding:13px 16px;border-radius:10px;border:1.5px solid #ddd;font-size:16px;color:#1a1a1a;outline:none;text-align:center;transition:border-color .2s;margin-bottom:14px;font-family:inherit}
+.name-input:focus{border-color:#E24B4A}
+.btn-start{width:100%;padding:13px;border-radius:10px;border:none;background:#E24B4A;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn-start:hover{opacity:.88}
+.btn-start:disabled{background:#ddd;cursor:default;color:#aaa}
+.name-logo{font-size:48px;margin-bottom:16px}
 </style>
 </head>
 <body>
@@ -87,7 +98,20 @@ body{padding-top:0px}.started body,.body-started{padding-top:80px}#timer-bar{dis
   </div>
 </div>
 
-<div class="timer-bar" id="timer-bar">
+
+<div class="name-screen" id="name-screen">
+  <div class="name-box">
+    <div class="name-logo">🎯</div>
+    <h2>Cible de prospection</h2>
+    <p>Entrez votre prénom pour commencer.<br>Vous aurez <strong>3 minutes</strong> pour placer vos prospects.</p>
+    <input class="name-input" id="stagiaire-name" type="text" placeholder="Votre prénom..." maxlength="40"
+      oninput="document.getElementById('btn-start').disabled=!this.value.trim()"
+      onkeydown="if(event.key==='Enter')startExercise()">
+    <button class="btn-start" id="btn-start" onclick="startExercise()" disabled>Commencer ⏱</button>
+  </div>
+</div>
+
+<div class="timer-bar" id="timer-bar" style="display:none">
   <svg class="timer-circle" viewBox="0 0 54 54">
     <circle cx="27" cy="27" r="23" fill="none" stroke="#eee" stroke-width="4"/>
     <circle id="timer-ring" cx="27" cy="27" r="23" fill="none" stroke="#E24B4A" stroke-width="4"
@@ -446,10 +470,26 @@ function startExercise(){
   startTimer();
 }
 
+// ── NOM STAGIAIRE ──
+let stagName='';
+function startExercise(){
+  const input=document.getElementById('stagiaire-name');
+  stagName=input.value.trim();
+  if(!stagName) return;
+  document.getElementById('name-screen').style.display='none';
+  document.getElementById('timer-bar').style.display='flex';
+  document.body.style.overflow='';
+  timerInterval2=setInterval(tickTimer,1000);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>document.getElementById('stagiaire-name').focus(),300);
+});
+
 // ── TIMER ──
 const TOTAL=180;
 let remaining=TOTAL;
 let timerDone=false;
+let timerInterval2=null;
 const CIRC=2*Math.PI*23;
 
 function tickTimer(){
@@ -525,15 +565,59 @@ function copyText(){
 
 function downloadCapture(){
   document.getElementById('result-modal').style.display='none';
+  // Créer un panneau temporaire propre pour la capture
+  const panels=document.querySelectorAll('.panel');
+  const rightPanel=panels[1]; // panneau cible
+  
+  // Créer un wrapper temporaire avec le nom du stagiaire
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='position:fixed;top:-9999px;left:-9999px;background:#f8f7f5;padding:24px;border-radius:16px;width:420px;font-family:-apple-system,sans-serif';
+  
+  // Header avec nom
+  const header=document.createElement('div');
+  header.style.cssText='text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #e0ddd8';
+  header.innerHTML='<div style="font-size:28px;margin-bottom:6px">🎯</div>'+
+    '<div style="font-size:18px;font-weight:700;color:#1a1a1a">Cible de prospection</div>'+
+    '<div style="font-size:14px;color:#E24B4A;font-weight:600;margin-top:4px">'+stagName+'</div>'+
+    '<div style="font-size:11px;color:#aaa;margin-top:3px">Formation Chogan — '+new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+'</div>';
+  
+  // Clone du panneau cible
+  const clone=rightPanel.cloneNode(true);
+  clone.style.cssText='background:#fff;border-radius:12px;padding:14px;max-height:none;overflow:visible;border:0.5px solid #e0ddd8';
+  
+  // Légende des cercles
+  const legend=document.createElement('div');
+  legend.style.cssText='margin-top:14px;padding:12px 14px;background:#fff;border-radius:10px;border:0.5px solid #e0ddd8';
+  legend.innerHTML='<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px">Résumé</div>'+
+    [{id:'chaud',label:'Cercle chaud',color:'#E24B4A'},{id:'tiede',label:'Cercle tiède',color:'#EF9F27'},{id:'froid',label:'Cercle froid',color:'#378ADD'}]
+    .map(z=>{
+      const ids=Object.entries(state.placed).filter(([,v])=>v===z.id).map(([id])=>id);
+      return'<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
+        '<span style="width:10px;height:10px;border-radius:50%;background:'+z.color+';display:inline-block;flex-shrink:0"></span>'+
+        '<span style="font-size:12px;font-weight:600;color:#333">'+z.label+'</span>'+
+        '<span style="font-size:12px;color:#999;margin-left:auto">'+ids.length+' prospect'+(ids.length>1?'s':'')+'</span>'+
+      '</div>';
+    }).join('')+
+    '<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid #eee;font-size:12px;font-weight:700;color:#1a1a1a">Total : '+Object.keys(state.placed).length+' / '+PROSPECTS.length+' prospects</div>';
+  
+  wrapper.appendChild(header);
+  wrapper.appendChild(clone);
+  wrapper.appendChild(legend);
+  document.body.appendChild(wrapper);
+  
   setTimeout(()=>{
-    html2canvas(document.body,{scale:1.5,useCORS:true,backgroundColor:'#f8f7f5'}).then(canvas=>{
+    html2canvas(wrapper,{scale:2,useCORS:true,backgroundColor:'#f8f7f5',logging:false}).then(canvas=>{
+      document.body.removeChild(wrapper);
       const a=document.createElement('a');
-      a.download='ma-cible-chogan.png';
+      a.download='cible-'+stagName.replace(/ /g,'_')+'.png';
       a.href=canvas.toDataURL('image/png');
       a.click();
       document.getElementById('result-modal').style.display='flex';
+    }).catch(()=>{
+      document.body.removeChild(wrapper);
+      document.getElementById('result-modal').style.display='flex';
     });
-  },300);
+  },400);
 }
 
 </script>
