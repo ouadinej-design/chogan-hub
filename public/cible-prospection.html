@@ -58,11 +58,34 @@ body{background:#f8f7f5;padding:16px}
 .btn-dl{flex:1;padding:11px;border-radius:9px;border:1px solid #ccc;background:#fff;color:#333;font-size:13px;font-weight:600;cursor:pointer}
 .btn-copy{flex:1;padding:11px;border-radius:9px;border:none;background:#1a1a1a;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
 .btn-close{width:100%;padding:10px;border-radius:9px;border:1px solid #ddd;background:#fff;color:#888;font-size:12px;cursor:pointer;margin-top:8px}
-body{padding-top:80px}
+body{padding-top:0px}.started body,.body-started{padding-top:80px}#timer-bar{display:none}
+
+.name-screen{position:fixed;inset:0;z-index:1000;background:#f8f7f5;display:flex;align-items:center;justify-content:center;padding:24px}
+.name-box{background:#fff;border-radius:18px;padding:36px 28px;max-width:400px;width:100%;text-align:center;border:0.5px solid #e0ddd8;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.name-box h2{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.name-box p{font-size:14px;color:#888;margin-bottom:24px;line-height:1.5}
+.name-input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid #ddd;font-size:16px;text-align:center;outline:none;font-family:inherit;margin-bottom:16px;transition:border .2s}
+.name-input:focus{border-color:#E24B4A}
+.name-input::placeholder{color:#bbb}
+.btn-start{width:100%;padding:15px;border-radius:12px;border:none;background:#E24B4A;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn-start:hover{opacity:.88}
+.btn-start:disabled{background:#ccc;cursor:default}
+.logo-icon{font-size:48px;margin-bottom:16px}
 </style>
 </head>
 <body>
 
+
+
+<div class="name-screen" id="name-screen">
+  <div class="name-box">
+    <div class="logo-icon">🎯</div>
+    <h2>Cible de prospection</h2>
+    <p>Entrez votre prénom pour commencer.<br>Vous aurez <strong>3 minutes</strong> pour placer vos prospects.</p>
+    <input class="name-input" id="stagiaire-name" type="text" placeholder="Votre prénom..." maxlength="40" autocomplete="given-name">
+    <button class="btn-start" id="btn-start" onclick="startExercise()" disabled>Commencer ⏱</button>
+  </div>
+</div>
 
 <div class="timer-bar" id="timer-bar">
   <svg class="timer-circle" viewBox="0 0 54 54">
@@ -397,9 +420,31 @@ function openTagPicker(e,id){
   picker.style.left=left+'px';picker.style.top=top+'px';
 }
 
-window.setFilter=setFilter;window.assignZone=assignZone;window.removeFromZone=removeFromZone;window.openTagPicker=openTagPicker;window.openModal=openModal;window.copyText=copyText;window.downloadCapture=downloadCapture;
+window.setFilter=setFilter;window.assignZone=assignZone;window.removeFromZone=removeFromZone;window.openTagPicker=openTagPicker;window.openModal=openModal;window.startExercise=startExercise;window.copyText=copyText;window.downloadCapture=downloadCapture;
 function init(){renderFilters();renderProspects();renderStats();renderTarget();renderPlaced();}
 init();window.addEventListener('resize',renderTarget);
+
+
+// ── NAME SCREEN ──
+let stagiaireName = '';
+
+document.getElementById('stagiaire-name').addEventListener('input', function(){
+  document.getElementById('btn-start').disabled = this.value.trim().length < 2;
+});
+document.getElementById('stagiaire-name').addEventListener('keydown', function(e){
+  if(e.key==='Enter' && this.value.trim().length>=2) startExercise();
+});
+
+function startExercise(){
+  const name = document.getElementById('stagiaire-name').value.trim();
+  if(!name) return;
+  stagiaireName = name;
+  document.getElementById('name-screen').style.display='none';
+  document.getElementById('timer-bar').style.display='flex';
+  document.body.style.paddingTop='80px';
+  // Start timer
+  startTimer();
+}
 
 // ── TIMER ──
 const TOTAL=180;
@@ -427,14 +472,17 @@ function tickTimer(){
   if(remaining<=0){
     clearInterval(timerInterval);
     timerDone=true;
-    document.getElementById('timer-title').textContent='⏰ Temps écoulé !';
+    document.getElementById('timer-title').textContent='⏰ Temps écoulé, '+stagiaireName+' !';
     document.getElementById('timer-sub').textContent='Envoyez maintenant votre cible à la formatrice';
     document.getElementById('btn-send').style.background='#639922';
     document.getElementById('btn-send').textContent='📤 Envoyer ma cible';
     openModal();
   }
 }
-const timerInterval=setInterval(tickTimer,1000);
+let timerInterval=null;
+function startTimer(){
+  timerInterval=setInterval(tickTimer,1000);
+}
 
 // ── MODAL ──
 function buildSummary(){
