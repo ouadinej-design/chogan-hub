@@ -6,7 +6,29 @@
 <title>Cible Prospection Chogan</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif}
-body{background:#f8f7f5;padding:16px}
+body{background:#f8f7f5;padding:80px 16px 16px}
+
+/* ── NAME SCREEN ── */
+#name-screen{position:fixed;inset:0;z-index:1000;background:#f8f7f5;display:flex;align-items:center;justify-content:center;padding:24px}
+.name-box{background:#fff;border-radius:18px;padding:40px 30px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1);border:0.5px solid #e0ddd8}
+.name-emoji{font-size:52px;margin-bottom:14px}
+.name-title{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.name-sub{font-size:13px;color:#888;line-height:1.6;margin-bottom:26px}
+#name-input{width:100%;padding:15px 16px;border-radius:12px;border:2px solid #e0ddd8;font-size:17px;text-align:center;outline:none;font-family:inherit;margin-bottom:14px;color:#1a1a1a;transition:border-color .2s}
+#name-input:focus{border-color:#E24B4A}
+#name-input::placeholder{color:#bbb}
+#btn-start{width:100%;padding:15px;border-radius:12px;border:none;font-size:15px;font-weight:700;font-family:inherit;background:#ddd;color:#aaa;cursor:not-allowed;transition:all .25s}
+#btn-start.active{background:#E24B4A;color:#fff;cursor:pointer}
+#btn-start.active:hover{opacity:.88}
+
+/* ── TIMER BAR ── */
+#timer-bar{position:fixed;top:0;left:0;right:0;z-index:500;background:#fff;border-bottom:1px solid #eee;padding:8px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.t-msg{flex:1;font-size:13px;color:#555;line-height:1.4}
+.t-msg strong{color:#1a1a1a;display:block;font-size:14px;margin-bottom:1px}
+#btn-send{padding:9px 20px;border-radius:10px;border:none;background:#E24B4A;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+#btn-send:hover{opacity:.88}
+
+/* ── LAYOUT ── */
 .wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:600px}
 .panel{background:#fff;border:0.5px solid #e0ddd8;border-radius:12px;padding:14px;overflow-y:auto;max-height:740px}
 .panel h2{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #e8e5e0}
@@ -16,6 +38,9 @@ body{background:#f8f7f5;padding:16px}
 .prospect-item:hover{background:#f5f3f0}
 .prospect-item.placed{opacity:.38;text-decoration:line-through}
 .dot-ind{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:0.5px solid #ccc}
+.filter-row{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.filter-btn{padding:4px 10px;border-radius:10px;border:0.5px solid #ccc;font-size:11px;cursor:pointer;background:#fff;color:#666}
+.filter-btn.active{background:#e8f0fb;color:#185FA5;border-color:#378ADD}
 .stats-row{display:flex;gap:8px;margin-bottom:12px}
 .stat-box{flex:1;background:#f5f3f0;border-radius:8px;padding:8px;text-align:center}
 .stat-num{font-size:18px;font-weight:600;color:#1a1a1a}
@@ -23,86 +48,119 @@ body{background:#f8f7f5;padding:16px}
 .target-wrap{position:relative;width:100%;aspect-ratio:1;max-width:320px;margin:0 auto}
 .progress-bar{height:5px;background:#eee;border-radius:3px;overflow:hidden;margin-top:8px}
 .progress-fill{height:100%;border-radius:3px;transition:width .4s;background:#378ADD}
-.filter-row{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
-.filter-btn{padding:4px 10px;border-radius:10px;border:0.5px solid #ccc;font-size:11px;cursor:pointer;background:#fff;color:#666}
-.filter-btn.active{background:#e8f0fb;color:#185FA5;border-color:#378ADD}
 .sep{height:0.5px;background:#eee;margin:8px 0}
 .placed-zone-title{font-size:11px;font-weight:600;text-transform:uppercase;margin-bottom:3px}
 .placed-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;margin:2px;cursor:pointer;border:0.5px solid}
 
-/* POPOVER */
-.zone-picker{position:fixed;z-index:9999;background:#fff;border:0.5px solid #ccc;border-radius:12px;padding:8px;box-shadow:0 6px 24px rgba(0,0,0,.14);display:none;min-width:190px}
-.zone-picker.open{display:block}
+/* ── POPOVER ── */
+#zone-picker{position:fixed;z-index:9999;background:#fff;border:0.5px solid #ccc;border-radius:12px;padding:8px;box-shadow:0 6px 24px rgba(0,0,0,.14);display:none;min-width:200px}
+#zone-picker.open{display:block}
 .picker-title{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;padding:0 4px}
 .zone-choice{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
 .zone-choice:hover{background:#f5f3f0}
 .zone-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.picker-sep{height:0.5px;background:#eee;margin:4px 0;display:none}
-.remove-choice{display:none;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:#999;transition:background .1s}
-.remove-choice:hover{background:#f5f3f0}
+.picker-sep{height:0.5px;background:#eee;margin:4px 0}
+.remove-btn{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:#999;transition:background .1s}
+.remove-btn:hover{background:#f5f3f0}
 
-.timer-bar{position:fixed;top:0;left:0;right:0;z-index:500;background:#fff;border-bottom:1px solid #eee;padding:10px 20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.timer-circle{width:54px;height:54px;flex-shrink:0}
-.timer-num{font-size:18px;font-weight:700;text-align:center;dominant-baseline:middle}
-.timer-msg{flex:1;font-size:13px;color:#555;line-height:1.4}
-.timer-msg strong{color:#1a1a1a;display:block;font-size:14px;margin-bottom:2px}
-.btn-send{padding:10px 22px;border-radius:10px;border:none;background:#E24B4A;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s}
-.btn-send:hover{opacity:.88}
-.btn-send:disabled{background:#ccc;cursor:default}
-.overlay-modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px}
-.modal-box{background:#fff;border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-box h3{font-size:18px;font-weight:700;margin-bottom:6px;color:#1a1a1a}
-.modal-box p{font-size:13px;color:#666;margin-bottom:16px;line-height:1.5}
-.modal-summary{background:#f5f3f0;border-radius:10px;padding:14px;font-size:12px;line-height:1.8;margin-bottom:16px;white-space:pre-wrap;font-family:monospace;color:#333;max-height:220px;overflow-y:auto}
-.modal-btns{display:flex;gap:10px;flex-wrap:wrap}
-.btn-dl{flex:1;padding:11px;border-radius:9px;border:1px solid #ccc;background:#fff;color:#333;font-size:13px;font-weight:600;cursor:pointer}
-.btn-copy{flex:1;padding:11px;border-radius:9px;border:none;background:#1a1a1a;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+/* ── MODAL ── */
+#result-modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#fff;border-radius:16px;padding:28px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-summary{background:#f5f3f0;border-radius:10px;padding:14px;font-size:12px;line-height:1.8;margin-bottom:16px;white-space:pre-wrap;font-family:monospace;color:#333;max-height:200px;overflow-y:auto}
+.modal-btns{display:flex;gap:10px}
+.btn-dl{flex:1;padding:12px;border-radius:9px;border:1px solid #ccc;background:#fff;color:#333;font-size:13px;font-weight:600;cursor:pointer}
+.btn-copy{flex:1;padding:12px;border-radius:9px;border:none;background:#1a1a1a;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
 .btn-close{width:100%;padding:10px;border-radius:9px;border:1px solid #ddd;background:#fff;color:#888;font-size:12px;cursor:pointer;margin-top:8px}
-body{padding-top:0px}.started body,.body-started{padding-top:80px}#timer-bar{display:none}
-
-.name-screen{position:fixed;inset:0;z-index:1000;background:#f8f7f5;display:flex;align-items:center;justify-content:center;padding:24px}
-.name-box{background:#fff;border-radius:18px;padding:36px 28px;max-width:400px;width:100%;text-align:center;border:0.5px solid #e0ddd8;box-shadow:0 8px 32px rgba(0,0,0,.08)}
-.name-box h2{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
-.name-box p{font-size:14px;color:#888;margin-bottom:24px;line-height:1.5}
-.name-input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid #ddd;font-size:16px;text-align:center;outline:none;font-family:inherit;margin-bottom:16px;transition:border .2s}
-.name-input:focus{border-color:#E24B4A}
-.name-input::placeholder{color:#bbb}
-.btn-start{width:100%;padding:15px;border-radius:12px;border:none;background:#E24B4A;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s}
-.btn-start:hover{opacity:.88}
-.btn-start:disabled{background:#ccc;cursor:default}
-.logo-icon{font-size:48px;margin-bottom:16px}
-
-.name-screen{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}
-.name-box{background:#fff;border-radius:18px;padding:36px 28px;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.15)}
-.name-box h2{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
-.name-box p{font-size:13px;color:#888;margin-bottom:24px;line-height:1.5}
-.name-input{width:100%;padding:13px 16px;border-radius:10px;border:1.5px solid #ddd;font-size:16px;color:#1a1a1a;outline:none;text-align:center;transition:border-color .2s;margin-bottom:14px;font-family:inherit}
-.name-input:focus{border-color:#E24B4A}
-.btn-start{width:100%;padding:13px;border-radius:10px;border:none;background:#E24B4A;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s}
-.btn-start:hover{opacity:.88}
-.btn-start:disabled{background:#ddd;cursor:default;color:#aaa}
-.name-logo{font-size:48px;margin-bottom:16px}
 </style>
 </head>
 <body>
 
-
-
-
-
-<div class="zone-picker" id="zone-picker">
-  <div class="picker-title">Placer dans...</div>
-  <div id="zone-choices"></div>
-  <div class="picker-sep" id="picker-sep"></div>
-  <div class="remove-choice" id="remove-choice" onclick="removeFromZone()">✕ Retirer de la cible</div>
+<!-- ÉCRAN NOM -->
+<div id="name-screen">
+  <div class="name-box">
+    <div class="name-emoji">🎯</div>
+    <div class="name-title">Cible de prospection</div>
+    <div class="name-sub">Entrez votre prénom pour commencer.<br>Vous aurez <strong style="color:#E24B4A">3 minutes</strong> pour identifier vos prospects.</div>
+    <input id="name-input" type="text" placeholder="Votre prénom..." maxlength="40" autocomplete="given-name">
+    <button id="btn-start">Commencer ⏱</button>
+  </div>
 </div>
 
+<!-- TIMER BAR -->
+<div id="timer-bar">
+  <svg width="52" height="52" viewBox="0 0 52 52" style="flex-shrink:0">
+    <circle cx="26" cy="26" r="22" fill="none" stroke="#eee" stroke-width="4"/>
+    <circle id="t-ring" cx="26" cy="26" r="22" fill="none" stroke="#378ADD" stroke-width="4"
+      stroke-dasharray="138.23" stroke-dashoffset="0"
+      stroke-linecap="round" transform="rotate(-90 26 26)"
+      style="transition:stroke-dashoffset .9s linear,stroke .5s"/>
+    <text id="t-txt" x="26" y="31" text-anchor="middle" font-size="12" font-weight="700" fill="#378ADD">3:00</text>
+  </svg>
+  <div class="t-msg">
+    <strong id="t-title">⏱ Vous avez 3 minutes !</strong>
+    <span id="t-sub">Cliquez sur un prospect pour le placer dans un cercle</span>
+  </div>
+  <button id="btn-send" onclick="openModal()">📤 Envoyer ma cible</button>
+</div>
+
+<!-- CONTENU PRINCIPAL -->
+<div class="wrap">
+
+  <!-- PANNEAU GAUCHE : LISTE -->
+  <div class="panel" id="left-panel">
+    <h2>👥 Prospects <span id="count-lbl" style="font-size:12px;color:#999;font-weight:400"></span></h2>
+    <div class="hint">👆 Cliquez sur un prospect pour le placer dans un cercle</div>
+    <div class="filter-row" id="filter-row"></div>
+    <div id="prospect-list"></div>
+  </div>
+
+  <!-- PANNEAU DROIT : CIBLE -->
+  <div class="panel" id="right-panel">
+    <h2>🎯 Ma cible de prospection</h2>
+    <div class="stats-row" id="stats-row"></div>
+    <div class="target-wrap" id="target-wrap"></div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div style="font-size:11px;color:#999;margin-top:4px" id="prog-label">0 prospect placé</div>
+    <div id="placed-list"></div>
+  </div>
+
+</div>
+
+<!-- POPOVER CHOIX CERCLE -->
+<div id="zone-picker">
+  <div class="picker-title">Placer dans...</div>
+  <div id="zone-choices"></div>
+  <div id="pick-sep" class="picker-sep" style="display:none"></div>
+  <div id="pick-remove" class="remove-btn" style="display:none" onclick="removeProspect()">✕ Retirer de la cible</div>
+</div>
+
+<!-- MODAL RÉSULTAT -->
+<div id="result-modal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal-box">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:36px;margin-bottom:8px">🎯</div>
+      <div style="font-size:18px;font-weight:700;color:#1a1a1a" id="modal-title">Cible envoyée !</div>
+      <div style="font-size:13px;color:#888;margin-top:4px" id="modal-sub">Voici votre résumé</div>
+    </div>
+    <div class="modal-summary" id="modal-summary"></div>
+    <div class="modal-btns">
+      <button class="btn-dl" onclick="downloadCapture()">📸 Télécharger ma cible</button>
+      <button class="btn-copy" id="btn-copy" onclick="copyText()">📋 Copier le résumé</button>
+    </div>
+    <button class="btn-close" onclick="document.getElementById('result-modal').style.display='none'">Fermer</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
+// ── DATA ──
 const ZONES=[
   {id:'chaud',label:'Cercle chaud',sub:'Famille & amis',color:'#E24B4A',bg:'rgba(226,75,74,.1)',text:'#A32D2D'},
   {id:'tiede',label:'Cercle tiède',sub:'Connaissances',color:'#EF9F27',bg:'rgba(239,159,39,.1)',text:'#854F0B'},
   {id:'froid',label:'Cercle froid',sub:'Prospects froids',color:'#378ADD',bg:'rgba(55,138,221,.1)',text:'#185FA5'},
 ];
+
 const PROSPECTS=[
   {id:'p1',name:'Maman',cat:'b2c',type:'Famille'},
   {id:'p2',name:'Sœur / belle-sœur',cat:'b2c',type:'Famille'},
@@ -209,41 +267,85 @@ const PROSPECTS=[
   {id:'b45',name:'Salons professionnels / expos',cat:'b2b',type:'Réseaux & digital'},
 ];
 
+// ── STATE ──
 const state={placed:{},filter:'all',activeId:null};
+let stagName='';
 
+// ── NOM STAGIAIRE ──
+document.getElementById('name-input').addEventListener('input',function(){
+  const ok=this.value.trim().length>=2;
+  const btn=document.getElementById('btn-start');
+  btn.className=ok?'active':'';
+  this.style.borderColor=ok?'#E24B4A':'#e0ddd8';
+});
+document.getElementById('name-input').addEventListener('keydown',function(e){
+  if(e.key==='Enter')startExercise();
+});
+document.getElementById('btn-start').addEventListener('click',startExercise);
+setTimeout(()=>document.getElementById('name-input').focus(),300);
+
+function startExercise(){
+  const val=document.getElementById('name-input').value.trim();
+  if(val.length<2)return;
+  stagName=val;
+  document.getElementById('name-screen').style.display='none';
+  document.getElementById('timer-bar').style.display='flex';
+  document.getElementById('t-title').textContent='⏱ '+stagName+', vous avez 3 minutes !';
+  startTimer();
+}
+
+// ── TIMER ──
+const TOTAL=180, CIRC=2*Math.PI*22;
+let remaining=TOTAL;
+function startTimer(){
+  const iv=setInterval(()=>{
+    remaining--;
+    const m=Math.floor(remaining/60), s=remaining%60;
+    const pct=remaining/TOTAL;
+    const col=remaining>60?'#378ADD':remaining>30?'#EF9F27':'#E24B4A';
+    const ring=document.getElementById('t-ring');
+    const txt=document.getElementById('t-txt');
+    ring.style.strokeDashoffset=(CIRC*(1-pct))+'';
+    ring.style.stroke=col;
+    txt.textContent=m+':'+(s<10?'0':'')+s;
+    txt.setAttribute('fill',col);
+    if(remaining<=0){
+      clearInterval(iv);
+      document.getElementById('t-title').textContent='⏰ Temps écoulé, '+stagName+' !';
+      document.getElementById('t-sub').textContent='Envoyez maintenant votre cible à la formatrice';
+      document.getElementById('btn-send').style.background='#639922';
+      openModal();
+    }
+  },1000);
+}
+
+// ── FILTRES ──
 function renderFilters(){
   const f=[
     {id:'all',label:'Tous ('+PROSPECTS.length+')'},
     {id:'b2c',label:'B2C ('+PROSPECTS.filter(p=>p.cat==='b2c').length+')'},
     {id:'b2b',label:'B2B ('+PROSPECTS.filter(p=>p.cat==='b2b').length+')'},
-    
   ];
   document.getElementById('filter-row').innerHTML=f.map(x=>
-    `<button class="filter-btn${state.filter===x.id?' active':''}" onclick="setFilter('${x.id}')">${x.label}</button>`
+    '<button class="filter-btn'+(state.filter===x.id?' active':'')+'" onclick="setFilter(\''+x.id+'\')">'+x.label+'</button>'
   ).join('');
 }
+function setFilter(f){state.filter=f;closePicker();renderFilters();renderProspects();}
 
-function setFilter(f){state.filter=f;renderFilters();renderProspects();closePicker();}
-
+// ── PROSPECTS ──
 function renderProspects(){
-  const list=document.getElementById('prospect-list');
-  const filtered=PROSPECTS.filter(p=>{
-    if(state.filter==='b2c')return p.cat==='b2c';
-    if(state.filter==='b2b')return p.cat==='b2b';
-    
-    return true;
-  });
+  const filtered=PROSPECTS.filter(p=>state.filter==='all'||(p.cat===state.filter));
   document.getElementById('count-lbl').textContent='— '+filtered.filter(p=>!state.placed[p.id]).length+' restants';
   const byType={};
   filtered.forEach(p=>{if(!byType[p.type])byType[p.type]=[];byType[p.type].push(p);});
-  list.innerHTML=Object.entries(byType).map(([type,items])=>
+  document.getElementById('prospect-list').innerHTML=Object.entries(byType).map(([type,items])=>
     '<div class="cat-label">'+type+'</div>'+
     items.map(p=>{
       const z=state.placed[p.id];
       const zone=z?ZONES.find(zz=>zz.id===z):null;
-      return'<div class="prospect-item'+(z?' placed':'')+'" onclick="openPicker(event,\''+p.id+'\')">'+
+      return '<div class="prospect-item'+(z?' placed':'')+'" onclick="openPicker(event,\''+p.id+'\')">'+
         '<div class="dot-ind" style="'+(zone?'background:'+zone.color+';border-color:'+zone.color:'')+'"></div>'+
-        '<span>'+p.name+''+'</span>'+
+        '<span>'+p.name+'</span>'+
         '<span style="margin-left:auto;font-size:10px;color:#999">'+(zone?zone.label:'')+'</span>'+
         '<span style="font-size:11px;color:#bbb;margin-left:2px">›</span>'+
       '</div>';
@@ -251,58 +353,77 @@ function renderProspects(){
   ).join('');
 }
 
+// ── POPOVER ──
 function openPicker(e,id){
   e.stopPropagation();
   state.activeId=id;
   const already=state.placed[id];
-  const picker=document.getElementById('zone-picker');
   document.getElementById('zone-choices').innerHTML=ZONES.map(z=>
     '<div class="zone-choice" onclick="assignZone(\''+z.id+'\')" style="'+(already===z.id?'background:'+z.bg:'')+'">'+
       '<span class="zone-dot" style="background:'+z.color+'"></span>'+
       '<span style="color:'+(already===z.id?z.text:'#1a1a1a')+'">'+z.label+'</span>'+
       '<span style="font-size:10px;color:#999;margin-left:4px">'+z.sub+'</span>'+
-      (already===z.id?'<span style="margin-left:auto;color:'+z.text+';font-size:12px">✓</span>':'')+
+      (already===z.id?'<span style="margin-left:auto;color:'+z.text+'">✓</span>':'')+
     '</div>'
   ).join('');
-  const sep=document.getElementById('picker-sep');
-  const rem=document.getElementById('remove-choice');
-  if(already){sep.style.display='block';rem.style.display='flex';}
-  else{sep.style.display='none';rem.style.display='none';}
+  document.getElementById('pick-sep').style.display=already?'block':'none';
+  document.getElementById('pick-remove').style.display=already?'flex':'none';
+  const picker=document.getElementById('zone-picker');
   picker.classList.add('open');
   const rect=e.currentTarget.getBoundingClientRect();
-  let left=rect.right+8,top=rect.top;
-  if(left+200>window.innerWidth)left=rect.left-208;
-  if(top+200>window.innerHeight)top=window.innerHeight-210;
-  picker.style.left=left+'px';picker.style.top=top+'px';picker.style.width='200px';
+  let left=rect.right+8, top=rect.top;
+  if(left+210>window.innerWidth) left=rect.left-218;
+  if(top+180>window.innerHeight) top=window.innerHeight-190;
+  picker.style.left=left+'px'; picker.style.top=top+'px';
 }
-
 function assignZone(zoneId){
-  if(state.activeId){
-    state.placed[state.activeId]=zoneId;
-    closePicker();
-    renderProspects();renderTarget();renderPlaced();renderStats();
-  }
+  if(state.activeId) state.placed[state.activeId]=zoneId;
+  closePicker(); render();
 }
-
-function removeFromZone(){
-  if(state.activeId){
-    delete state.placed[state.activeId];
-    closePicker();
-    renderProspects();renderTarget();renderPlaced();renderStats();
-  }
+function removeProspect(){
+  if(state.activeId) delete state.placed[state.activeId];
+  closePicker(); render();
 }
-
 function closePicker(){
   document.getElementById('zone-picker').classList.remove('open');
   state.activeId=null;
 }
-
 document.addEventListener('click',e=>{
-  if(!document.getElementById('zone-picker').contains(e.target))closePicker();
+  if(!document.getElementById('zone-picker').contains(e.target)) closePicker();
 });
 
+// ── CIBLE SVG ──
+function renderTarget(){
+  const wrap=document.getElementById('target-wrap');
+  const size=wrap.offsetWidth||300;
+  const cx=size/2, cy=size/2;
+  const rings={chaud:{inner:0,outer:size*.14},tiede:{inner:size*.17,outer:size*.27},froid:{inner:size*.31,outer:size*.43}};
+  const counts={chaud:0,tiede:0,froid:0};
+  const colors={chaud:'#E24B4A',tiede:'#EF9F27',froid:'#378ADD'};
+  let dots='';
+  Object.entries(state.placed).forEach(([id,zone])=>{
+    const ring=rings[zone]; if(!ring) return;
+    const idx=counts[zone]||0; counts[zone]++;
+    const angle=idx*137.508*(Math.PI/180);
+    const t=((idx*0.618)%1);
+    const r=ring.inner+(ring.outer-ring.inner)*(0.2+t*0.7);
+    const p=PROSPECTS.find(p=>p.id===id);
+    dots+='<circle cx="'+(cx+Math.cos(angle)*r)+'" cy="'+(cy+Math.sin(angle)*r)+'" r="4.5" fill="'+colors[zone]+'" opacity=".9" stroke="#fff" stroke-width="1"><title>'+(p?p.name:'')+'</title></circle>';
+  });
+  wrap.innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.46)+'" fill="rgba(55,138,221,.07)" stroke="#378ADD" stroke-width="1.5"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.30)+'" fill="rgba(239,159,39,.1)" stroke="#EF9F27" stroke-width="1.5"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.16)+'" fill="rgba(226,75,74,.18)" stroke="#E24B4A" stroke-width="2"/>'+
+    '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="10" fill="#A32D2D" font-weight="600">CHAUD</text>'+
+    '<text x="'+cx+'" y="'+(cy-size*.215)+'" text-anchor="middle" font-size="9" fill="#854F0B">TIÈDE</text>'+
+    '<text x="'+cx+'" y="'+(cy-size*.355)+'" text-anchor="middle" font-size="9" fill="#185FA5">FROID</text>'+
+    dots+'</svg>';
+}
+
+// ── STATS + PLACED ──
 function renderStats(){
-  const total=PROSPECTS.length,placed=Object.keys(state.placed).length,pct=Math.round(placed/total*100);
+  const total=PROSPECTS.length, placed=Object.keys(state.placed).length;
+  const pct=Math.round(placed/total*100);
   document.getElementById('stats-row').innerHTML=
     '<div class="stat-box"><div class="stat-num">'+total+'</div><div class="stat-lbl">Total</div></div>'+
     '<div class="stat-box"><div class="stat-num" style="color:#378ADD">'+placed+'</div><div class="stat-lbl">Placés</div></div>'+
@@ -311,254 +432,98 @@ function renderStats(){
   document.getElementById('prog-fill').style.width=pct+'%';
   document.getElementById('prog-label').textContent=placed+' prospect'+(placed>1?'s':'')+' placé'+(placed>1?'s':'')+' sur '+total;
 }
-
-function renderTarget(){
-  const wrap=document.getElementById('target-svg-wrap');
-  const size=wrap.offsetWidth||300;
-  const cx=size/2,cy=size/2;
-  // Limites intérieure/extérieure de chaque anneau (en fraction de size/2)
-  const rings={
-    chaud:{inner:0,      outer:size*.13},
-    tiede:{inner:size*.17, outer:size*.27},
-    froid:{inner:size*.32, outer:size*.44},
-  };
-  const counts={chaud:0,tiede:0,froid:0};
-  const colors={chaud:'#E24B4A',tiede:'#EF9F27',froid:'#378ADD'};
-  let dots='';
-  Object.entries(state.placed).forEach(([id,zone])=>{
-    const ring=rings[zone];
-    const idx=counts[zone]||0;
-    counts[zone]=(counts[zone]||0)+1;
-    // Spirale de Fibonacci pour repartir uniformément dans l'anneau
-    const angle=idx*137.508*(Math.PI/180);
-    // Radius aléatoire mais fixe (basé sur idx) entre inner et outer
-    const t=((idx*0.618)%1);
-    const r=ring.inner+(ring.outer-ring.inner)*(0.2+t*0.7);
-    const p=PROSPECTS.find(p=>p.id===id);
-    dots+='<circle cx="'+(cx+Math.cos(angle)*r)+'" cy="'+(cy+Math.sin(angle)*r)+'" r="4.5" fill="'+colors[zone]+'" opacity=".9" stroke="#fff" stroke-width="1"><title>'+(p?p.name:id)+'</title></circle>';
-  });
-  wrap.innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" aria-label="Cible de prospection Chogan">'+
-    ''+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.46)+'" fill="rgba(55,138,221,.07)" stroke="#378ADD" stroke-width="1.5"/>'+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.30)+'" fill="rgba(239,159,39,.1)" stroke="#EF9F27" stroke-width="1.5"/>'+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(size*.16)+'" fill="rgba(226,75,74,.18)" stroke="#E24B4A" stroke-width="2"/>'+
-    '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="10" fill="#A32D2D" font-weight="600">CHAUD</text>'+
-    '<text x="'+cx+'" y="'+(cy-size*.215)+'" text-anchor="middle" font-size="9" fill="#854F0B">TIÈDE</text>'+
-    '<text x="'+cx+'" y="'+(cy-size*.355)+'" text-anchor="middle" font-size="9" fill="#185FA5">FROID</text>'+
-    ''+
-    dots+'</svg>';
-}
-
 function renderPlaced(){
-  const list=document.getElementById('placed-list');
-  if(!Object.keys(state.placed).length){list.innerHTML='';return;}
-  list.innerHTML='<div class="sep"></div>'+ZONES.map(z=>{
+  const pl=document.getElementById('placed-list');
+  if(!Object.keys(state.placed).length){pl.innerHTML='';return;}
+  pl.innerHTML='<div class="sep"></div>'+ZONES.map(z=>{
     const ids=Object.entries(state.placed).filter(([,v])=>v===z.id).map(([id])=>id);
     if(!ids.length)return'';
     return'<div style="margin-bottom:7px">'+
       '<div class="placed-zone-title" style="color:'+z.text+'">'+z.label+' ('+ids.length+')</div>'+
       '<div>'+ids.map(id=>{
         const p=PROSPECTS.find(p=>p.id===id);
-        return'<span class="placed-tag" style="background:'+z.bg+';color:'+z.text+';border-color:'+z.color+'40" onclick="openTagPicker(event,\''+id+'\')" title="Modifier">'+
-          (p?p.name:id)+' ✎</span>';
+        return'<span class="placed-tag" style="background:'+z.bg+';color:'+z.text+';border-color:'+z.color+'40" onclick="openTagPicker(event,\''+id+'\')">'+(p?p.name:id)+' ✎</span>';
       }).join('')+'</div></div>';
   }).join('');
 }
-
 function openTagPicker(e,id){
   e.stopPropagation();
   openPicker({currentTarget:e.target,stopPropagation:()=>{}},id);
   const rect=e.target.getBoundingClientRect();
   const picker=document.getElementById('zone-picker');
-  let left=rect.left,top=rect.bottom+4;
-  if(left+200>window.innerWidth)left=window.innerWidth-210;
-  if(top+200>window.innerHeight)top=rect.top-210;
-  picker.style.left=left+'px';picker.style.top=top+'px';
+  let left=rect.left, top=rect.bottom+4;
+  if(left+210>window.innerWidth)left=window.innerWidth-218;
+  if(top+180>window.innerHeight)top=rect.top-190;
+  picker.style.left=left+'px'; picker.style.top=top+'px';
 }
 
-window.setFilter=setFilter;window.assignZone=assignZone;window.removeFromZone=removeFromZone;window.openTagPicker=openTagPicker;window.openModal=openModal;window.startExercise=startExercise;window.copyText=copyText;window.downloadCapture=downloadCapture;window.onNameInput=onNameInput;
-function init(){renderFilters();renderProspects();renderStats();renderTarget();renderPlaced();}
-init();window.addEventListener('resize',renderTarget);
-
-
-// ── NAME SCREEN ──
-let stagiaireName = '';
-
-
-
-
-function startExercise(){
-  const name = document.getElementById('stagiaire-name').value.trim();
-  if(!name) return;
-  stagiaireName = name;
-  document.getElementById('name-screen').style.display='none';
-  document.getElementById('timer-bar').style.display='flex';
-  document.body.style.paddingTop='80px';
-  // Start timer
-  startTimer();
-}
-
-// ── NOM STAGIAIRE ──
-let stagName='';
-function onNameInput(val){
-  const btn=document.getElementById('btn-start');
-  const inp=document.getElementById('name-input');
-  if(val.trim().length>=2){
-    btn.style.background='#E24B4A';btn.style.color='#fff';btn.style.cursor='pointer';
-    inp.style.borderColor='#E24B4A';
-  } else {
-    btn.style.background='#ddd';btn.style.color='#aaa';btn.style.cursor='not-allowed';
-    inp.style.borderColor='#eee';
-  }
-}
-function startExercise(){
-  const inp=document.getElementById('name-input');
-  stagName=(inp?inp.value:'').trim();
-  if(stagName.length<2) return;
-  document.getElementById('name-screen').style.display='none';
-  document.getElementById('timer-bar').style.display='flex';
-  document.body.style.overflow='';
-  document.getElementById('timer-title').textContent='⏱ '+stagName+', vous avez 3 minutes !';
-  timerInterval2=setInterval(tickTimer,1000);
-}
-
-
-// ── TIMER ──
-const TOTAL=180;
-let remaining=TOTAL;
-let timerDone=false;
-let timerInterval2=null;
-const CIRC=2*Math.PI*23;
-
-function tickTimer(){
-  remaining--;
-  const mins=Math.floor(remaining/60);
-  const secs=remaining%60;
-  const pct=remaining/TOTAL;
-  const ring=document.getElementById('timer-ring');
-  const txt=document.getElementById('timer-text');
-  if(ring) ring.style.strokeDashoffset=(CIRC*(1-pct))+'';
-  if(ring){
-    if(remaining<=30) ring.style.stroke='#E24B4A';
-    else if(remaining<=60) ring.style.stroke='#EF9F27';
-    else ring.style.stroke='#378ADD';
-  }
-  if(txt){
-    txt.textContent=mins+':'+(secs<10?'0':'')+secs;
-    txt.style.fill=remaining<=30?'#E24B4A':remaining<=60?'#EF9F27':'#378ADD';
-  }
-  if(remaining<=0){
-    clearInterval(timerInterval);
-    timerDone=true;
-    document.getElementById('timer-title').textContent='⏰ Temps écoulé, '+stagiaireName+' !';
-    document.getElementById('timer-sub').textContent='Envoyez maintenant votre cible à la formatrice';
-    document.getElementById('btn-send').style.background='#639922';
-    document.getElementById('btn-send').textContent='📤 Envoyer ma cible';
-    openModal();
-  }
-}
-let timerInterval=null;
-function startTimer(){
-  timerInterval=setInterval(tickTimer,1000);
-}
+function render(){renderProspects();renderTarget();renderStats();renderPlaced();}
 
 // ── MODAL ──
 function buildSummary(){
-  const zones=[
-    {id:'chaud',label:'🔴 CERCLE CHAUD (Famille & amis proches)'},
-    {id:'tiede',label:'🟠 CERCLE TIÈDE (Connaissances & collègues)'},
-    {id:'froid',label:'🔵 CERCLE FROID (Prospects froids)'},
-  ];
   const total=Object.keys(state.placed).length;
-  let txt='📊 MA CIBLE CHOGAN\n';
+  let txt='📊 CIBLE CHOGAN — '+stagName+'\n';
+  txt+='Date : '+new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+'\n';
   txt+='================================\n';
   txt+=total+' prospect'+(total>1?'s':'')+' identifié'+(total>1?'s':'')+' sur '+PROSPECTS.length+'\n\n';
-  zones.forEach(z=>{
+  ZONES.forEach(z=>{
     const ids=Object.entries(state.placed).filter(([,v])=>v===z.id).map(([id])=>id);
-    if(!ids.length) return;
-    txt+=z.label+'\n';
-    ids.forEach(id=>{
-      const p=PROSPECTS.find(p=>p.id===id);
-      txt+='  • '+(p?p.name:id)+'\n';
-    });
+    if(!ids.length)return;
+    txt+=z.label.toUpperCase()+' ('+ids.length+')\n';
+    ids.forEach(id=>{const p=PROSPECTS.find(p=>p.id===id);txt+='  • '+(p?p.name:id)+'\n';});
     txt+='\n';
   });
-  if(total===0) txt+='Aucun prospect sélectionné.\n';
+  if(total===0)txt+='Aucun prospect sélectionné.\n';
   return txt;
 }
-
 function openModal(){
+  document.getElementById('modal-title').textContent='Cible de '+stagName;
+  document.getElementById('modal-sub').textContent=Object.keys(state.placed).length+' prospect(s) identifié(s)';
   document.getElementById('modal-summary').textContent=buildSummary();
   document.getElementById('result-modal').style.display='flex';
 }
-
 function copyText(){
-  const txt=document.getElementById('modal-summary').textContent;
-  navigator.clipboard.writeText(txt).then(()=>{
-    const btn=document.getElementById('btn-copy-text');
+  navigator.clipboard.writeText(document.getElementById('modal-summary').textContent).then(()=>{
+    const btn=document.getElementById('btn-copy');
     btn.textContent='✓ Copié !';
     setTimeout(()=>btn.textContent='📋 Copier le résumé',2000);
   });
 }
-
 function downloadCapture(){
   document.getElementById('result-modal').style.display='none';
-  // Créer un panneau temporaire propre pour la capture
-  const panels=document.querySelectorAll('.panel');
-  const rightPanel=panels[1]; // panneau cible
-  
-  // Créer un wrapper temporaire avec le nom du stagiaire
-  const wrapper=document.createElement('div');
-  wrapper.style.cssText='position:fixed;top:-9999px;left:-9999px;background:#f8f7f5;padding:24px;border-radius:16px;width:420px;font-family:-apple-system,sans-serif';
-  
-  // Header avec nom
-  const header=document.createElement('div');
-  header.style.cssText='text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #e0ddd8';
-  header.innerHTML='<div style="font-size:28px;margin-bottom:6px">🎯</div>'+
-    '<div style="font-size:18px;font-weight:700;color:#1a1a1a">Cible de prospection</div>'+
-    '<div style="font-size:14px;color:#E24B4A;font-weight:600;margin-top:4px">'+stagName+'</div>'+
-    '<div style="font-size:11px;color:#aaa;margin-top:3px">Formation Chogan — '+new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+'</div>';
-  
-  // Clone du panneau cible
-  const clone=rightPanel.cloneNode(true);
-  clone.style.cssText='background:#fff;border-radius:12px;padding:14px;max-height:none;overflow:visible;border:0.5px solid #e0ddd8';
-  
-  // Légende des cercles
-  const legend=document.createElement('div');
-  legend.style.cssText='margin-top:14px;padding:12px 14px;background:#fff;border-radius:10px;border:0.5px solid #e0ddd8';
-  legend.innerHTML='<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px">Résumé</div>'+
-    [{id:'chaud',label:'Cercle chaud',color:'#E24B4A'},{id:'tiede',label:'Cercle tiède',color:'#EF9F27'},{id:'froid',label:'Cercle froid',color:'#378ADD'}]
-    .map(z=>{
-      const ids=Object.entries(state.placed).filter(([,v])=>v===z.id).map(([id])=>id);
-      return'<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
-        '<span style="width:10px;height:10px;border-radius:50%;background:'+z.color+';display:inline-block;flex-shrink:0"></span>'+
-        '<span style="font-size:12px;font-weight:600;color:#333">'+z.label+'</span>'+
-        '<span style="font-size:12px;color:#999;margin-left:auto">'+ids.length+' prospect'+(ids.length>1?'s':'')+'</span>'+
-      '</div>';
-    }).join('')+
-    '<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid #eee;font-size:12px;font-weight:700;color:#1a1a1a">Total : '+Object.keys(state.placed).length+' / '+PROSPECTS.length+' prospects</div>';
-  
-  wrapper.appendChild(header);
-  wrapper.appendChild(clone);
-  wrapper.appendChild(legend);
-  document.body.appendChild(wrapper);
-  
+  const panel=document.getElementById('right-panel');
   setTimeout(()=>{
-    html2canvas(wrapper,{scale:2,useCORS:true,backgroundColor:'#f8f7f5',logging:false}).then(canvas=>{
-      document.body.removeChild(wrapper);
+    html2canvas(panel,{scale:2,backgroundColor:'#fff',logging:false}).then(canvas=>{
+      // Ajouter le nom du stagiaire en haut de l'image
+      const final=document.createElement('canvas');
+      final.width=canvas.width;
+      final.height=canvas.height+80;
+      const ctx=final.getContext('2d');
+      // Header
+      ctx.fillStyle='#fff';
+      ctx.fillRect(0,0,final.width,final.height);
+      ctx.fillStyle='#E24B4A';
+      ctx.fillRect(0,0,final.width,6);
+      ctx.fillStyle='#1a1a1a';
+      ctx.font='bold '+(canvas.width*0.055)+'px -apple-system,sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('🎯 Cible — '+stagName, final.width/2, 44);
+      ctx.fillStyle='#888';
+      ctx.font=(canvas.width*0.03)+'px -apple-system,sans-serif';
+      ctx.fillText('Formation Chogan · '+new Date().toLocaleDateString('fr-FR'), final.width/2, 68);
+      ctx.drawImage(canvas,0,80);
       const a=document.createElement('a');
       a.download='cible-'+stagName.replace(/ /g,'_')+'.png';
-      a.href=canvas.toDataURL('image/png');
+      a.href=final.toDataURL('image/png');
       a.click();
       document.getElementById('result-modal').style.display='flex';
-    }).catch(()=>{
-      document.body.removeChild(wrapper);
-      document.getElementById('result-modal').style.display='flex';
     });
-  },400);
+  },300);
 }
 
+// ── INIT ──
+renderFilters();render();
+window.addEventListener('resize',renderTarget);
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
