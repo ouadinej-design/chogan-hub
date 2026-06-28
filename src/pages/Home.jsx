@@ -22,6 +22,7 @@ const APP_GROUPS = [
   ]},
   { label: '🎓 Apprentissage', items: [
     { id:'formation',   label:'Formation',    desc:'Modules',    icon:'🎓', color:'#B89A6A', bg:'rgba(184,154,106,0.13)', path:'/app/formation',   duration:'~15 min' },
+    { id:'prospection', label:'Prospecter Pros', desc:'Guide B2B terrain', icon:'🎯', color:'#4247B3', bg:'rgba(66,71,179,0.13)', path:'/app/prospection' },
     { id:'inspirations',label:'Inspirations', desc:'Motivation', icon:'🌹', color:'#9e5a7a', bg:'rgba(158,90,122,0.13)',  path:'/app/inspirations' },
     { id:'catalogues',  label:'Catalogues',   desc:'Produits',   icon:'📖', color:'#3d6b9e', bg:'rgba(61,107,158,0.13)',  path:'/app/catalogues' },
     { id:'familles',    label:'Familles',     desc:'Olfactif',   icon:'💐', color:'#9e5a7a', bg:'rgba(158,90,122,0.13)',  path:'/app/familles' },

@@ -24,6 +24,7 @@ import Formation  from './pages/apps/Formation';
 import Familles   from './pages/apps/Familles';
 import Catalogues from './pages/apps/Catalogues';
 import Checklist  from './pages/apps/Checklist';
+import Prospection from './pages/apps/Prospection';
 import './styles/globals.css';
 
 function AppRoutes() {
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="/app/familles"       element={<Familles />} />
         <Route path="/app/catalogues"     element={<Catalogues />} />
         <Route path="/app/checklist"      element={<Checklist />} />
+        <Route path="/app/prospection"    element={<Prospection />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </DataProvider>
