@@ -610,25 +610,63 @@ function copySMS(id,btn){
 
 /* ════════════ PROSPECT FINDER ════════════ */
 const FINDER_TYPES = [
-  { key:'coiffeur',   label:'💇 Salon de coiffure',   osm:'shop=hairdresser',       profil:'beaute',     gender:true },
-  { key:'institut',   label:'💅 Institut / Esthétique', osm:'shop=beauty',          profil:'beaute' },
-  { key:'restaurant', label:'🍽️ Restaurant',          osm:'amenity=restaurant',     profil:'hotellerie' },
-  { key:'hotel',      label:'🏨 Hôtel',               osm:'tourism=hotel',          profil:'hotellerie' },
-  { key:'sport',      label:'💪 Salle de sport',       osm:'leisure=fitness_centre', profil:'sante' },
-  { key:'fleuriste',  label:'💐 Fleuriste',           osm:'shop=florist',           profil:'concept' },
-  { key:'cadeaux',    label:'🎁 Boutique cadeaux/déco', osm:'shop=gift',            profil:'concept' },
-  { key:'optique',    label:'👓 Opticien',            osm:'shop=optician',          profil:'sante' },
-  { key:'pharmacie',  label:'➕ Pharmacie/Parapharm.', osm:'amenity=pharmacy',       profil:'sante' },
-  { key:'immo',       label:'🏢 Agence immobilière',   osm:'office=estate_agent',    profil:'agence' },
+  { key:'coiffeur',   g:'Beauté & bien-être', label:'💇 Salon de coiffure',   osm:'shop=hairdresser',       profil:'beaute', gender:true },
+  { key:'institut',   g:'Beauté & bien-être', label:'💅 Institut / Esthétique', osm:'shop=beauty',          profil:'beaute' },
+  { key:'spa',        g:'Beauté & bien-être', label:'🧖 Spa / Massage',        osm:'leisure=spa',            profil:'beaute' },
+  { key:'tatoueur',   g:'Beauté & bien-être', label:'🖋️ Tatoueur',            osm:'shop=tattoo',            profil:'beaute' },
+  { key:'restaurant', g:'Restauration & hôtellerie', label:'🍽️ Restaurant',   osm:'amenity=restaurant',     profil:'hotellerie' },
+  { key:'cafe',       g:'Restauration & hôtellerie', label:'☕ Café / Bar',     osm:'amenity=cafe',           profil:'hotellerie' },
+  { key:'boulangerie',g:'Restauration & hôtellerie', label:'🥖 Boulangerie',   osm:'shop=bakery',            profil:'hotellerie' },
+  { key:'hotel',      g:'Restauration & hôtellerie', label:'🏨 Hôtel',         osm:'tourism=hotel',          profil:'hotellerie' },
+  { key:'hotes',      g:'Restauration & hôtellerie', label:"🛏️ Chambres d'hôtes", osm:'tourism=guest_house', profil:'hotellerie' },
+  { key:'sport',      g:'Santé & sport', label:'💪 Salle de sport',  osm:'leisure=fitness_centre', profil:'sante' },
+  { key:'optique',    g:'Santé & sport', label:'👓 Opticien',        osm:'shop=optician',          profil:'sante' },
+  { key:'pharmacie',  g:'Santé & sport', label:'➕ Pharmacie',       osm:'amenity=pharmacy',       profil:'sante' },
+  { key:'dentiste',   g:'Santé & sport', label:'🦷 Dentiste',        osm:'amenity=dentist',        profil:'sante' },
+  { key:'veto',       g:'Santé & sport', label:'🐾 Vétérinaire',     osm:'amenity=veterinary',     profil:'sante' },
+  { key:'fleuriste',  g:'Commerces & déco', label:'💐 Fleuriste',     osm:'shop=florist',  profil:'concept' },
+  { key:'cadeaux',    g:'Commerces & déco', label:'🎁 Boutique cadeaux', osm:'shop=gift',  profil:'concept' },
+  { key:'deco',       g:'Commerces & déco', label:'🛋️ Décoration',   osm:'shop=interior_decoration', profil:'concept' },
+  { key:'bijou',      g:'Commerces & déco', label:'💍 Bijouterie',    osm:'shop=jewelry',  profil:'concept' },
+  { key:'pretaporter',g:'Commerces & déco', label:'👗 Prêt-à-porter', osm:'shop=clothes',  profil:'concept' },
+  { key:'caviste',    g:'Commerces & déco', label:'🍷 Caviste',       osm:'shop=wine',     profil:'concept' },
+  { key:'immo',       g:'Services & agences', label:'🏢 Agence immobilière', osm:'office=estate_agent', profil:'agence' },
+  { key:'voyage',     g:'Services & agences', label:'✈️ Agence de voyage',   osm:'shop=travel_agency',  profil:'agence' },
+  { key:'assurance',  g:'Services & agences', label:'🛡️ Assurance',          osm:'office=insurance',    profil:'agence' },
+  { key:'pressing',   g:'Services & agences', label:'👔 Pressing',           osm:'shop=dry_cleaning',   profil:'agence' },
+  { key:'autoecole',  g:'Services & agences', label:'🚗 Auto-école',         osm:'amenity=driving_school', profil:'agence' },
+  { key:'avocat',     g:'Professions libérales', label:'⚖️ Avocat',    osm:'office=lawyer',     profil:'liberal' },
+  { key:'comptable',  g:'Professions libérales', label:'🧮 Comptable',  osm:'office=accountant', profil:'liberal' },
+  { key:'notaire',    g:'Professions libérales', label:'📜 Notaire',    osm:'office=notary',     profil:'liberal' },
+  { key:'creche',     g:'Petite enfance', label:'👶 Crèche', osm:'amenity=kindergarten', profil:'petiteenfance' },
+  { key:'autre',      g:'Autre', label:'✏️ Autre (à préciser…)', osm:'', profil:'concept', custom:true },
 ];
 
-let finder = { step:'form', type:'coiffeur', gender:'aucun', start:null, depart:'09:00', results:[], route:[] };
+const CUSTOM_MAP = {
+  'tatoueur':'shop=tattoo','tatouage':'shop=tattoo','spa':'leisure=spa','massage':'shop=massage',
+  'ongle':'shop=beauty','onglerie':'shop=beauty','manucure':'shop=beauty','barbier':'shop=hairdresser',
+  'cafe':'amenity=cafe','bar':'amenity=bar','boulangerie':'shop=bakery','patisserie':'shop=pastry',
+  'boucherie':'shop=butcher','primeur':'shop=greengrocer','epicerie':'shop=convenience','traiteur':'shop=deli',
+  'chaussure':'shop=shoes','vetement':'shop=clothes','bijouterie':'shop=jewelry','animalerie':'shop=pet',
+  'toilettage':'shop=pet_grooming','caviste':'shop=wine','tabac':'shop=tobacco','photographe':'craft=photographer',
+  'photo':'shop=photo','pressing':'shop=dry_cleaning','cordonnerie':'craft=shoemaker','optique':'shop=optician',
+  'opticien':'shop=optician','pharmacie':'amenity=pharmacy','dentiste':'amenity=dentist','medecin':'amenity=doctors',
+  'kine':'amenity=physiotherapist','veterinaire':'amenity=veterinary','osteopathe':'amenity=doctors',
+  'avocat':'office=lawyer','comptable':'office=accountant','notaire':'office=notary','assurance':'office=insurance',
+  'immobilier':'office=estate_agent','voyage':'shop=travel_agency','autoecole':'amenity=driving_school',
+  'creche':'amenity=kindergarten','fleuriste':'shop=florist','garage':'shop=car_repair','restaurant':'amenity=restaurant',
+  'sport':'leisure=fitness_centre','yoga':'leisure=fitness_centre','hotel':'tourism=hotel','coiffeur':'shop=hairdresser',
+};
+
+let finder = { step:'form', type:'coiffeur', gender:'aucun', start:'', depart:'09:00', date:'', custom:'', results:[], route:[] };
 
 function angleFor(profilId){
   const p = PROFILS.find(x=>x.id===profilId);
-  if(!p) return '';
+  if(!p) return "Comprends d'abord son activité : pose une vraie question sur son quotidien avant de proposer quoi que ce soit.";
   return (p.vente && p.vente.ouverture) ? p.vente.ouverture : (p.vente ? p.vente.accroche : '');
 }
+function tagToProfil(osm){ const f=FINDER_TYPES.find(t=>t.osm===osm); return f?f.profil:'concept'; }
+function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
 function haversine(a,b,c,d){
   const R=6371,r=Math.PI/180;
   const dLat=(c-a)*r,dLon=(d-b)*r;
@@ -642,8 +680,10 @@ function selectFinder(){ view='finder'; renderTabs(); renderFinder(); window.scr
 function renderFinder(){
   if(finder.step==='results') return renderFinderResults();
   if(finder.step==='route')   return renderFinderRoute();
-  const opts = FINDER_TYPES.map(t=>`<option value="${t.key}" ${t.key===finder.type?'selected':''}>${t.label}</option>`).join('');
-  const isCoif = (FINDER_TYPES.find(t=>t.key===finder.type)||{}).gender;
+  if(!finder.date){ finder.date = new Date().toISOString().split('T')[0]; }
+  const groups=[...new Set(FINDER_TYPES.map(t=>t.g))];
+  const opts=groups.map(g=>'<optgroup label="'+g+'">'+FINDER_TYPES.filter(t=>t.g===g).map(t=>'<option value="'+t.key+'" '+(t.key===finder.type?'selected':'')+'>'+t.label+'</option>').join('')+'</optgroup>').join('');
+  const cur=FINDER_TYPES.find(t=>t.key===finder.type)||{};
   document.getElementById('panel').innerHTML = `
     <div class="finder-head">
       <h2>🔍 Trouver des prospects</h2>
@@ -653,11 +693,13 @@ function renderFinder(){
     <div class="add-card">
       <div class="field"><label>📍 Mon point de départ (adresse)</label><input type="text" id="f-start" placeholder="Ex : 10 rue de la Paix, Lyon" value="${esc(finder.start||'')}"></div>
       <div class="field-row">
+        <div class="field"><label>📅 Date de la tournée</label><input type="date" id="f-date" value="${finder.date}"></div>
         <div class="field"><label>🕒 Heure de départ</label><input type="time" id="f-depart" value="${finder.depart}"></div>
-        <div class="field"><label>🏙️ Ville à prospecter</label><input type="text" id="f-city" placeholder="Ex : Villeurbanne" value="${esc(finder.city||'')}"></div>
       </div>
+      <div class="field"><label>🏙️ Ville à prospecter</label><input type="text" id="f-city" placeholder="Ex : Villeurbanne" value="${esc(finder.city||'')}"></div>
       <div class="field"><label>Type d'établissement</label><select id="f-type" onchange="finder.type=this.value;renderFinder()">${opts}</select></div>
-      ${isCoif?`<div class="field"><label>Filtre clientèle</label><div class="gender-row">
+      ${cur.custom?`<div class="field"><label>✏️ Précise ce que tu cherches</label><input type="text" id="f-custom" placeholder="Ex : tatoueur, caviste, garage, kiné…" value="${esc(finder.custom||'')}"></div>`:''}
+      ${cur.gender?`<div class="field"><label>Filtre clientèle</label><div class="gender-row">
         ${['aucun','femme','homme','mixte'].map(g=>`<button class="gender-btn ${finder.gender===g?'active':''}" onclick="finder.gender='${g}';renderFinder()">${g==='aucun'?'Aucun':g.charAt(0).toUpperCase()+g.slice(1)}</button>`).join('')}
       </div></div>`:''}
       <button class="add-btn" onclick="runFinderSearch()">🔎 Rechercher les établissements</button>
@@ -666,62 +708,105 @@ function renderFinder(){
 }
 
 async function geocode(q){
-  const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}});
-  const j = await r.json();
-  if(!j || !j.length) return null;
-  return { lat:parseFloat(j[0].lat), lon:parseFloat(j[0].lon), label:j[0].display_name };
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=fr&q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}});
+    if(r.ok){ const j=await r.json(); if(j&&j.length) return {lat:parseFloat(j[0].lat),lon:parseFloat(j[0].lon),label:j[0].display_name}; }
+  }catch(e){}
+  try{
+    const r=await fetch('https://photon.komoot.io/api/?limit=1&lang=fr&q='+encodeURIComponent(q));
+    if(r.ok){ const j=await r.json(); if(j&&j.features&&j.features.length){ const c=j.features[0].geometry.coordinates; return {lat:c[1],lon:c[0],label:(j.features[0].properties.name||q)}; } }
+  }catch(e){}
+  return null;
+}
+async function overpass(ql){
+  const eps=[
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.openstreetmap.fr/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+  ];
+  for(const ep of eps){
+    try{
+      const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),26000);
+      const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(ql),signal:ctrl.signal});
+      clearTimeout(to);
+      if(r.ok){ const j=await r.json(); if(j&&j.elements) return j; }
+    }catch(e){}
+  }
+  return null;
 }
 
 async function runFinderSearch(){
-  const start = document.getElementById('f-start').value.trim();
-  const city  = document.getElementById('f-city').value.trim();
+  finder.start  = document.getElementById('f-start').value.trim();
+  finder.city   = document.getElementById('f-city').value.trim();
   finder.depart = document.getElementById('f-depart').value || '09:00';
-  finder.start = start; finder.city = city;
-  if(!city){ alert('Indique la ville à prospecter.'); return; }
+  finder.date   = document.getElementById('f-date').value || finder.date;
+  const cur = FINDER_TYPES.find(t=>t.key===finder.type)||{};
+  if(cur.custom){ finder.custom = ((document.getElementById('f-custom')||{}).value||'').trim(); }
+  if(!finder.city){ alert('Indique la ville à prospecter.'); return; }
+  if(cur.custom && !finder.custom){ alert('Précise ce que tu cherches (ex : tatoueur).'); return; }
   const out = document.getElementById('finder-out');
-  out.innerHTML = '<div class="finder-status"><div class="spinner"></div>Recherche des établissements en cours…</div>';
-  try{
-    const cityGeo = await geocode(city);
-    if(!cityGeo){ out.innerHTML='<div class="finder-status">❌ Ville introuvable. Vérifie l\'orthographe.</div>'; return; }
-    finder.cityGeo = cityGeo;
-    if(start){ try{ finder.startGeo = await geocode(start); }catch(e){ finder.startGeo=null; } } else finder.startGeo=null;
-    const type = FINDER_TYPES.find(t=>t.key===finder.type);
-    const [k,v] = type.osm.split('=');
-    const radius = 4000;
-    const ql = `[out:json][timeout:25];(node["${k}"="${v}"](around:${radius},${cityGeo.lat},${cityGeo.lon});way["${k}"="${v}"](around:${radius},${cityGeo.lat},${cityGeo.lon}););out center tags 80;`;
-    const r = await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(ql)});
-    const j = await r.json();
-    let items = (j.elements||[]).map(el=>{
-      const t = el.tags||{};
-      const lat = el.lat || (el.center&&el.center.lat), lon = el.lon || (el.center&&el.center.lon);
-      const addr = [t['addr:housenumber'],t['addr:street'],t['addr:postcode'],t['addr:city']].filter(Boolean).join(' ');
-      return { id:el.type+el.id, name:t.name||'(sans nom)', lat, lon,
-        phone:t.phone||t['contact:phone']||'', email:t.email||t['contact:email']||'',
-        website:t.website||t['contact:website']||'', hours:t.opening_hours||'',
-        addr:addr||city, gtag:(t.female==='yes'?'femme':t.male==='yes'?'homme':t.unisex==='yes'?'mixte':''),
-        profil:type.profil, angle:angleFor(type.profil) };
-    }).filter(x=>x.name!=='(sans nom)' && x.lat);
-    // gender filter (best effort: exclude explicitly opposite)
-    if(type.gender && finder.gender==='femme') items = items.filter(x=>x.gtag!=='homme');
-    if(type.gender && finder.gender==='homme') items = items.filter(x=>x.gtag!=='femme');
-    // distance from start (or city center)
-    const o = finder.startGeo || cityGeo;
-    items.forEach(x=>{ x.dist = haversine(o.lat,o.lon,x.lat,x.lon); });
-    items.sort((a,b)=>a.dist-b.dist);
-    finder.results = items.slice(0,40);
-    finder.step='results';
-    renderFinder();
-  }catch(e){
-    out.innerHTML = '<div class="finder-status">❌ Souci réseau (le serveur OpenStreetMap est parfois saturé). Réessaie dans quelques secondes.</div>';
+  out.innerHTML = '<div class="finder-status"><div class="spinner"></div>Recherche en cours…<br><span style="font-size:11px">(localisation de la ville puis recherche des établissements)</span></div>';
+
+  const cityGeo = await geocode(finder.city);
+  if(!cityGeo){ out.innerHTML='<div class="finder-status">❌ Ville introuvable. Vérifie l\'orthographe (ex : « Pont-à-Mousson »).</div>'; return; }
+  finder.cityGeo = cityGeo;
+  finder.startGeo = finder.start ? await geocode(finder.start) : null;
+
+  const radius = 5000;
+  const ar = '(around:'+radius+','+cityGeo.lat+','+cityGeo.lon+')';
+  let ql, prof;
+  if(cur.custom){
+    const key = norm(finder.custom);
+    let mapped = CUSTOM_MAP[key];
+    if(!mapped){ for(const k in CUSTOM_MAP){ if(key.indexOf(k)>=0){ mapped=CUSTOM_MAP[k]; break; } } }
+    if(mapped){
+      const kv=mapped.split('='); const k=kv[0], v=kv[1];
+      ql='[out:json][timeout:26];(node["'+k+'"="'+v+'"]'+ar+';way["'+k+'"="'+v+'"]'+ar+';);out center tags 80;';
+      prof=tagToProfil(mapped);
+    }else{
+      const kw=finder.custom.replace(/"/g,'');
+      ql='[out:json][timeout:26];(nwr["shop"]["name"~"'+kw+'",i]'+ar+';nwr["amenity"]["name"~"'+kw+'",i]'+ar+';nwr["office"]["name"~"'+kw+'",i]'+ar+';nwr["craft"]["name"~"'+kw+'",i]'+ar+';nwr["leisure"]["name"~"'+kw+'",i]'+ar+';);out center tags 80;';
+      prof='concept';
+    }
+  }else{
+    const kv=cur.osm.split('='); const k=kv[0], v=kv[1];
+    ql='[out:json][timeout:26];(node["'+k+'"="'+v+'"]'+ar+';way["'+k+'"="'+v+'"]'+ar+';);out center tags 80;';
+    prof=cur.profil;
   }
+
+  const j = await overpass(ql);
+  if(!j){ out.innerHTML='<div class="finder-status">❌ Les serveurs OpenStreetMap sont momentanément saturés.<br>Réessaie dans 10-20 secondes — la recherche bascule automatiquement sur d\'autres serveurs.</div>'; return; }
+
+  const angle = angleFor(prof);
+  let items = (j.elements||[]).map(el=>{
+    const t=el.tags||{};
+    const lat=el.lat||(el.center&&el.center.lat), lon=el.lon||(el.center&&el.center.lon);
+    const addr=[t['addr:housenumber'],t['addr:street'],t['addr:postcode'],t['addr:city']].filter(Boolean).join(' ');
+    return { id:el.type+el.id, name:t.name||'(sans nom)', lat, lon,
+      phone:t.phone||t['contact:phone']||'', email:t.email||t['contact:email']||'',
+      website:t.website||t['contact:website']||'', hours:t.opening_hours||'',
+      addr:addr||finder.city, gtag:(t.female==='yes'?'femme':t.male==='yes'?'homme':t.unisex==='yes'?'mixte':''),
+      profil:prof, angle:angle };
+  }).filter(x=>x.name!=='(sans nom)' && x.lat);
+
+  if(cur.gender && finder.gender==='femme') items=items.filter(x=>x.gtag!=='homme');
+  if(cur.gender && finder.gender==='homme') items=items.filter(x=>x.gtag!=='femme');
+
+  const o = finder.startGeo || cityGeo;
+  items.forEach(x=>{ x.dist=haversine(o.lat,o.lon,x.lat,x.lon); });
+  items.sort((a,b)=>a.dist-b.dist);
+  finder.results = items.slice(0,40);
+  finder.step='results';
+  renderFinder();
 }
 
 function renderFinderResults(){
-  const r = finder.results;
-  const selCount = r.filter(x=>x.sel).length;
-  const cards = r.map((x,i)=>{
-    const maps = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.addr);
-    const pappers = 'https://www.pappers.fr/recherche?q='+encodeURIComponent(x.name+' '+(finder.city||''));
+  const r=finder.results;
+  const selCount=r.filter(x=>x.sel).length;
+  const cards=r.map((x,i)=>{
+    const maps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.addr);
+    const pappers='https://www.pappers.fr/recherche?q='+encodeURIComponent(x.name+' '+(finder.city||''));
     return `<div class="fcard ${x.sel?'sel':''}" id="fc-${i}">
       <div class="fcard-body">
         <div class="fcard-top"><div class="fcard-name">${esc(x.name)}</div><div class="fcard-dist">${x.dist.toFixed(1)} km</div></div>
@@ -729,7 +814,7 @@ function renderFinderResults(){
         ${x.phone?`<div class="fcard-meta">📞 <a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></div>`:''}
         ${x.email?`<div class="fcard-meta">✉️ <a href="mailto:${esc(x.email)}">${esc(x.email)}</a></div>`:''}
         ${x.website?`<div class="fcard-meta">🌐 <a href="${esc(x.website)}" target="_blank" rel="noopener">Site web</a></div>`:''}
-        <div class="fcard-hours">🕒 ${x.hours?esc(x.hours):'Horaires non renseignés — à vérifier sur place'}</div>
+        <div class="fcard-hours">🕒 ${x.hours?esc(x.hours):'Horaires non renseignés — à vérifier'}</div>
         <div class="fcard-angle"><span class="al">🎯 Angle d'attaque</span><p>${esc(x.angle)}</p></div>
         <div class="lookup-row">
           <a class="lookup-btn" href="${maps}" target="_blank" rel="noopener">⭐ Avis Google</a>
@@ -745,19 +830,18 @@ function renderFinderResults(){
       </div>
     </div>`;
   }).join('');
-  document.getElementById('panel').innerHTML = `
+  document.getElementById('panel').innerHTML=`
     <div class="finder-head"><h2>🔍 ${r.length} établissements trouvés</h2><p>${esc(finder.city)} · triés du plus proche au plus loin. Sélectionne ceux à visiter.</p></div>
     <button class="complete-toggle" style="margin-bottom:10px" onclick="finder.step='form';renderFinder()">← Modifier la recherche</button>
     <div class="res-count">${selCount} sélectionné(s) pour la tournée</div>
-    ${r.length?cards:'<div class="finder-status">Aucun résultat. Essaie un autre type ou une ville plus grande.</div>'}
+    ${r.length?cards:'<div class="finder-status">Aucun résultat ici. Essaie un autre type, le mode « Autre », ou une ville plus grande à proximité.</div>'}
     ${selCount?`<div class="route-bar"><span>${selCount} visite(s)</span><button onclick="organizeRoute()">🗺️ Organiser ma tournée →</button></div>`:''}`;
 }
 
 function organizeRoute(){
-  let pts = finder.results.filter(x=>x.sel);
+  let pts=finder.results.filter(x=>x.sel);
   if(!pts.length){ alert('Sélectionne au moins un établissement.'); return; }
-  const o = finder.startGeo || finder.cityGeo;
-  // nearest-neighbour route from start
+  const o=finder.startGeo||finder.cityGeo;
   const route=[]; let cur={lat:o.lat,lon:o.lon}; const pool=[...pts];
   while(pool.length){
     let bi=0,bd=Infinity;
@@ -767,44 +851,40 @@ function organizeRoute(){
   finder.route=route; finder.step='route'; computeTimes(); renderFinder();
 }
 function computeTimes(){
-  const [h,m]=(finder.depart||'09:00').split(':').map(Number);
-  let t=h*60+m;
-  finder.route.forEach((p,i)=>{
-    const travel=Math.max(5,Math.round((p._leg||0)/30*60)); // 30 km/h moyenne ville
+  const hm=(finder.depart||'09:00').split(':').map(Number);
+  let t=hm[0]*60+hm[1];
+  finder.route.forEach(p=>{
+    const travel=Math.max(5,Math.round((p._leg||0)/30*60));
     t+=travel;
-    const hh=String(Math.floor(t/60)%24).padStart(2,'0'), mm=String(t%60).padStart(2,'0');
-    p._arr=hh+':'+mm;
-    t+=20; // 20 min sur place
+    p._arr=String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+    t+=20;
   });
 }
 function moveStop(i,dir){
   const j=i+dir; if(j<0||j>=finder.route.length) return;
-  const a=finder.route; [a[i],a[j]]=[a[j],a[i]];
-  // recompute legs from start
+  const a=finder.route; const tmp=a[i]; a[i]=a[j]; a[j]=tmp;
   const o=finder.startGeo||finder.cityGeo; let cur={lat:o.lat,lon:o.lon};
   a.forEach(p=>{p._leg=haversine(cur.lat,cur.lon,p.lat,p.lon);cur=p;});
   computeTimes(); renderFinder();
 }
 function renderFinderRoute(){
   const a=finder.route;
-  const last=a[a.length-1];
   const wp=a.map(p=>p.lat+','+p.lon).join('/');
   const o=finder.startGeo||finder.cityGeo;
   const gmaps='https://www.google.com/maps/dir/'+(o?o.lat+','+o.lon+'/':'')+wp;
-  const today=new Date().toISOString().split('T')[0];
   const cards=a.map((p,i)=>`<div class="rcard">
     <div class="ord">${i+1}</div>
     <div class="rinfo"><div class="rname">${esc(p.name)}</div><div class="rtime">🕒 arrivée ~${p._arr} · ${p._leg.toFixed(1)} km</div></div>
     <div class="rmove"><button onclick="moveStop(${i},-1)">▲</button><button onclick="moveStop(${i},1)">▼</button></div>
   </div>`).join('');
   document.getElementById('panel').innerHTML=`
-    <div class="finder-head"><h2>🗺️ Ma tournée (${a.length})</h2><p>Départ ${finder.depart} · ordre optimisé par distance. Réorganise avec ▲▼.</p></div>
+    <div class="finder-head"><h2>🗺️ Ma tournée (${a.length})</h2><p>Le ${finder.date} · départ ${finder.depart} · ordre optimisé par distance. Réorganise avec ▲▼.</p></div>
     <button class="complete-toggle" style="margin-bottom:10px" onclick="finder.step='results';renderFinder()">← Retour aux résultats</button>
     ${cards}
     <a class="fcard-select" style="display:block;text-align:center;text-decoration:none;background:var(--blue-light);color:var(--blue)" href="${gmaps}" target="_blank" rel="noopener">🧭 Ouvrir l'itinéraire dans Google Maps</a>
     <div class="add-card" style="margin-top:14px">
       <div class="add-title">📅 Enregistrer dans le Planner</div>
-      <div class="field"><label>Jour de la tournée</label><input type="date" class="date-pick" id="finder-date" value="${today}"></div>
+      <div class="field"><label>Jour de la tournée</label><input type="date" class="date-pick" id="finder-date" value="${finder.date}"></div>
       <button class="add-btn" onclick="saveToPlanner()">📌 Créer les « rdv prospects »</button>
     </div>`;
 }
