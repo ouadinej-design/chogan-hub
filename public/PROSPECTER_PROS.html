@@ -689,7 +689,7 @@ function renderFinder(){
       <h2>🔍 Trouver des prospects</h2>
       <p>Indique ta ville cible et ton point de départ : je te liste les établissements réels, avec un angle d'attaque sur mesure et une tournée optimisée.</p>
     </div>
-    <div class="finder-note">📍 Données réelles via OpenStreetMap (nom, adresse, tél, horaires). Les <b>avis</b> et le <b>CA</b> ne sont pas en accès libre : tu auras un lien direct + un champ pour les coller toi-même sur chaque fiche.</div>
+    <div class="finder-note">📍 Données réelles via OpenStreetMap (nom, adresse, tél, horaires). Les <b>avis clients</b> ne sont pas en accès libre : tu as un lien direct vers Google + un champ pour noter l'info toi-même sur chaque fiche.</div>
     <div class="add-card">
       <div class="field"><label>📍 Mon point de départ (adresse)</label><input type="text" id="f-start" placeholder="Ex : 10 rue de la Paix, Lyon" value="${esc(finder.start||'')}"></div>
       <div class="field-row">
@@ -811,7 +811,6 @@ function renderFinderResults(){
   const selCount=r.filter(x=>x.sel).length;
   const cards=r.map((x,i)=>{
     const maps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.addr);
-    const pappers='https://www.pappers.fr/recherche?q='+encodeURIComponent(x.name+' '+(finder.city||''));
     return `<div class="fcard ${x.sel?'sel':''}" id="fc-${i}">
       <div class="fcard-body">
         <div class="fcard-top"><div class="fcard-name">${esc(x.name)}</div><div class="fcard-dist">${x.dist.toFixed(1)} km</div></div>
@@ -822,13 +821,11 @@ function renderFinderResults(){
         <div class="fcard-hours">🕒 ${x.hours?esc(x.hours):'Horaires non renseignés — à vérifier'}</div>
         <div class="fcard-angle"><span class="al">🎯 Angle d'attaque</span><p>${esc(x.angle)}</p></div>
         <div class="lookup-row">
-          <a class="lookup-btn" href="${maps}" target="_blank" rel="noopener">⭐ Avis Google</a>
-          <a class="lookup-btn" href="${pappers}" target="_blank" rel="noopener">📊 CA (Pappers)</a>
+          <a class="lookup-btn" href="${maps}" target="_blank" rel="noopener">⭐ Voir les avis Google</a>
         </div>
-        <button class="complete-toggle" onclick="document.getElementById('cb-${i}').classList.toggle('open')">📝 Compléter avis / CA / notes ▾</button>
+        <button class="complete-toggle" onclick="document.getElementById('cb-${i}').classList.toggle('open')">📝 Compléter avis / notes ▾</button>
         <div class="complete-box" id="cb-${i}">
           <div class="field"><label>Avis clients (note, nb d'avis…)</label><input type="text" value="${esc(x.avis||'')}" oninput="finder.results[${i}].avis=this.value" placeholder="Ex : 4,7★ (212 avis)"></div>
-          <div class="field"><label>Chiffre d'affaires</label><input type="text" value="${esc(x.ca||'')}" oninput="finder.results[${i}].ca=this.value" placeholder="Ex : 180 000 € (2024)"></div>
           <div class="field"><label>Notes perso</label><textarea rows="2" oninput="finder.results[${i}].notes=this.value" placeholder="Gérant, meilleur créneau, remarques…">${esc(x.notes||'')}</textarea></div>
         </div>
         <button class="fcard-select" onclick="finder.results[${i}].sel=!finder.results[${i}].sel;renderFinder()">${x.sel?'✓ Dans ma tournée':'+ Ajouter à ma tournée'}</button>
@@ -928,7 +925,7 @@ function saveToPlanner(){
   let consultant=''; try{ const s=JSON.parse(localStorage.getItem('chogan_hub_session')||'null'); if(s) consultant=((s.firstName||'')+' '+(s.lastName||'')).trim(); }catch(e){}
   finder.route.forEach((p,i)=>{
     evs.push({ id:String(Date.now())+'_'+i, n:(p._arr?p._arr+' ':'')+'RDV '+p.name, lbl:'rdv prospects', d:date,
-      email:p.email||'', tel:p.phone||'', consultant, adresse:p.addr||'', angle:p.angle||'', avis:p.avis||'', ca:p.ca||'', notes:p.notes||'' });
+      email:p.email||'', tel:p.phone||'', consultant, adresse:p.addr||'', angle:p.angle||'', avis:p.avis||'', notes:p.notes||'' });
   });
   try{ localStorage.setItem('le_cevents',JSON.stringify(evs)); }catch(e){}
   document.getElementById('panel').insertAdjacentHTML('afterbegin','<div class="finder-note" style="background:#D1FAE5;border-color:#10B981;color:#065F46">✅ '+finder.route.length+' « rdv prospects » enregistrés dans ton agenda le '+date+' ! Tu les retrouves dans l\'app Agenda/Planner.</div>');
