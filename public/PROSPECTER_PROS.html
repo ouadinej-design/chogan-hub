@@ -610,7 +610,7 @@ function copySMS(id,btn){
 
 /* ════════════ PROSPECT FINDER ════════════ */
 const FINDER_TYPES = [
-  { key:'coiffeur',   g:'Beauté & bien-être', label:'💇 Salon de coiffure',   osm:'shop=hairdresser',       profil:'beaute', gender:true },
+  { key:'coiffeur',   g:'Beauté & bien-être', label:'💇 Salon de coiffure',   osm:'shop=hairdresser,craft=hairdresser', profil:'beaute', gender:true, gq:'salon de coiffure' },
   { key:'institut',   g:'Beauté & bien-être', label:'💅 Institut / Esthétique', osm:'shop=beauty',          profil:'beaute' },
   { key:'spa',        g:'Beauté & bien-être', label:'🧖 Spa / Massage',        osm:'leisure=spa',            profil:'beaute' },
   { key:'tatoueur',   g:'Beauté & bien-être', label:'🖋️ Tatoueur',            osm:'shop=tattoo',            profil:'beaute' },
@@ -753,27 +753,32 @@ async function runFinderSearch(){
   finder.cityGeo = cityGeo;
   finder.startGeo = finder.start ? await geocode(finder.start) : null;
 
-  const radius = 5000;
+  const radius = 7000;
   const ar = '(around:'+radius+','+cityGeo.lat+','+cityGeo.lon+')';
+  function unionTags(spec){
+    return '('+spec.split(',').map(function(pair){
+      const kv=pair.split('='); return 'node["'+kv[0]+'"="'+kv[1]+'"]'+ar+';way["'+kv[0]+'"="'+kv[1]+'"]'+ar+';';
+    }).join('')+');';
+  }
   let ql, prof;
   if(cur.custom){
     const key = norm(finder.custom);
     let mapped = CUSTOM_MAP[key];
     if(!mapped){ for(const k in CUSTOM_MAP){ if(key.indexOf(k)>=0){ mapped=CUSTOM_MAP[k]; break; } } }
     if(mapped){
-      const kv=mapped.split('='); const k=kv[0], v=kv[1];
-      ql='[out:json][timeout:26];(node["'+k+'"="'+v+'"]'+ar+';way["'+k+'"="'+v+'"]'+ar+';);out center tags 80;';
+      ql='[out:json][timeout:26];'+unionTags(mapped)+'out center tags 120;';
       prof=tagToProfil(mapped);
     }else{
       const kw=finder.custom.replace(/"/g,'');
-      ql='[out:json][timeout:26];(nwr["shop"]["name"~"'+kw+'",i]'+ar+';nwr["amenity"]["name"~"'+kw+'",i]'+ar+';nwr["office"]["name"~"'+kw+'",i]'+ar+';nwr["craft"]["name"~"'+kw+'",i]'+ar+';nwr["leisure"]["name"~"'+kw+'",i]'+ar+';);out center tags 80;';
+      ql='[out:json][timeout:26];(nwr["shop"]["name"~"'+kw+'",i]'+ar+';nwr["amenity"]["name"~"'+kw+'",i]'+ar+';nwr["office"]["name"~"'+kw+'",i]'+ar+';nwr["craft"]["name"~"'+kw+'",i]'+ar+';nwr["leisure"]["name"~"'+kw+'",i]'+ar+';);out center tags 120;';
       prof='concept';
     }
   }else{
-    const kv=cur.osm.split('='); const k=kv[0], v=kv[1];
-    ql='[out:json][timeout:26];(node["'+k+'"="'+v+'"]'+ar+';way["'+k+'"="'+v+'"]'+ar+';);out center tags 80;';
+    ql='[out:json][timeout:26];'+unionTags(cur.osm)+'out center tags 120;';
     prof=cur.profil;
   }
+  finder.gq = cur.custom ? finder.custom : (cur.gq || cur.label.replace(/^[^0-9A-Za-zÀ-ÿ]+/,'').trim());
+  finder.prof = prof;
 
   const j = await overpass(ql);
   if(!j){ out.innerHTML='<div class="finder-status">❌ Les serveurs OpenStreetMap sont momentanément saturés.<br>Réessaie dans 10-20 secondes — la recherche bascule automatiquement sur d\'autres serveurs.</div>'; return; }
@@ -830,12 +835,40 @@ function renderFinderResults(){
       </div>
     </div>`;
   }).join('');
+  const gall='https://www.google.com/maps/search/'+encodeURIComponent((finder.gq||'')+' '+(finder.city||''));
   document.getElementById('panel').innerHTML=`
     <div class="finder-head"><h2>🔍 ${r.length} établissements trouvés</h2><p>${esc(finder.city)} · triés du plus proche au plus loin. Sélectionne ceux à visiter.</p></div>
-    <button class="complete-toggle" style="margin-bottom:10px" onclick="finder.step='form';renderFinder()">← Modifier la recherche</button>
+    <button class="complete-toggle" style="margin-bottom:6px" onclick="finder.step='form';renderFinder()">← Modifier la recherche</button>
+    <div class="finder-note" style="margin-bottom:10px">ℹ️ OpenStreetMap ne référence pas tous les commerces. Vois la <b>liste complète sur Google</b>, et <b>ajoute à la main</b> ceux qui manquent — ils entreront dans ta tournée et ton Planner.</div>
+    <div class="lookup-row" style="margin-bottom:12px">
+      <a class="lookup-btn" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)" href="${gall}" target="_blank" rel="noopener">🗺️ Voir tous sur Google Maps</a>
+      <button class="lookup-btn" style="cursor:pointer" onclick="document.getElementById('manual-box').classList.toggle('open')">➕ Ajouter un manquant</button>
+    </div>
+    <div class="complete-box" id="manual-box" style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:13px;margin-bottom:12px">
+      <div class="field"><label>Nom de l'établissement</label><input type="text" id="m-name" placeholder="Ex : Salon Élégance"></div>
+      <div class="field"><label>Adresse (rue + ville)</label><input type="text" id="m-addr" placeholder="Ex : 8 rue Gambetta, Pont-à-Mousson"></div>
+      <div class="field"><label>Téléphone (optionnel)</label><input type="text" id="m-phone" placeholder="Ex : 03 83 ..."></div>
+      <button class="add-btn" onclick="addManual()">Ajouter à la liste</button>
+    </div>
     <div class="res-count">${selCount} sélectionné(s) pour la tournée</div>
-    ${r.length?cards:'<div class="finder-status">Aucun résultat ici. Essaie un autre type, le mode « Autre », ou une ville plus grande à proximité.</div>'}
+    ${r.length?cards:'<div class="finder-status">Aucun résultat via OpenStreetMap. Utilise « Voir tous sur Google Maps » puis « Ajouter un manquant ».</div>'}
     ${selCount?`<div class="route-bar"><span>${selCount} visite(s)</span><button onclick="organizeRoute()">🗺️ Organiser ma tournée →</button></div>`:''}`;
+}
+
+async function addManual(){
+  const name=(document.getElementById('m-name').value||'').trim();
+  const addr=(document.getElementById('m-addr').value||'').trim();
+  const phone=(document.getElementById('m-phone').value||'').trim();
+  if(!name){ alert('Indique au moins le nom.'); return; }
+  let lat, lon;
+  const g = addr ? await geocode(addr+' '+(finder.city||'')) : null;
+  if(g){ lat=g.lat; lon=g.lon; } else { const o=finder.cityGeo||{lat:0,lon:0}; lat=o.lat; lon=o.lon; }
+  const o=finder.startGeo||finder.cityGeo;
+  const dist=o?haversine(o.lat,o.lon,lat,lon):0;
+  finder.results.unshift({ id:'manual'+Date.now(), name, addr:addr||finder.city, lat, lon, phone, email:'', website:'', hours:'',
+    gtag:'', profil:finder.prof, angle:angleFor(finder.prof), dist, sel:true, manual:true });
+  renderFinder();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function organizeRoute(){
