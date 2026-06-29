@@ -689,7 +689,7 @@ function renderFinder(){
       <h2>🔍 Trouver des prospects</h2>
       <p>Indique ta ville cible et ton point de départ : je te liste les établissements réels, avec un angle d'attaque sur mesure et une tournée optimisée.</p>
     </div>
-    <div class="finder-note">📍 Deux sources <b>gratuites</b> combinées : le <b>registre officiel des entreprises</b> (couverture quasi complète) + <b>OpenStreetMap</b> (ajoute tél/horaires quand dispo). Les avis ne sont pas en accès libre : lien Google + champ à remplir sur chaque fiche.</div>
+    <div class="finder-note">📍 Deux sources <b>gratuites</b> combinées : le <b>registre officiel</b> (couverture quasi complète + <b>CA</b> quand l'entreprise a publié ses comptes) + <b>OpenStreetMap</b> (tél/horaires quand dispo). Les micro-entreprises n'ont pas de CA public. Avis : lien Google + champ à remplir.</div>
     <div class="add-card">
       <div class="field"><label>📍 Mon point de départ (adresse)</label><input type="text" id="f-start" placeholder="Ex : 10 rue de la Paix, Lyon" value="${esc(finder.start||'')}"></div>
       <div class="field-row">
@@ -714,30 +714,41 @@ async function gouvSearch(naf, lat, lon, prof, angle){
   for(let page=1; page<=3; page++){
     let j=null;
     try{
-      const r=await fetch('https://recherche-entreprises.api.gouv.fr/near_point?lat='+lat+'&long='+lon+'&radius=12&activite_principale='+encodeURIComponent(naf)+'&per_page=25&page='+page,{headers:{'Accept':'application/json'}});
+      const r=await fetch('https://recherche-entreprises.api.gouv.fr/near_point?lat='+lat+'&long='+lon+'&radius=25&activite_principale='+encodeURIComponent(naf)+'&per_page=25&page='+page,{headers:{'Accept':'application/json'}});
       if(r.ok) j=await r.json();
     }catch(e){}
     if(!j||!j.results||!j.results.length) break;
     j.results.forEach(c=>{
       const et=(c.matching_etablissements&&c.matching_etablissements[0])||c.siege||{};
       const name=(et.liste_enseignes&&et.liste_enseignes[0])||c.nom_complet||c.nom_raison_sociale||'';
+      let ca='', caY='';
+      if(c.finances && typeof c.finances==='object'){
+        const yrs=Object.keys(c.finances).filter(y=>/^\d{4}$/.test(y)).sort();
+        for(let i=yrs.length-1;i>=0;i--){
+          const fy=c.finances[yrs[i]]; const v=fy&&(fy.ca!=null?fy.ca:fy.chiffre_affaires);
+          if(v!=null && !isNaN(v)){ ca=fmtCA(v); caY=yrs[i]; break; }
+        }
+      }
       out.push({ id:'reg'+(et.siret||c.siren||Math.random()), name:name, lat:parseFloat(et.latitude), lon:parseFloat(et.longitude),
-        phone:'', email:'', website:'', hours:'', addr:et.adresse||'', gtag:'', profil:prof, angle:angle, source:'registre' });
+        phone:'', email:'', website:'', hours:'', addr:et.adresse||'', gtag:'', profil:prof, angle:angle, source:'registre', ca:ca, caY:caY });
     });
     if(j.total_pages && page>=j.total_pages) break;
   }
   return out.filter(x=>x.name);
 }
+function fmtCA(v){ v=Number(v); if(!v||v<0) return ''; if(v>=1e6) return (v/1e6).toFixed(v>=1e7?0:1).replace('.',',')+' M€'; return Math.round(v).toLocaleString('fr-FR')+' €'; }
 function mergeResults(osm, reg){
   const out=osm.slice();
   reg.forEach(g=>{
     const gn=norm(g.name);
-    const dup=out.some(o=>{
+    let match=null;
+    for(const o of out){
       const sameName = norm(o.name)===gn || (gn.length>4 && norm(o.name).indexOf(gn.slice(0,Math.min(8,gn.length)))>=0);
       const close = (o.lat&&g.lat) ? haversine(o.lat,o.lon,g.lat,g.lon)<0.15 : false;
-      return sameName || (close && norm(o.name).slice(0,4)===gn.slice(0,4));
-    });
-    if(!dup) out.push(g);
+      if(sameName || (close && norm(o.name).slice(0,4)===gn.slice(0,4))){ match=o; break; }
+    }
+    if(match){ if(!match.ca && g.ca){ match.ca=g.ca; match.caY=g.caY; } }
+    else out.push(g);
   });
   return out;
 }
@@ -788,7 +799,7 @@ async function runFinderSearch(){
   finder.cityGeo = cityGeo;
   finder.startGeo = finder.start ? await geocode(finder.start) : null;
 
-  const radius = 7000;
+  const radius = 10000;
   const ar = '(around:'+radius+','+cityGeo.lat+','+cityGeo.lon+')';
   function unionTags(spec){
     return '('+spec.split(',').map(function(pair){
@@ -861,14 +872,16 @@ function renderFinderResults(){
         ${x.phone?`<div class="fcard-meta">📞 <a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></div>`:''}
         ${x.email?`<div class="fcard-meta">✉️ <a href="mailto:${esc(x.email)}">${esc(x.email)}</a></div>`:''}
         ${x.website?`<div class="fcard-meta">🌐 <a href="${esc(x.website)}" target="_blank" rel="noopener">Site web</a></div>`:''}
+        ${x.ca?`<div class="fcard-meta" style="color:#0a7d33;font-weight:700">💰 CA ${esc(x.ca)}${x.caY?' ('+x.caY+')':''}</div>`:''}
         <div class="fcard-hours">🕒 ${x.hours?esc(x.hours):'Horaires non renseignés — à vérifier'}</div>
         <div class="fcard-angle"><span class="al">🎯 Angle d'attaque</span><p>${esc(x.angle)}</p></div>
         <div class="lookup-row">
           <a class="lookup-btn" href="${maps}" target="_blank" rel="noopener">⭐ Voir les avis Google</a>
         </div>
-        <button class="complete-toggle" onclick="document.getElementById('cb-${i}').classList.toggle('open')">📝 Compléter avis / notes ▾</button>
+        <button class="complete-toggle" onclick="document.getElementById('cb-${i}').classList.toggle('open')">📝 Compléter avis / CA / notes ▾</button>
         <div class="complete-box" id="cb-${i}">
           <div class="field"><label>Avis clients (note, nb d'avis…)</label><input type="text" value="${esc(x.avis||'')}" oninput="finder.results[${i}].avis=this.value" placeholder="Ex : 4,7★ (212 avis)"></div>
+          <div class="field"><label>Chiffre d'affaires ${x.ca?'(auto)':''}</label><input type="text" value="${esc(x.ca||'')}" oninput="finder.results[${i}].ca=this.value" placeholder="Auto si dispo, sinon à compléter"></div>
           <div class="field"><label>Notes perso</label><textarea rows="2" oninput="finder.results[${i}].notes=this.value" placeholder="Gérant, meilleur créneau, remarques…">${esc(x.notes||'')}</textarea></div>
         </div>
         <button class="fcard-select" onclick="finder.results[${i}].sel=!finder.results[${i}].sel;renderFinder()">${x.sel?'✓ Dans ma tournée':'+ Ajouter à ma tournée'}</button>
@@ -968,7 +981,7 @@ function saveToPlanner(){
   let consultant=''; try{ const s=JSON.parse(localStorage.getItem('chogan_hub_session')||'null'); if(s) consultant=((s.firstName||'')+' '+(s.lastName||'')).trim(); }catch(e){}
   finder.route.forEach((p,i)=>{
     evs.push({ id:String(Date.now())+'_'+i, n:(p._arr?p._arr+' ':'')+'RDV '+p.name, lbl:'rdv prospects', d:date,
-      email:p.email||'', tel:p.phone||'', consultant, adresse:p.addr||'', angle:p.angle||'', avis:p.avis||'', notes:p.notes||'' });
+      email:p.email||'', tel:p.phone||'', consultant, adresse:p.addr||'', angle:p.angle||'', avis:p.avis||'', ca:p.ca||'', notes:p.notes||'' });
   });
   try{ localStorage.setItem('le_cevents',JSON.stringify(evs)); }catch(e){}
   document.getElementById('panel').insertAdjacentHTML('afterbegin','<div class="finder-note" style="background:#D1FAE5;border-color:#10B981;color:#065F46">✅ '+finder.route.length+' « rdv prospects » enregistrés dans ton agenda le '+date+' ! Tu les retrouves dans l\'app Agenda/Planner.</div>');
