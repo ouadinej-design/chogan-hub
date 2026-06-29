@@ -610,35 +610,35 @@ function copySMS(id,btn){
 
 /* ════════════ PROSPECT FINDER ════════════ */
 const FINDER_TYPES = [
-  { key:'coiffeur',   g:'Beauté & bien-être', label:'💇 Salon de coiffure',   osm:'shop=hairdresser,craft=hairdresser', profil:'beaute', gender:true, gq:'salon de coiffure' },
-  { key:'institut',   g:'Beauté & bien-être', label:'💅 Institut / Esthétique', osm:'shop=beauty',          profil:'beaute' },
-  { key:'spa',        g:'Beauté & bien-être', label:'🧖 Spa / Massage',        osm:'leisure=spa',            profil:'beaute' },
-  { key:'tatoueur',   g:'Beauté & bien-être', label:'🖋️ Tatoueur',            osm:'shop=tattoo',            profil:'beaute' },
-  { key:'restaurant', g:'Restauration & hôtellerie', label:'🍽️ Restaurant',   osm:'amenity=restaurant',     profil:'hotellerie' },
-  { key:'cafe',       g:'Restauration & hôtellerie', label:'☕ Café / Bar',     osm:'amenity=cafe',           profil:'hotellerie' },
-  { key:'boulangerie',g:'Restauration & hôtellerie', label:'🥖 Boulangerie',   osm:'shop=bakery',            profil:'hotellerie' },
-  { key:'hotel',      g:'Restauration & hôtellerie', label:'🏨 Hôtel',         osm:'tourism=hotel',          profil:'hotellerie' },
-  { key:'hotes',      g:'Restauration & hôtellerie', label:"🛏️ Chambres d'hôtes", osm:'tourism=guest_house', profil:'hotellerie' },
-  { key:'sport',      g:'Santé & sport', label:'💪 Salle de sport',  osm:'leisure=fitness_centre', profil:'sante' },
-  { key:'optique',    g:'Santé & sport', label:'👓 Opticien',        osm:'shop=optician',          profil:'sante' },
-  { key:'pharmacie',  g:'Santé & sport', label:'➕ Pharmacie',       osm:'amenity=pharmacy',       profil:'sante' },
-  { key:'dentiste',   g:'Santé & sport', label:'🦷 Dentiste',        osm:'amenity=dentist',        profil:'sante' },
-  { key:'veto',       g:'Santé & sport', label:'🐾 Vétérinaire',     osm:'amenity=veterinary',     profil:'sante' },
-  { key:'fleuriste',  g:'Commerces & déco', label:'💐 Fleuriste',     osm:'shop=florist',  profil:'concept' },
-  { key:'cadeaux',    g:'Commerces & déco', label:'🎁 Boutique cadeaux', osm:'shop=gift',  profil:'concept' },
-  { key:'deco',       g:'Commerces & déco', label:'🛋️ Décoration',   osm:'shop=interior_decoration', profil:'concept' },
-  { key:'bijou',      g:'Commerces & déco', label:'💍 Bijouterie',    osm:'shop=jewelry',  profil:'concept' },
-  { key:'pretaporter',g:'Commerces & déco', label:'👗 Prêt-à-porter', osm:'shop=clothes',  profil:'concept' },
-  { key:'caviste',    g:'Commerces & déco', label:'🍷 Caviste',       osm:'shop=wine',     profil:'concept' },
-  { key:'immo',       g:'Services & agences', label:'🏢 Agence immobilière', osm:'office=estate_agent', profil:'agence' },
-  { key:'voyage',     g:'Services & agences', label:'✈️ Agence de voyage',   osm:'shop=travel_agency',  profil:'agence' },
-  { key:'assurance',  g:'Services & agences', label:'🛡️ Assurance',          osm:'office=insurance',    profil:'agence' },
-  { key:'pressing',   g:'Services & agences', label:'👔 Pressing',           osm:'shop=dry_cleaning',   profil:'agence' },
-  { key:'autoecole',  g:'Services & agences', label:'🚗 Auto-école',         osm:'amenity=driving_school', profil:'agence' },
-  { key:'avocat',     g:'Professions libérales', label:'⚖️ Avocat',    osm:'office=lawyer',     profil:'liberal' },
-  { key:'comptable',  g:'Professions libérales', label:'🧮 Comptable',  osm:'office=accountant', profil:'liberal' },
-  { key:'notaire',    g:'Professions libérales', label:'📜 Notaire',    osm:'office=notary',     profil:'liberal' },
-  { key:'creche',     g:'Petite enfance', label:'👶 Crèche', osm:'amenity=kindergarten', profil:'petiteenfance' },
+  { key:'coiffeur',   g:'Beauté & bien-être', label:'💇 Salon de coiffure',   osm:'shop=hairdresser,craft=hairdresser', profil:'beaute', gender:true, gq:'salon de coiffure' , naf:'96.02A' },
+  { key:'institut',   g:'Beauté & bien-être', label:'💅 Institut / Esthétique', osm:'shop=beauty',          profil:'beaute' , naf:'96.02B' },
+  { key:'spa',        g:'Beauté & bien-être', label:'🧖 Spa / Massage',        osm:'leisure=spa',            profil:'beaute' , naf:'96.04Z' },
+  { key:'tatoueur',   g:'Beauté & bien-être', label:'🖋️ Tatoueur',            osm:'shop=tattoo',            profil:'beaute' , naf:'96.09Z' },
+  { key:'restaurant', g:'Restauration & hôtellerie', label:'🍽️ Restaurant',   osm:'amenity=restaurant',     profil:'hotellerie' , naf:'56.10A' },
+  { key:'cafe',       g:'Restauration & hôtellerie', label:'☕ Café / Bar',     osm:'amenity=cafe',           profil:'hotellerie' , naf:'56.30Z' },
+  { key:'boulangerie',g:'Restauration & hôtellerie', label:'🥖 Boulangerie',   osm:'shop=bakery',            profil:'hotellerie' , naf:'10.71C' },
+  { key:'hotel',      g:'Restauration & hôtellerie', label:'🏨 Hôtel',         osm:'tourism=hotel',          profil:'hotellerie' , naf:'55.10Z' },
+  { key:'hotes',      g:'Restauration & hôtellerie', label:"🛏️ Chambres d'hôtes", osm:'tourism=guest_house', profil:'hotellerie' , naf:'55.20Z' },
+  { key:'sport',      g:'Santé & sport', label:'💪 Salle de sport',  osm:'leisure=fitness_centre', profil:'sante' , naf:'93.13Z' },
+  { key:'optique',    g:'Santé & sport', label:'👓 Opticien',        osm:'shop=optician',          profil:'sante' , naf:'47.78A' },
+  { key:'pharmacie',  g:'Santé & sport', label:'➕ Pharmacie',       osm:'amenity=pharmacy',       profil:'sante' , naf:'47.73Z' },
+  { key:'dentiste',   g:'Santé & sport', label:'🦷 Dentiste',        osm:'amenity=dentist',        profil:'sante' , naf:'86.23Z' },
+  { key:'veto',       g:'Santé & sport', label:'🐾 Vétérinaire',     osm:'amenity=veterinary',     profil:'sante' , naf:'75.00Z' },
+  { key:'fleuriste',  g:'Commerces & déco', label:'💐 Fleuriste',     osm:'shop=florist',  profil:'concept' , naf:'47.76Z' },
+  { key:'cadeaux',    g:'Commerces & déco', label:'🎁 Boutique cadeaux', osm:'shop=gift',  profil:'concept' , naf:'47.78C' },
+  { key:'deco',       g:'Commerces & déco', label:'🛋️ Décoration',   osm:'shop=interior_decoration', profil:'concept' , naf:'47.59B' },
+  { key:'bijou',      g:'Commerces & déco', label:'💍 Bijouterie',    osm:'shop=jewelry',  profil:'concept' , naf:'47.77Z' },
+  { key:'pretaporter',g:'Commerces & déco', label:'👗 Prêt-à-porter', osm:'shop=clothes',  profil:'concept' , naf:'47.71Z' },
+  { key:'caviste',    g:'Commerces & déco', label:'🍷 Caviste',       osm:'shop=wine',     profil:'concept' , naf:'47.25Z' },
+  { key:'immo',       g:'Services & agences', label:'🏢 Agence immobilière', osm:'office=estate_agent', profil:'agence' , naf:'68.31Z' },
+  { key:'voyage',     g:'Services & agences', label:'✈️ Agence de voyage',   osm:'shop=travel_agency',  profil:'agence' , naf:'79.11Z' },
+  { key:'assurance',  g:'Services & agences', label:'🛡️ Assurance',          osm:'office=insurance',    profil:'agence' , naf:'66.22Z' },
+  { key:'pressing',   g:'Services & agences', label:'👔 Pressing',           osm:'shop=dry_cleaning',   profil:'agence' , naf:'96.01B' },
+  { key:'autoecole',  g:'Services & agences', label:'🚗 Auto-école',         osm:'amenity=driving_school', profil:'agence' , naf:'85.53Z' },
+  { key:'avocat',     g:'Professions libérales', label:'⚖️ Avocat',    osm:'office=lawyer',     profil:'liberal' , naf:'69.10Z' },
+  { key:'comptable',  g:'Professions libérales', label:'🧮 Comptable',  osm:'office=accountant', profil:'liberal' , naf:'69.20Z' },
+  { key:'notaire',    g:'Professions libérales', label:'📜 Notaire',    osm:'office=notary',     profil:'liberal' , naf:'69.10Z' },
+  { key:'creche',     g:'Petite enfance', label:'👶 Crèche', osm:'amenity=kindergarten', profil:'petiteenfance' , naf:'88.91A' },
   { key:'autre',      g:'Autre', label:'✏️ Autre (à préciser…)', osm:'', profil:'concept', custom:true },
 ];
 
@@ -689,7 +689,7 @@ function renderFinder(){
       <h2>🔍 Trouver des prospects</h2>
       <p>Indique ta ville cible et ton point de départ : je te liste les établissements réels, avec un angle d'attaque sur mesure et une tournée optimisée.</p>
     </div>
-    <div class="finder-note">📍 Données réelles via OpenStreetMap (nom, adresse, tél, horaires). Les <b>avis clients</b> ne sont pas en accès libre : tu as un lien direct vers Google + un champ pour noter l'info toi-même sur chaque fiche.</div>
+    <div class="finder-note">📍 Deux sources <b>gratuites</b> combinées : le <b>registre officiel des entreprises</b> (couverture quasi complète) + <b>OpenStreetMap</b> (ajoute tél/horaires quand dispo). Les avis ne sont pas en accès libre : lien Google + champ à remplir sur chaque fiche.</div>
     <div class="add-card">
       <div class="field"><label>📍 Mon point de départ (adresse)</label><input type="text" id="f-start" placeholder="Ex : 10 rue de la Paix, Lyon" value="${esc(finder.start||'')}"></div>
       <div class="field-row">
@@ -705,6 +705,41 @@ function renderFinder(){
       <button class="add-btn" onclick="runFinderSearch()">🔎 Rechercher les établissements</button>
     </div>
     <div id="finder-out"></div>`;
+}
+
+// Registre officiel des entreprises (gratuit, sans clé) — couverture quasi exhaustive
+async function gouvSearch(naf, lat, lon, prof, angle){
+  if(!naf) return [];
+  const out=[];
+  for(let page=1; page<=3; page++){
+    let j=null;
+    try{
+      const r=await fetch('https://recherche-entreprises.api.gouv.fr/near_point?lat='+lat+'&long='+lon+'&radius=12&activite_principale='+encodeURIComponent(naf)+'&per_page=25&page='+page,{headers:{'Accept':'application/json'}});
+      if(r.ok) j=await r.json();
+    }catch(e){}
+    if(!j||!j.results||!j.results.length) break;
+    j.results.forEach(c=>{
+      const et=(c.matching_etablissements&&c.matching_etablissements[0])||c.siege||{};
+      const name=(et.liste_enseignes&&et.liste_enseignes[0])||c.nom_complet||c.nom_raison_sociale||'';
+      out.push({ id:'reg'+(et.siret||c.siren||Math.random()), name:name, lat:parseFloat(et.latitude), lon:parseFloat(et.longitude),
+        phone:'', email:'', website:'', hours:'', addr:et.adresse||'', gtag:'', profil:prof, angle:angle, source:'registre' });
+    });
+    if(j.total_pages && page>=j.total_pages) break;
+  }
+  return out.filter(x=>x.name);
+}
+function mergeResults(osm, reg){
+  const out=osm.slice();
+  reg.forEach(g=>{
+    const gn=norm(g.name);
+    const dup=out.some(o=>{
+      const sameName = norm(o.name)===gn || (gn.length>4 && norm(o.name).indexOf(gn.slice(0,Math.min(8,gn.length)))>=0);
+      const close = (o.lat&&g.lat) ? haversine(o.lat,o.lon,g.lat,g.lon)<0.15 : false;
+      return sameName || (close && norm(o.name).slice(0,4)===gn.slice(0,4));
+    });
+    if(!dup) out.push(g);
+  });
+  return out;
 }
 
 async function geocode(q){
@@ -798,10 +833,17 @@ async function runFinderSearch(){
   if(cur.gender && finder.gender==='femme') items=items.filter(x=>x.gtag!=='homme');
   if(cur.gender && finder.gender==='homme') items=items.filter(x=>x.gtag!=='femme');
 
+  // Booster de couverture : registre officiel (gratuit) — fusionné par-dessus OSM
+  if(!cur.custom && cur.naf){
+    out.innerHTML='<div class="finder-status"><div class="spinner"></div>Complément registre officiel…</div>';
+    const reg = await gouvSearch(cur.naf, cityGeo.lat, cityGeo.lon, prof, angle);
+    items = mergeResults(items, reg);
+  }
+
   const o = finder.startGeo || cityGeo;
-  items.forEach(x=>{ x.dist=haversine(o.lat,o.lon,x.lat,x.lon); });
+  items.forEach(x=>{ if(!x.lat||!x.lon){ x.lat=o.lat; x.lon=o.lon; x.noGeo=true; } x.dist=haversine(o.lat,o.lon,x.lat,x.lon); });
   items.sort((a,b)=>a.dist-b.dist);
-  finder.results = items.slice(0,40);
+  finder.results = items.slice(0,60);
   finder.step='results';
   renderFinder();
 }
@@ -815,6 +857,7 @@ function renderFinderResults(){
       <div class="fcard-body">
         <div class="fcard-top"><div class="fcard-name">${esc(x.name)}</div><div class="fcard-dist">${x.dist.toFixed(1)} km</div></div>
         <div class="fcard-meta">📍 ${esc(x.addr)}</div>
+        ${x.source==='registre'?`<div class="fcard-meta" style="color:var(--indigo);font-size:11px">🏛️ Registre officiel · tél/horaires à vérifier sur place ou via Google</div>`:''}
         ${x.phone?`<div class="fcard-meta">📞 <a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></div>`:''}
         ${x.email?`<div class="fcard-meta">✉️ <a href="mailto:${esc(x.email)}">${esc(x.email)}</a></div>`:''}
         ${x.website?`<div class="fcard-meta">🌐 <a href="${esc(x.website)}" target="_blank" rel="noopener">Site web</a></div>`:''}
