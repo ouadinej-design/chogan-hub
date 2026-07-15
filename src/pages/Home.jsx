@@ -30,6 +30,7 @@ const APP_GROUPS = [
   ]},
   { label: '★ Premium VIP', items: [
     { id:'prospection', label:'Prospecter Pros', desc:'Guide B2B + Finder', icon:'🎯', color:'#4247B3', bg:'rgba(66,71,179,0.13)', path:'/app/prospection', vip:true },
+    { id:'prospection-nada', label:'Prospecter Pros (Nada)', desc:'Méthode Nada Bitar', icon:'🌷', color:'#9e5a7a', bg:'rgba(158,90,122,0.13)', path:'/app/prospection-nada', vip:true },
     { id:'wallet',     label:'Wallet',      desc:'Finances', icon:'💼', color:'#9e7a3d', bg:'rgba(158,122,61,0.13)',  path:'/app/wallet',      vip:true },
     { id:'coach',      label:'Coach Vocal', desc:'Objections 30s', icon:'🎤', color:'#8a4d4d', bg:'rgba(138,77,77,0.13)',   path:'/app/coach-vocal', vip:true, duration:'30 sec' },
     { id:'objections', label:'Objections',  desc:'Réponses',  icon:'💬', color:'#3d7a8a', bg:'rgba(61,122,138,0.13)',  path:'/app/objections',  vip:true },

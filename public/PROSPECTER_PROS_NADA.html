@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Prospecter les Pros — Chogan × PEP'S CONSULT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#4596D1; --blue-light:#E8F2FB; --blue-mid:#B8D8F0;
+  --indigo:#4247B3; --indigo-light:#EAEBF7;
+  --yellow:#FFC000; --yellow-light:#FFF6D6;
+  --white:#FFFFFF; --bg:#F6F8FB;
+  --text:#1E2A3A; --text-mid:#4A5568; --text-muted:#8896A6;
+  --border:#E2E8F0;
+  --shadow:0 4px 20px rgba(30,42,58,.08);
+  --shadow-lg:0 10px 36px rgba(30,42,58,.14);
+  --radius:16px; --radius-sm:10px;
+  --beaute:#D946A8; --nettoyage:#10B981; --sante:#F59E0B; --boutique:#8B5CF6;
+  --cse:#EF4444; --agence:#6366F1; --evenementiel:#EC4899; --petiteenfance:#06B6D4; --liberal:#0EA5E9;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:2px;}
+html{scroll-behavior:smooth;}
+
+.navbar{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--indigo),var(--blue));padding:max(14px,env(safe-area-inset-top)) 16px 12px;box-shadow:0 2px 12px rgba(66,71,179,.25);}
+.navbar-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px;}
+.nav-back{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;}
+.nav-back:hover{background:rgba(255,255,255,.28);}
+.nav-title{color:#fff;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;line-height:1.3;}
+.nav-title span{display:block;font-size:10px;font-weight:500;opacity:.75;letter-spacing:1.5px;margin-top:1px;}
+
+.hero{background:linear-gradient(160deg,var(--indigo) 0%,var(--blue) 60%,#62B5E5 100%);padding:30px 20px 42px;text-align:center;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:40px;background:var(--bg);border-radius:50% 50% 0 0/100% 100% 0 0;}
+.hero-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.18);padding:6px 14px;border-radius:30px;margin-bottom:12px;}
+.hero h1{font-family:'Playfair Display',serif;font-weight:700;font-style:italic;font-size:clamp(26px,6vw,36px);color:#fff;line-height:1.12;margin-bottom:8px;}
+.hero p{color:rgba(255,255,255,.86);font-size:14px;max-width:420px;margin:0 auto;}
+
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 90px;}
+
+/* MÉTHODE PÉLISSIER intro */
+.methode{background:linear-gradient(135deg,#2D2F66,#4247B3);border-radius:var(--radius);padding:20px 18px;margin:-22px 0 20px;position:relative;z-index:10;box-shadow:var(--shadow-lg);color:#fff;overflow:hidden;}
+.methode::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,192,0,.25),transparent 70%);}
+.methode-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;}
+.methode h2{font-family:'Playfair Display',serif;font-style:italic;font-size:21px;margin-bottom:8px;line-height:1.2;}
+.methode .pitch{font-size:13px;color:rgba(255,255,255,.88);line-height:1.55;margin-bottom:16px;}
+.methode .pitch em{color:var(--yellow);font-style:italic;font-weight:600;}
+.methode-toggle{width:100%;background:rgba(255,255,255,.12);border:none;color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;}
+.methode-toggle:hover{background:rgba(255,255,255,.2);}
+.methode-toggle .chev{transition:.3s;}
+.methode.open .methode-toggle .chev{transform:rotate(180deg);}
+.methode-detail{max-height:0;overflow:hidden;transition:max-height .5s ease;}
+.methode.open .methode-detail{max-height:1200px;}
+.methode-detail-inner{padding-top:16px;}
+.peurs-title,.cdd-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--yellow);margin:14px 0 9px;}
+.peur-row{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:12.5px;}
+.peur-k{font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.16);color:#fff;white-space:nowrap;flex-shrink:0;min-width:78px;text-align:center;}
+.peur-row .pd{color:rgba(255,255,255,.85);}
+.cdd-step{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.1);}
+.cdd-step:last-child{border-bottom:none;}
+.cdd-letter{width:30px;height:30px;border-radius:9px;background:var(--yellow);color:var(--text);font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cdd-step .ct{font-size:13px;font-weight:700;color:#fff;display:block;margin-bottom:2px;}
+.cdd-step .cd{font-size:12px;color:rgba(255,255,255,.82);line-height:1.5;}
+.regleor{margin-top:14px;background:rgba(255,192,0,.16);border-left:3px solid var(--yellow);border-radius:0 8px 8px 0;padding:10px 13px;font-size:12.5px;font-style:italic;color:#fff;}
+.methode-subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.msub{font-size:11px;font-weight:700;padding:7px 11px;border-radius:20px;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff;opacity:.75;font-family:inherit;cursor:pointer;}
+.msub.active{background:#fff;color:var(--indigo);opacity:1;border-color:#fff;}
+.ex-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.ex-chip{font-size:10.5px;font-style:italic;background:rgba(255,255,255,.14);color:#fff;padding:3px 8px;border-radius:20px;}
+.soncas-grid{display:flex;flex-direction:column;gap:8px;}
+.soncas-card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border-radius:10px;padding:9px 12px;}
+.soncas-letter{width:28px;height:28px;border-radius:50%;background:#fff;color:var(--indigo);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pca-note{margin-top:5px;font-size:11.5px;font-weight:700;color:var(--yellow);}
+
+.tabs-scroll{margin:0 -16px 22px;position:relative;z-index:5;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tabs-scroll::-webkit-scrollbar{display:none;}
+.tabs{display:inline-flex;gap:8px;padding:0 16px;}
+.tab{flex:0 0 auto;width:84px;background:var(--white);border-radius:12px;padding:12px 6px 10px;text-align:center;cursor:pointer;border:2px solid var(--border);transition:.22s;box-shadow:var(--shadow);}
+.tab:hover{border-color:var(--blue-mid);}
+.tab.active{border-color:var(--blue);background:var(--blue-light);transform:translateY(-2px);}
+.tab-icon{font-size:24px;display:block;margin-bottom:5px;}
+.tab-label{font-size:10px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;color:var(--text-mid);line-height:1.2;}
+.tab.active .tab-label{color:var(--indigo);}
+
+.profile-header{border-radius:var(--radius);overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow);}
+.profile-banner{padding:20px;display:flex;align-items:center;gap:14px;}
+.profile-emoji{font-size:42px;flex-shrink:0;}
+.profile-info h2{font-size:18px;font-weight:800;color:#fff;line-height:1.2;}
+.profile-info p{font-size:12px;color:rgba(255,255,255,.9);margin-top:4px;}
+.profile-focus{background:var(--white);padding:14px 18px;display:flex;flex-wrap:wrap;gap:6px;}
+.focus-chip{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;background:var(--blue-light);color:var(--indigo);}
+.gammes-row{background:var(--white);padding:0 18px 16px;}
+.gammes-label{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.gammes-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.gamme-tag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;background:var(--bg);color:var(--text-mid);border:1px solid var(--border);}
+
+.angle-toggle{display:flex;gap:6px;background:var(--white);border-radius:12px;padding:5px;margin-bottom:14px;box-shadow:var(--shadow);}
+.angle-btn{flex:1;padding:11px 8px;border:none;background:transparent;border-radius:9px;font-family:inherit;font-size:13px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.angle-btn.active.vente{background:linear-gradient(135deg,var(--blue),#62B5E5);color:#fff;box-shadow:0 4px 12px rgba(69,150,209,.3);}
+.angle-btn.active.recrut{background:linear-gradient(135deg,var(--indigo),#5B60C9);color:#fff;box-shadow:0 4px 12px rgba(66,71,179,.3);}
+
+.section{background:var(--white);border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;}
+.section-trigger{width:100%;padding:16px;border:none;background:transparent;display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;font-family:inherit;}
+.section-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;}
+.n1{background:var(--blue);} .n2{background:var(--indigo);} .n3{background:#E53E3E;} .n4{background:var(--yellow);color:var(--text)!important;}
+.section-title-wrap{flex:1;min-width:0;}
+.section-title{font-size:14px;font-weight:700;color:var(--text);display:block;}
+.section-subtitle{font-size:11px;color:var(--text-muted);display:block;margin-top:1px;}
+.section-chevron{font-size:13px;color:var(--text-muted);transition:.3s;flex-shrink:0;}
+.section.open .section-chevron{transform:rotate(180deg);}
+.section-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(0,1,0,1);}
+.section.open .section-body{max-height:8000px;transition:max-height .7s ease-in-out;}
+.section-inner{padding:0 16px 20px;}
+
+.check-group{margin-bottom:14px;}
+.check-group-title{font-size:11px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.check-group-title::before{content:'';width:14px;height:2px;background:var(--blue);border-radius:2px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;margin-bottom:5px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px;color:var(--text);cursor:pointer;transition:.18s;border:1.5px solid transparent;user-select:none;}
+.check-item:active{border-color:var(--blue-mid);}
+.check-item.checked{background:var(--blue-light);text-decoration:line-through;color:var(--text-muted);}
+.check-box{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transition:.18s;}
+.check-item.checked .check-box{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+/* OUVERTURE (question Q-Si-Arg-Cl) */
+.ouverture-box{background:linear-gradient(135deg,var(--yellow-light),#FFFBF0);border:1.5px solid var(--yellow);border-radius:var(--radius-sm);padding:13px 15px;margin-bottom:12px;position:relative;}
+.ouverture-label{font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:#B8860B;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.ouverture-text{font-size:13px;color:var(--text);line-height:1.55;font-weight:500;}
+
+.discourse-block{border-left:3px solid var(--indigo);padding:13px 15px;margin-bottom:12px;background:var(--indigo-light);border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.discourse-label{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--indigo);margin-bottom:6px;}
+.discourse-text{font-size:13.5px;line-height:1.6;color:var(--text);}
+.discourse-text em{color:var(--indigo);font-style:italic;font-weight:600;}
+.script-box{background:linear-gradient(135deg,var(--indigo),var(--blue));border-radius:var(--radius-sm);padding:16px 16px 14px;margin:12px 0;position:relative;}
+.script-box::before{content:'💬';position:absolute;top:-9px;left:14px;font-size:16px;background:var(--white);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);}
+.script-box p{color:#fff;font-size:13.5px;font-style:italic;line-height:1.62;padding-top:8px;}
+.arg-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;}
+.arg-card .arg-title{font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:3px;}
+.arg-card .arg-desc{font-size:12.5px;color:var(--text-mid);line-height:1.55;}
+
+.marge-box{background:linear-gradient(135deg,var(--yellow-light),#FFFDF5);border:1.5px solid var(--yellow);border-radius:var(--radius-sm);padding:14px 16px;margin:14px 0;}
+.marge-title{font-size:12px;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.marge-title::before{content:'📊';}
+.marge-line{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dashed rgba(255,192,0,.4);font-size:12.5px;}
+.marge-line:last-of-type{border-bottom:none;font-weight:800;color:var(--indigo);font-size:14px;padding-top:9px;}
+.marge-line .lbl{color:var(--text-mid);flex:1;padding-right:10px;}
+.marge-line .val{font-weight:700;white-space:nowrap;}
+.marge-line:last-of-type .lbl{color:var(--indigo);}
+.marge-note{font-size:10.5px;color:var(--text-muted);font-style:italic;margin-top:9px;}
+
+/* OBJECTIONS — framework C.D.D */
+.obj-card{border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.obj-header{background:#FEE2E2;padding:12px 14px;}
+.obj-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.obj-top .obj-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.obj-top .obj-text{font-size:13px;font-weight:700;color:#991B1B;line-height:1.4;}
+.peur-badge{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:4px 10px;border-radius:20px;background:#991B1B;color:#fff;}
+.peur-badge::before{content:'⚠';font-size:10px;}
+.cdd-flow{padding:6px 14px 14px;background:var(--white);}
+.cdd-item{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--bg);}
+.cdd-item:last-child{border-bottom:none;}
+.cdd-badge{width:28px;height:28px;border-radius:8px;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+.cdd-c{background:var(--blue);} .cdd-d1{background:#0EA572;} .cdd-d2{background:var(--indigo);}
+.cdd-content{flex:1;min-width:0;}
+.cdd-step-label{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;}
+.cl-c{color:var(--blue);} .cl-d1{color:#0EA572;} .cl-d2{color:var(--indigo);}
+.cdd-step-text{font-size:12.5px;color:var(--text);line-height:1.5;}
+.cdd-item.dissiper .cdd-step-text{background:linear-gradient(90deg,var(--indigo-light),var(--blue-light));border-radius:8px;padding:9px 11px;font-weight:600;color:var(--indigo);font-style:italic;}
+
+.sms-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;}
+.sms-when{background:var(--bg);padding:8px 14px;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--indigo);display:flex;align-items:center;gap:6px;}
+.sms-when::before{content:'⏱';}
+.sms-bubble{margin:12px 14px;background:#DCF8C6;border-radius:14px 14px 14px 4px;padding:11px 13px;font-size:12.5px;color:#1E2A3A;line-height:1.5;}
+.sms-copy{display:block;margin:0 14px 12px;text-align:right;}
+.sms-copy button{background:var(--blue-light);color:var(--indigo);border:none;font-family:inherit;font-size:11px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;transition:.2s;}
+.sms-copy button:active{background:var(--blue);color:#fff;}
+
+.tip-box{background:var(--yellow-light);border-left:3px solid var(--yellow);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:11px 14px;margin:12px 0;}
+.tip-box p{font-size:12.5px;color:var(--text);line-height:1.5;}
+.tip-box .tip-icon{margin-right:5px;}
+
+.app-footer{text-align:center;padding:30px 16px 20px;font-size:11px;color:var(--text-muted);}
+.app-footer .brand{font-weight:800;color:var(--indigo);font-size:12px;display:block;margin-bottom:4px;}
+
+/* ── COCKPIT / SUIVI ── */
+.tab.tab-suivi{background:linear-gradient(135deg,var(--indigo),var(--blue));border-color:transparent;}
+.tab.tab-suivi .tab-label,.tab.tab-suivi .tab-icon{color:#fff;}
+.tab.tab-suivi.active{background:linear-gradient(135deg,#363aa0,#3a82bd);border-color:var(--yellow);transform:translateY(-2px);}
+.cockpit-head{background:linear-gradient(135deg,var(--indigo),var(--blue));border-radius:var(--radius);padding:18px 18px 16px;color:#fff;margin-bottom:14px;box-shadow:var(--shadow);}
+.cockpit-head h2{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px;}
+.cockpit-head p{font-size:12.5px;opacity:.9;margin-top:4px;line-height:1.5;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px;}
+.stat-card{background:var(--white);border-radius:12px;padding:10px 6px;text-align:center;box-shadow:var(--shadow);border:1.5px solid var(--border);}
+.stat-num{font-size:20px;font-weight:800;line-height:1;}
+.stat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text-muted);margin-top:4px;line-height:1.2;}
+.sc-prosp .stat-num{color:#64748B;} .sc-rdv .stat-num{color:var(--blue);} .sc-clos .stat-num{color:#E8920C;} .sc-sign .stat-num{color:#10B981;}
+.add-card{background:var(--white);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px;}
+.add-card .add-title{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--indigo);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.field{margin-bottom:10px;}
+.field label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;}
+.field input,.field select{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;color:var(--text);background:var(--bg);box-sizing:border-box;-webkit-appearance:none;}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);background:#fff;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.add-btn{width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--indigo),var(--blue));color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;box-shadow:0 4px 12px rgba(66,71,179,.3);}
+.add-btn:active{transform:scale(.99);}
+.prospect-list{display:flex;flex-direction:column;gap:10px;}
+.empty-state{text-align:center;padding:34px 20px;color:var(--text-muted);background:var(--white);border-radius:var(--radius);border:1.5px dashed var(--border);}
+.empty-state .es-emoji{font-size:34px;display:block;margin-bottom:8px;}
+.empty-state p{font-size:13px;line-height:1.5;}
+.pcard{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;border-left:4px solid var(--border);}
+.pcard.st-prosp{border-left-color:#94A3B8;} .pcard.st-rdv{border-left-color:var(--blue);} .pcard.st-clos{border-left-color:var(--yellow);} .pcard.st-sign{border-left-color:#10B981;}
+.pcard-body{padding:13px 15px;}
+.pcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.pcard-name{font-size:15px;font-weight:800;color:var(--text);line-height:1.25;}
+.pcard-profil{font-size:10.5px;font-weight:600;color:var(--indigo);background:var(--indigo-light);padding:2px 8px;border-radius:20px;display:inline-block;margin-top:5px;}
+.status-chip{font-size:10px;font-weight:800;padding:5px 10px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0;}
+.status-chip.st-prosp{background:#F1F5F9;color:#475569;} .status-chip.st-rdv{background:var(--blue-light);color:var(--blue);} .status-chip.st-clos{background:var(--yellow-light);color:#B8860B;} .status-chip.st-sign{background:#D1FAE5;color:#059669;}
+.pcard-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);margin-top:9px;}
+.pcard-rappel{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;margin-top:9px;padding:4px 9px;border-radius:8px;background:var(--bg);color:var(--text-mid);}
+.pcard-rappel.due{background:#FEE2E2;color:#DC2626;}
+.pcard-rappel.soon{background:var(--yellow-light);color:#B8860B;}
+.pcard-links{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;}
+.plink{flex:1;min-width:90px;text-align:center;font-size:11.5px;font-weight:700;padding:8px 6px;border-radius:9px;text-decoration:none;border:1.5px solid var(--border);color:var(--text-mid);background:var(--bg);transition:.15s;}
+.plink:active{border-color:var(--blue);}
+.pcard-actions{display:flex;gap:7px;margin-top:9px;}
+.act-advance{flex:1;font-size:11.5px;font-weight:700;padding:9px;border:none;border-radius:9px;background:var(--indigo-light);color:var(--indigo);font-family:inherit;cursor:pointer;}
+.act-advance:disabled{opacity:.45;cursor:default;}
+.act-del{font-size:11.5px;font-weight:700;padding:9px 14px;border:none;border-radius:9px;background:#FEE2E2;color:#DC2626;font-family:inherit;cursor:pointer;}
+.export-row{margin-top:14px;text-align:center;}
+.export-row button{font-size:11.5px;font-weight:700;color:var(--text-mid);background:transparent;border:1.5px solid var(--border);border-radius:20px;padding:8px 18px;font-family:inherit;cursor:pointer;}
+
+@media(min-width:560px){.tab{width:92px;}}/* ── PROSPECT FINDER ── */
+.tab.tab-finder{background:linear-gradient(135deg,#0EA5E9,#4596D1);border-color:transparent;}
+.tab.tab-finder .tab-label,.tab.tab-finder .tab-icon{color:#fff;}
+.tab.tab-finder.active{background:linear-gradient(135deg,#0c93d1,#3a82bd);border-color:var(--yellow);transform:translateY(-2px);}
+.finder-head{background:linear-gradient(135deg,#0EA5E9,#4596D1);border-radius:var(--radius);padding:18px;color:#fff;margin-bottom:14px;box-shadow:var(--shadow);}
+.finder-head h2{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px;}
+.finder-head p{font-size:12.5px;opacity:.92;margin-top:5px;line-height:1.5;}
+.finder-note{background:var(--yellow-light);border:1px solid #F2D98A;border-radius:12px;padding:10px 12px;font-size:11.5px;color:#7a5b00;line-height:1.5;margin-bottom:14px;}
+.gender-row{display:flex;gap:6px;flex-wrap:wrap;}
+.gender-btn{flex:1;min-width:60px;padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:inherit;font-size:12px;font-weight:700;color:var(--text-mid);cursor:pointer;}
+.gender-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.finder-status{text-align:center;padding:22px;color:var(--text-mid);font-size:13px;}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.res-count{font-size:12px;font-weight:700;color:var(--indigo);margin:4px 0 12px;}
+.fcard{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);border-left:4px solid var(--blue);overflow:hidden;margin-bottom:11px;}
+.fcard.sel{border-left-color:#10B981;background:#F0FDF7;}
+.fcard-body{padding:13px 15px;}
+.fcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.fcard-name{font-size:15px;font-weight:800;color:var(--text);line-height:1.25;}
+.fcard-dist{font-size:11px;font-weight:700;color:var(--blue);white-space:nowrap;background:var(--blue-light);padding:3px 8px;border-radius:20px;flex-shrink:0;}
+.fcard-meta{font-size:12px;color:var(--text-mid);margin-top:7px;display:flex;align-items:flex-start;gap:6px;line-height:1.45;}
+.fcard-meta a{color:var(--blue);text-decoration:none;font-weight:600;}
+.fcard-hours{font-size:11.5px;color:var(--text-mid);margin-top:7px;background:var(--bg);padding:6px 9px;border-radius:8px;line-height:1.4;}
+.fcard-angle{margin-top:10px;background:var(--indigo-light);border-radius:10px;padding:10px 12px;}
+.fcard-angle .al{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--indigo);display:block;margin-bottom:4px;}
+.fcard-angle p{font-size:12.5px;color:var(--text);line-height:1.5;}
+.lookup-row{display:flex;gap:7px;margin-top:10px;}
+.lookup-btn{flex:1;text-align:center;font-size:11px;font-weight:700;padding:8px 6px;border-radius:9px;text-decoration:none;border:1.5px solid var(--border);color:var(--text-mid);background:var(--bg);}
+.complete-toggle{margin-top:9px;font-size:11.5px;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px 0;font-family:inherit;}
+.complete-box{margin-top:8px;display:none;}
+.complete-box.open{display:block;}
+.complete-box .field{margin-bottom:8px;}
+.complete-box label{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;}
+.complete-box input,.complete-box textarea{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:13px;color:var(--text);background:var(--bg);box-sizing:border-box;resize:vertical;}
+.fcard-select{width:100%;margin-top:11px;padding:10px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;background:var(--blue-light);color:var(--blue);}
+.fcard.sel .fcard-select{background:#10B981;color:#fff;}
+.route-bar{position:sticky;bottom:0;background:linear-gradient(135deg,var(--indigo),var(--blue));border-radius:14px;padding:13px 16px;margin-top:8px;box-shadow:0 -2px 16px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:5;}
+.route-bar span{color:#fff;font-size:12.5px;font-weight:700;}
+.route-bar button{background:var(--yellow);color:#3a2e00;border:none;border-radius:10px;padding:10px 16px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.rcard{background:var(--white);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border);padding:12px 14px;margin-bottom:9px;display:flex;align-items:center;gap:12px;}
+.rcard .ord{width:30px;height:30px;border-radius:50%;background:var(--indigo);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rcard .rinfo{flex:1;min-width:0;}
+.rcard .rname{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2;}
+.rcard .rtime{font-size:11px;color:var(--blue);font-weight:700;margin-top:2px;}
+.rcard .rmove{display:flex;flex-direction:column;gap:2px;}
+.rcard .rmove button{background:var(--bg);border:1px solid var(--border);border-radius:6px;width:26px;height:20px;font-size:11px;cursor:pointer;color:var(--text-mid);padding:0;}
+.date-pick{width:100%;padding:11px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;color:var(--text);background:var(--bg);box-sizing:border-box;margin-bottom:10px;}
+
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <button class="nav-back" onclick="window.history.back()" aria-label="Retour">←</button>
+    <div class="nav-title">Chogan Hub · PEP'S CONSULT<span>OSER PROPOSER — Formation Nada Bitar</span></div>
+  </div>
+</nav>
+
+<section class="hero">
+  <span class="hero-badge">Module B2B · Connaître son client</span>
+  <h1>Prospecter les Professionnels</h1>
+  <p>9 profils, deux angles, et la méthode Nada (VAMP + Q-Si-Arg-Cl) pour transformer chaque objection en vente.</p>
+</section>
+
+<main class="wrap">
+  <div id="methode"></div>
+  <div class="tabs-scroll"><div class="tabs" id="tabs" role="tablist"></div></div>
+  <div id="panel"></div>
+</main>
+
+<footer class="app-footer">
+  <span class="brand">PEP'S CONSULT × CHOGAN</span>
+  Formation « OSER PROPOSER » — Nada Bitar<br>
+  Méthode de vente Q-Si-Arg-Cl — inspirée de Nada Bitar
+</footer>
+
+<script>
+const PROFILS = [{"id": "beaute", "tab": {"icon": "💆‍♀️", "label": "Beauté"}, "color": "beaute", "emoji": "💆‍♀️", "titre": "Salons & Instituts de Beauté", "sous": "Coiffeurs · Esthéticiennes · Prothésistes ongulaires · Spas · Barbiers", "focus": ["💸 Marge 50%+", "🌸 Vente croisée", "🔒 Fidélisation captive"], "gammes": ["Extraits de Parfum", "Brumes corps & cheveux", "Cosmétiques Bio", "Maquillage", "Huiles essentielles"], "checklist": {"ech": ["Mallette testeurs : 5 best-sellers parfums (femme + homme + mixte)", "2 Brumes cheveux & corps (incontournable coiffeurs)", "1 Crème Bave d'Escargot + 1 Argan (soin visage premium)", "2-3 teintes maquillage (rouge à lèvres, mascara waterproof)", "Huile essentielle Lavande/Tea Tree (rituel spa)"], "mat": ["Calculateur de marge imprimé (Achat 15€ → Revente 30€ = +100%)", "Grille tarifaire PRO + prix de revente conseillés", "Fiches certifications : Bio, Cruelty-Free, Made in Italy", "Mouillettes pré-parfumées et étiquetées dans sachets", "Bon de commande + carte de visite"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "Le pro de la beauté ne veut pas « un fournisseur de plus ». Il veut <em>sécuriser sa trésorerie</em> et fidéliser. Fais-lui découvrir le manque, ne le lui impose pas.", "ouverture": "Avant de parler produit, pose la question qui fait réfléchir : « Sur une cliente fidèle, vous gagnez sur la prestation… mais après, elle achète ses parfums et ses soins ailleurs, non ? »", "script": "« Avant de vous montrer quoi que ce soit, dites-moi : aujourd'hui, sur une cliente qui vient toutes les 5 semaines, vous récupérez quoi entre deux visites ? … Exactement, rien. Imaginez qu'elle reparte avec un parfum ou un soin que vous êtes la SEULE à proposer. Elle revient chez vous pour racheter, et vous touchez jusqu'à 50% de marge. On regarde ensemble ce que ça donnerait sur votre fichier clients ? »", "args": [{"t": "💰 Zéro risque de trésorerie", "d": "Pas de stock dormant : vous commandez ce qui est déjà réservé ou vendu. L'inquiétude « ça va m'immobiliser de l'argent » tombe immédiatement."}, {"t": "🔒 Fidélisation captive", "d": "Introuvable en supermarché ou chez Sephora. Pour se réapprovisionner, la cliente DOIT revenir. Vous ne vendez pas un produit, vous créez une raison de revenir."}, {"t": "🌸 Vente croisée naturelle", "d": "Une brume après un brushing, un soin après un nettoyage de peau. La proposition se glisse dans la prestation — sans forcing, exactement la philosophie."}, {"t": "✨ Image premium renforcée", "d": "Une gamme exclusive Made in Italy rehausse le positionnement de l'établissement. Le pro vend mieux, pas juste plus."}], "marge": {"titre": "Le calcul qui fait naître l'envie", "lignes": [["Prix d'achat consultant (parfum 100ml)", "≈ 15 €"], ["Prix de revente conseillé", "30 €"], ["Marge nette par flacon", "+15 € (+100%)"], ["× 3 ventes / jour × 22 jours", "≈ 990 € / mois"]], "note": "Ne récite pas ces chiffres. Fais-les CALCULER au pro à voix haute — c'est lui qui doit se convaincre."}}, "partenariat": {"accroche": "Le pro de la beauté a déjà un fichier clients et la fibre commerciale. Ne lui « vends » pas l'opportunité : <em>fais-lui voir</em> qu'il laisse de l'argent sur la table.", "ouverture": "« Vous conseillez déjà vos clientes toute la journée, gratuitement. Et si chaque conseil devenait un revenu récurrent, pas juste une marge ponctuelle ? »", "script": "« Vous faites déjà 80% du travail d'une consultante sans le savoir : vous conseillez, on vous fait confiance, vos clientes achètent ce que vous recommandez. La seule différence ? Aujourd'hui vous ne touchez rien dessus. En devenant partenaire, vous touchez une commission récurrente, vous pouvez parrainer d'autres pros, et tout se fait sur votre temps. Démarrage gratuit, zéro stock. Je vous montre le plan en 10 min ? »", "args": [{"t": "📈 Revenu récurrent + parrainage", "d": "Au-delà de la marge, vous gagnez sur les commandes de votre équipe. Effet boule de neige."}, {"t": "🆓 Démarrage gratuit", "d": "Pas de droit d'entrée, pas de stock imposé. L'inquiétude du risque financier disparaît."}, {"t": "👭 Réseau déjà constitué", "d": "Votre clientèle est votre première équipe potentielle. Vous partez avec une longueur d'avance."}]}, "objections": [{"o": "Je n'ai pas de place sur mes étagères.", "q": "Quand vous dites pas de place… c'est l'espace physique qui vous inquiète, ou plutôt le fait de devoir gérer un stock ?", "a": "Rassurez-vous, on ne crée pas un rayon. Vous avez juste besoin de la place d'une tasse à café sur votre comptoir pour le testeur. Le produit se vend sur l'expérience olfactive, pas sur l'exposition.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Mes clientes veulent des grandes marques.", "q": "Qu'est-ce qu'elles recherchent vraiment d'après vous : le logo sur le flacon, ou le fait de sentir bon et de se sentir bien ?", "a": "Nos essences viennent des mêmes maisons de Grasse que les grandes marques. La différence ? Vos clientes paient le parfum, pas la publicité. Faites le test à l'aveugle — vous verrez leur réaction.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "C'est de la contrefaçon ?", "q": "C'est une super question — qu'est-ce qui vous ferait dire ça exactement ?", "a": "Non, Chogan est une maison de parfumerie italienne avec ses propres formules. S'inspirer d'un style n'est pas copier une œuvre. D'ailleurs, voici les certifications — tout est transparent, vous vérifiez vous-même.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "Le bio, c'est trop cher pour mon salon.", "q": "Trop cher par rapport à quoi ? À ce que vous payez aujourd'hui, ou à ce que vos clientes sont prêtes à mettre ?", "a": "C'est justement l'inverse ! Grâce au circuit direct, notre crème bio Aloe Vera est à 12€ quand l'équivalent pharmacie est à 25€. Meilleure qualité pour la cliente, meilleure marge pour vous.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "J+2 après RDV (Question ouverte)", "t": "Bonjour [Prénom] 😊 Une question m'est venue après notre échange : qu'est-ce qui vous freinerait à tester les 3 produits cette semaine ? Belle journée ! — [Vous]"}, {"q": "J+7 (Relance bienveillante)", "t": "Coucou [Prénom], pas de pression du tout 🌸 Je repensais à ce que vous m'avez dit sur vos clientes fidèles. Beaucoup de salons démarrent avec un mini-kit de 5 produits, sans engagement. Ça vous dirait d'essayer juste pour voir ?"}, {"q": "Après 1ère vente (ancrer)", "t": "Bravo [Prénom] pour vos premières ventes 🎉 Vous voyez, vos clientes étaient prêtes. On réassortit les 3 best-sellers avant la rupture ?"}]}, {"id": "hotellerie", "tab": {"icon": "🏨", "label": "Hôtellerie"}, "color": "nettoyage", "emoji": "🏨", "titre": "Hôtellerie · Restauration · Nettoyage", "sous": "Gîtes · Chambres d'hôtes · Restaurants · Sociétés de ménage · Hôtels", "focus": ["📉 Coûts ÷3", "✅ Normes HACCP", "🕯️ Signature olfactive"], "gammes": ["Gamme Maison ultra-concentrée", "Dégraissants HACCP", "Diffuseurs d'ambiance", "Désodorisants pro"], "checklist": {"ech": ["Nettoyant multi-surfaces ultra-concentré (flacon démo)", "Dégraissant cuisine certifié HACCP", "Nettoyant sol parfumé (rendu olfactif)", "2 Diffuseurs à bâtonnets (notes fraîches + chaudes)", "Pulvérisateur avec produit déjà dilué (démo en direct)"], "mat": ["Fiche technique HACCP + certificats de conformité", "Tableau comparatif dosage : concentré vs classique", "Calculateur coût/litre dilué vs marque actuelle", "Catalogue gamme Maison + grille tarifaire PRO", "Bon de commande + carte de visite"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "Le pro de l'hôtellerie ne veut pas changer de produit pour le plaisir. Il veut <em>arrêter de gaspiller de l'argent</em>. Mets le doigt sur la fuite, puis montre la vanne.", "ouverture": "« Sans indiscrétion, votre poste produits d'entretien, c'est combien par mois ? … Et si je vous disais qu'on peut diviser ça par 3 sans rien perdre en efficacité ? »", "script": "« Avant de vous montrer le produit, une question : vos charges d'entretien, elles montent ou elles descendent chaque année ? … Voilà. Le problème, ce n'est pas le produit, c'est que vous payez surtout de l'eau et du transport. Nos concentrés certifiés HACCP : 1 bidon = 20 litres prêts à l'emploi. Vous divisez le budget par 3. Je vous le PROUVE tout de suite sur ce comptoir ? »", "args": [{"t": "📊 Coût d'usage imbattable", "d": "C'est le coût à la dilution qui compte, pas le prix du bidon. Fais-le calculer au pro — il se persuade seul."}, {"t": "✅ Conformité HACCP", "d": "Fiches prêtes pour les contrôles. Lève l'inquiétude « et si je suis contrôlé ? » avant même qu'elle sorte."}, {"t": "🕯️ Marketing sensoriel gratuit", "d": "Les diffuseurs créent une signature olfactive. Le client associe un parfum à l'établissement. Argument émotionnel, pas juste rationnel."}, {"t": "🚚 Livraison directe", "d": "Commande en ligne, livrée sur site. Fini les allers-retours chez le grossiste."}], "marge": {"titre": "La fuite d'argent, chiffrée", "lignes": [["Budget mensuel produits actuels (estimé)", "300 €"], ["Même volume nettoyé en concentré Chogan", "≈ 100 €"], ["Économie mensuelle", "200 €"], ["Économie annuelle", "≈ 2 400 €"]], "note": "Reprends SA facture réelle. Le chiffre qui sort de sa bouche pèse 10× le tien."}}, "partenariat": {"accroche": "Société de ménage avec des salariés ? Le produit qu'il consomme peut devenir un <em>centre de profit</em>. Fais-lui voir la charge devenir revenu.", "ouverture": "« Vous utilisez déjà ces produits sur tous vos chantiers. Et si, au lieu d'être une dépense, ils devenaient une marge sur chaque facture client ? »", "script": "« Aujourd'hui, vos produits d'entretien sont une charge. Logique. Mais imaginez les revendre à vos propres clients pros : vous achetez au prix consultant, vous facturez au prix marché. La charge devient profit. Et vous connaissez d'autres sociétés de ménage à équiper. Zéro risque, démarrage gratuit. On regarde combien ça représente sur votre volume ? »", "args": [{"t": "♻️ Charge → profit", "d": "Le produit consommé devient une source de revenu quand vous le revendez. Renversement total de logique."}, {"t": "🤝 Réseau B2B", "d": "Vous connaissez d'autres pros du nettoyage : vos premiers clients revendeurs."}, {"t": "🆓 Sans risque", "d": "Démarrage gratuit, commandes à la demande. L'inquiétude financière tombe."}]}, "objections": [{"o": "J'ai déjà un fournisseur attitré.", "q": "Et qu'est-ce qui fait que vous restez chez lui aujourd'hui : le prix, l'habitude, ou autre chose ?", "a": "Je ne vous demande pas de le quitter. Juste de tester UN produit en parallèle 2 semaines et de comparer. Si c'est moins bien, vous ne perdez rien. Si c'est mieux et moins cher… vous déciderez vous-même.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Le concentré, c'est compliqué pour mon équipe.", "q": "Qu'est-ce qui vous inquiète le plus : le dosage, ou le temps de former l'équipe ?", "a": "C'est 1 bouchon + de l'eau dans un pulvérisateur, c'est tout. Et je viens moi-même former votre équipe en 15 min. Résultat : ils forceront moins pour frotter et vous stockerez 5 fois moins de bidons.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "Ces produits ne m'intéressent pas.", "q": "Pas de souci — juste par curiosité, c'est le sujet « produits d'entretien » en général qui ne vous parle pas, ou c'est le moment qui tombe mal ?", "a": "Je comprends, on a tous un agenda chargé. Dernière chose et je vous laisse : quel est votre budget entretien mensuel ? … Et si je vous montrais comment le diviser par 3 ? Ça vaut bien 2 minutes, non ?", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "Je ne connais pas cette marque.", "q": "C'est normal — qu'est-ce qui vous rassurerait le plus : voir les certifications, ou parler à d'autres établissements qui l'utilisent ?", "a": "On ne fait pas de pub TV, et c'est exactement pour ça que nos prix sont si bas. Chogan, entreprise italienne, certifiée HACCP depuis des années. La vraie preuve de qualité, c'est le produit — pas la publicité.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "J+2 (Question ouverte)", "t": "Bonjour [Prénom], merci pour votre accueil ! Une question : à part le prix, y a-t-il un point qui vous ferait hésiter à tester ? Je préfère qu'on en parle franchement. — [Vous]"}, {"q": "J+7 (relance douce)", "t": "Bonjour [Prénom] 👋 Le calcul d'économie pour votre établissement, c'était [montant]/an. Le kit test à prix coûtant est toujours dispo, sans engagement. On le lance ?"}, {"q": "Réassort", "t": "Bonjour [Prénom], vous arrivez bientôt à court de dégraissant HACCP. Je relance la commande habituelle ? Livraison 48-72h."}]}, {"id": "sante", "tab": {"icon": "💪", "label": "Santé/Sport"}, "color": "sante", "emoji": "💪", "titre": "Santé · Sport · Bien-être", "sous": "Coachs sportifs · Masseurs · Kinés · Naturopathes · Salles de sport · Yoga", "focus": ["🌿 100% naturel", "🤝 Complémentarité", "💊 Revenu récurrent"], "gammes": ["Compléments alimentaires", "Huiles essentielles pures", "Crème Neem", "Gel Aloe Vera"], "checklist": {"ech": ["3 Compléments phares (Énergie, Récupération, Articulations)", "HE Menthe Poivrée (douleurs musculaires)", "HE Eucalyptus (respiration, récupération)", "Crème Huile de Neem (anti-inflammatoire naturel)", "Gel Aloe Vera (apaisement, récupération cutanée)"], "mat": ["Fiches composition (ingrédients, dosages, certifications)", "Guide d'utilisation des HE (protocoles massage/diffusion)", "Comparatif prix vs pharmacie/parapharmacie", "Catalogue bien-être + grille tarifaire PRO", "Bon de commande + carte de visite"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "Le coach ou le masseur a horreur de « vendre ». Ne le mets jamais dans cette posture : il <em>recommande</em>, comme il recommande déjà l'hydratation ou les étirements.", "ouverture": "« Quand vous dites à un client de mieux récupérer ou de mieux s'hydrater, c'est de la vente, ça ? … Non, c'est du conseil. Là, c'est exactement pareil. »", "script": "« Vous recommandez déjà des choses à vos clients tous les jours, gratuitement. Et si une de ces recommandations prolongeait vos résultats ENTRE deux séances, tout en vous rapportant un revenu ? Des compléments dosés et des huiles 100% pures, à prix direct fabricant. Vous ne vendez pas — vous recommandez ce que vous validez. Je vous laisse tester une huile sur vous d'abord ? »", "args": [{"t": "🌿 100% naturel & certifié", "d": "HE pures, compléments formulés en Italie, sans additif. Cohérent avec les valeurs du pro et de sa clientèle."}, {"t": "🤝 Renforce, ne remplace pas", "d": "Chogan AMPLIFIE l'expertise du pro, ne s'y substitue pas. Lève la peur « ça va décrédibiliser mon métier »."}, {"t": "💊 Revenu récurrent", "d": "Chaque recommandation génère une commission. 30 clients fidèles = un complément mensuel solide."}, {"t": "🎓 Crédibilité d'expert", "d": "Proposer des solutions naturelles positionne le pro comme expert global. Il gagne en image, pas seulement en argent."}], "marge": {"titre": "L'effet récurrent", "lignes": [["Marge moyenne par complément vendu", "≈ 8-12 €"], ["Clients qui rachètent / mois", "20"], ["Revenu mensuel produits", "≈ 200 €"], ["+ commissions équipe (si parrainage)", "variable"]], "note": "Insiste sur le RÉCURRENT : un client qui rachète chaque mois, c'est l'envie qui se renouvelle seule."}}, "partenariat": {"accroche": "Le pro du bien-être a la <em>confiance de ses clients ET une audience</em>. C'est exactement ce qui fait un excellent partenaire. Ne le recrute pas — montre-lui qu'il a déjà tout.", "ouverture": "« Vous avez deux choses que 99% des consultantes rêvent d'avoir : la confiance de vos clients et une audience. Pourquoi ne pas en faire un vrai revenu ? »", "script": "« Honnêtement, vous avez déjà tout ce qu'il faut. La confiance de vos clients, ça ne s'achète pas — et vous l'avez. Une audience sur vos réseaux — vous l'avez. En devenant partenaire, vous recommandez ce que vous utilisez déjà, et vous pouvez fédérer d'autres coachs comme vous. Pas de vente forcée, pas de réunion. Démarrage gratuit. Je vous explique comment d'autres l'ont fait ? »", "args": [{"t": "🗣️ Audience = avantage", "d": "Réseaux sociaux et clientèle : une base déjà chaude. Pas de prospection à froid."}, {"t": "✅ Recommander, pas vendre", "d": "Le pro parle de ce qu'il teste et valide. Authentique — exactement la vente sans forcing."}, {"t": "🌱 Effet réseau", "d": "Le milieu du bien-être est ultra-connecté : autres coachs, studios, salles deviennent l'équipe."}]}, "objections": [{"o": "Je ne suis pas vendeur, je suis coach.", "q": "Quand vous conseillez à un client de mieux dormir ou de s'étirer, vous appelez ça vendre, vous ?", "a": "Justement, vous ne vendrez rien. Vous recommanderez ce que vous utilisez et validez, comme vous le faites déjà. La seule différence, c'est qu'on vous rémunère pour un conseil que vous donniez gratuitement.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Les compléments, ça ne marche pas vraiment.", "q": "Vous avez raison de douter — vous avez eu une mauvaise expérience avec un produit en particulier ?", "a": "Je comprends, il y a beaucoup de n'importe quoi sur ce marché. Regardez cette composition : des actifs dosés, fabriqués en Italie, pas des placebos. Le mieux ? Testez-le vous-même 30 jours. Votre ressenti sera votre meilleur argument.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "Mes clients achètent déjà en pharmacie.", "q": "Et quand ils achètent en pharmacie, ils suivent le conseil du pharmacien… ou le vôtre ?", "a": "Vos clients vous font plus confiance qu'au pharmacien sur ces sujets. Quand VOUS recommandez, ils achètent. Et en plus, ce sera moins cher que la pharmacie. Tout le monde y gagne.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "C'est du MLM, je ne veux pas de réseau.", "q": "Qu'est-ce qui vous dérange exactement dans le mot « réseau » : le recrutement, ou l'idée d'avoir l'air de harceler vos proches ?", "a": "Je ne vous propose pas de faire du réseau. Juste de recommander des produits que vous utilisez. Vous touchez une marge, point. Pas de réunion, pas de recrutement, pas de pression sur vos proches.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "J+3 (après essai HE)", "t": "Bonjour [Prénom] 🌿 Alors, l'huile de Menthe Poivrée, votre ressenti ? Si elle vous a plu, c'est le meilleur signe pour vos clients aussi. On en parle ? — [Vous]"}, {"q": "J+10 (Relance bienveillante)", "t": "Coucou [Prénom], aucune pression. Je repensais à ce que vous m'avez dit sur la récupération de vos clients. Beaucoup de coachs démarrent avec un kit HE + Neem + Aloe, sans engagement. Tenté ?"}, {"q": "Partenariat", "t": "[Prénom], j'ai pensé à vous : avec votre audience, le statut consultant pourrait être un vrai complément. 10 min en visio juste pour voir si ça vous parle ?"}]}, {"id": "concept", "tab": {"icon": "🎁", "label": "Boutiques"}, "color": "boutique", "emoji": "🎁", "titre": "Concept Store & Boutiques Cadeaux", "sous": "Boutiques déco · Concept stores · Fleuristes · Boutiques cadeaux · Épiceries fines", "focus": ["🛍️ Achat impulsion", "✨ Exclusivité locale", "📦 Sans gros stock"], "gammes": ["Diffuseurs à bâtonnets", "Brumes parfumées", "Extraits de parfum", "Coffrets cadeaux"], "checklist": {"ech": ["3 Diffuseurs à bâtonnets (florale, boisée, fraîche)", "2-3 Brumes parfumées tendance", "3 Extraits de parfum best-sellers (coffret cadeau potentiel)", "1 Coffret découverte (idéal périodes de fêtes)"], "mat": ["Catalogue avec visuels produits (tablette = impact)", "Grille PRO : prix d'achat / prix de revente conseillé", "Photos de mise en situation (diffuseurs en intérieur déco)", "Argumentaire « idées cadeaux par budget » (15/25/40€)", "Bon de commande + carte de visite"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "Le boutiquier vit de l'<em>achat plaisir</em>. Ne lui vends pas un parfum : fais-lui voir le coup de cœur que ses clients auront en passant devant.", "ouverture": "« Vos meilleurs produits, c'est ceux qu'on n'avait pas prévu d'acheter et qu'on prend quand même, non ? »", "script": "« Vos clients viennent chez vous pour DÉCOUVRIR, pas pour retrouver ce qu'ils voient partout. Nos diffuseurs Made in Italy, c'est exactement ça : forte valeur perçue, design élégant, l'objet cadeau parfait pour l'impulsion. Et comme on n'est pas en grande distribution, vous devenez le SEUL à les avoir dans le coin. Je vous en montre 3, vous me direz lequel vous voyez déjà en vitrine ? »", "args": [{"t": "💎 Valeur perçue élevée", "d": "Packaging élégant qui fait « cadeau haut de gamme ». Le client perçoit 30-40€ de valeur pour un prix réel inférieur."}, {"t": "🛍️ Achat impulsion", "d": "Le client sent, il aime, il achète. Aucun argumentaire complexe — la vente se fait toute seule."}, {"t": "✨ Exclusivité locale", "d": "Pas en grande distribution. La boutique devient LE point de vente local. Différenciation immédiate."}, {"t": "📦 Réassort sans stock", "d": "Quelques unités suffisent pour démarrer. L'inquiétude « et si j'ai du stock sur les bras » disparaît."}], "marge": {"titre": "La marge boutique", "lignes": [["Prix d'achat diffuseur (consultant)", "≈ 12 €"], ["Prix de vente boutique", "28 €"], ["Marge brute par diffuseur", "+16 € (+130%)"], ["× 40 diffuseurs / mois (Noël)", "≈ 640 €"]], "note": "Montre la marge, mais vends surtout le coup de cœur client. L'émotion fait acheter, la marge confirme."}}, "partenariat": {"accroche": "Le boutiquier a déjà <em>local, clientèle et sens du commerce</em>. Il ne lui manque qu'une chose : voir que sa vitrine est une machine à prospecter.", "ouverture": "« Votre boutique, c'est déjà le meilleur outil de démonstration qui existe. Pourquoi ne pas en faire une vraie seconde activité ? »", "script": "« Vous avez le local, le flux clients, l'œil. En devenant partenaire, vous ne revendez plus seulement : vous accédez à toute la gamme à prix consultant, vous organisez des ventes privées en boutique, vous créez votre réseau. Votre vitrine devient une machine à recruter et à vendre. C'est une seconde activité bâtie sur la première, sans rien changer à votre quotidien. »", "args": [{"t": "🏪 Vitrine = atout", "d": "La boutique devient un point de démonstration permanent. Le meilleur outil de prospection qui soit."}, {"t": "🎉 Ventes privées", "d": "Soirées parfum en boutique : marge produit + recrutement. Double effet."}, {"t": "🌐 Gamme complète", "d": "Accès à tout l'univers Chogan, pas seulement les diffuseurs. Plus de cartes à jouer."}]}, "objections": [{"o": "J'ai déjà des bougies d'une autre marque.", "q": "Et vos clients qui n'aiment pas allumer une flamme chez eux, vous leur proposez quoi aujourd'hui ?", "a": "Nos bâtonnets sont un format différent — complémentaire, pas concurrent. Vos clients qui évitent les flammes auront enfin une alternative, et vous, une meilleure marge.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Je ne connais pas Chogan, mes clients non plus.", "q": "Vos clients viennent chez vous pour les marques qu'ils connaissent déjà… ou pour celles qu'ils ne trouvent nulle part ailleurs ?", "a": "C'est justement la force d'un concept store ! Vos clients viennent DÉCOUVRIR. Chogan, ce n'est pas du déjà-vu — c'est votre pépite italienne exclusive.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "Le parfum, ce n'est pas mon univers.", "q": "Vous vendez déjà des bougies, des plaids, de la déco… le parfum d'ambiance, c'est si loin de ça ?", "a": "On ne parle pas de parfum à porter ! Un diffuseur, c'est un objet déco. Une brume, une idée cadeau. C'est exactement votre rayon — juste avec une meilleure marge.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "Et si ça ne se vend pas ?", "q": "Qu'est-ce qui vous rassurerait le plus pour tester sans stress : un petit volume, ou une reprise des invendus ?", "a": "On fait simple : 3 diffuseurs pendant 1 mois. Si ça ne part pas, je les reprends, vous ne perdez rien. Mais entre nous… une fois que ça sent bon dans votre boutique, vos clients vont craquer.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "J+3 (Question ouverte)", "t": "Bonjour [Prénom] ✨ Le diffuseur a-t-il fait réagir vos clients ? Si quelque chose vous retient encore de vous lancer, dites-le-moi franchement. — [Vous]"}, {"q": "Avant les fêtes", "t": "Bonjour [Prénom] 🎁 Les coffrets cadeaux partent vite en cette saison. Je vous en réserve avant rupture ? Risque zéro, je reprends les invendus."}, {"q": "Vente privée", "t": "[Prénom], et si on organisait une soirée parfum dans votre boutique ? Vous attirez du monde, je gère l'animation. Marge + nouveaux clients pour vous 🥂"}]}, {"id": "cse", "tab": {"icon": "🏢", "label": "CSE / CE"}, "color": "cse", "emoji": "🏢", "titre": "Comités d'Entreprise (CSE)", "sous": "Élus du personnel · Avantages salariés · Cadeaux de fin d'année", "focus": ["📦 Gros volumes", "🤝 Partenariat durable", "💼 Pouvoir d'achat"], "gammes": ["Parfumerie (commande groupée)", "Coffrets cadeaux", "Toute la gamme via code promo"], "checklist": {"ech": ["Beau catalogue papier à laisser aux élus", "Petits coffrets parfums comme échantillons de prestige", "Sélection « idées cadeaux Noël » prête à présenter"], "mat": ["Grille de remise « Achats Groupés » pré-calculée", "Proposition de code promo permanent salariés", "Modèle de bon de commande individuel (logistique gérée par vous)", "Présentation des certifications & origine Made in Italy", "Carte de visite + plaquette partenariat CSE"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "L'élu CSE veut <em>défendre le pouvoir d'achat</em> de ses collègues sans se rajouter du travail. Mets-toi de son côté : tu lui offres une victoire facile.", "ouverture": "« Votre rôle, c'est d'offrir des avantages aux salariés. Mais le frein, c'est souvent tout ce que ça vous demande à gérer, non ? Et si je gérais 100% pour vous ? »", "script": "« En tant qu'élu, votre mission c'est le pouvoir d'achat des collègues — mais sans y passer vos soirées. Je vous propose un partenariat gratuit : la parfumerie premium à prix direct usine. Soit une commande groupée Noël avec remises fortes, soit un code promo permanent. Dans tous les cas, je gère TOUTE la logistique et les livraisons individuelles. Vous offrez l'avantage, je fais le travail. »", "args": [{"t": "⏱️ Zéro gestion pour le CSE", "d": "Vous gérez bons de commande et livraisons. L'inquiétude n°1 de l'élu (la charge) tombe d'entrée."}, {"t": "💼 Pouvoir d'achat réel", "d": "Parfums et soins premium à prix usine : un avantage concret, visible, apprécié des salariés."}, {"t": "🎄 Idéal cadeaux de fin d'année", "d": "Coffrets élégants pour les commandes de Noël. Effet « waouh » garanti auprès des équipes."}, {"t": "🔁 Partenariat récurrent", "d": "Code promo permanent = relation durable, pas une opération one-shot."}], "marge": {"titre": "L'intérêt d'une commande groupée", "lignes": [["Coffrets commandés (Noël, ex.)", "100"], ["Marge consultant par coffret", "≈ 10 €"], ["Revenu sur l'opération", "≈ 1 000 €"], ["+ commandes récurrentes via code promo", "récurrent"]], "note": "Pour l'élu, l'argument n'est pas TA marge mais le service rendu aux salariés. Garde le focus sur lui."}}, "partenariat": {"accroche": "Un élu dynamique connaît <em>toute l'entreprise et d'autres élus</em>. C'est un multiplicateur de réseau rare. Fais-lui voir la portée de son carnet d'adresses.", "ouverture": "« Vous parlez à combien de personnes dans votre entreprise chaque semaine ? … C'est exactement la base dont rêve une consultante. »", "script": "« Au-delà du partenariat CSE, si l'aventure vous plaît : vous connaissez tout le monde dans votre boîte, et d'autres élus ailleurs. C'est une base de prospection en or, déjà en confiance avec vous. En devenant consultant, vous touchez une commission sur tout ce que vous facilitez. Une activité parfaite à mener en parallèle de votre mandat. »", "args": [{"t": "📣 Réseau interne énorme", "d": "Un élu parle à toute l'entreprise. Prospection idéale, déjà en confiance."}, {"t": "💰 Commission sur volume", "d": "Sur des commandes groupées, le volume génère des commissions intéressantes."}, {"t": "🔗 Inter-CSE", "d": "Vous connaissez des élus d'autres entreprises : le réseau s'étend tout seul."}]}, "objections": [{"o": "On donne déjà des chèques cadeaux.", "q": "Et avec ces chèques, vos salariés s'offrent surtout de l'utile, ou aussi du plaisir ?", "a": "Les chèques sont parfaits ! Et nos salariés pourront les utiliser chez nous à un prix déjà remisé. C'est du double pouvoir d'achat — vous ne remplacez rien, vous ajoutez.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "On n'a pas le budget pour un partenariat.", "q": "Vous imaginez que ça coûte quelque chose au CSE ?", "a": "Justement, ça ne coûte rien au CSE ! Le code promo et toute la logistique, c'est moi. Vous offrez un avantage à vos salariés sans dépenser un centime.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "C'est trop de paperasse à gérer.", "q": "Qu'est-ce qui vous prendrait le plus de temps d'après vous : récolter les commandes, ou gérer les livraisons ?", "a": "Aucune paperasse pour vous. Chaque salarié commande en ligne, je livre chez lui directement. Vous ne gérez rien — vous offrez juste l'accès.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "Nos salariés ne connaissent pas la marque.", "q": "Et s'ils pouvaient sentir les produits avant de décider, ça lèverait le doute ?", "a": "Je peux venir un midi présenter la gamme avec des testeurs. Vos salariés sentent, découvrent, adorent — sans aucune obligation d'achat. La découverte fait tout le travail.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "Après réunion CSE", "t": "Bonjour, merci de votre écoute ! Avant d'aller plus loin : y a-t-il un point qui inquiète les élus sur ce partenariat ? Je préfère lever tout doute maintenant. — [Vous]"}, {"q": "Relance", "t": "Bonjour, petit rappel amical : pour une commande groupée de Noël, il faut lancer avant [date]. Et je gère 100% de la logistique, vous n'avez rien à faire. On en parle ?"}, {"q": "Code promo lancé", "t": "Bonjour, le code promo salariés est actif ✅ Diffusez-le sur votre intranet quand vous voulez. Toutes les livraisons individuelles, c'est moi qui gère."}]}, {"id": "agence", "tab": {"icon": "🔑", "label": "Agences"}, "color": "agence", "emoji": "🔑", "titre": "Agences & Concessions", "sous": "Agents immobiliers · Concessionnaires auto · Notaires · Courtiers", "focus": ["🎁 Cadeau de closing", "🧠 Ancrage mémoriel", "💼 Frais déductibles"], "gammes": ["Diffuseurs d'ambiance", "Extraits de parfum", "Coffrets prestige"], "checklist": {"ech": ["Diffuseur d'ambiance « signature » haut de gamme", "Extrait de parfum prestige en coffret", "Sélection de coffrets « cadeau client » par gamme de prix"], "mat": ["Argumentaire « cadeau de remise de clés / livraison »", "Note sur la déductibilité fiscale des cadeaux clients", "Grille tarifaire volume (achats récurrents)", "Visuels élégants de mise en situation", "Carte de visite + plaquette B2B"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "L'agent veut <em>marquer durablement</em> ses clients et générer du bouche-à-oreille. Le parfum crée une empreinte mémorielle — bien plus que le champagne.", "ouverture": "« Le champagne que vous offrez à la signature… il est bu et oublié en une soirée, non ? Et si votre cadeau parfumait leur nouveau foyer pendant des mois ? »", "script": "« Un client qui signe attend une attention. Le champagne, c'est bien — mais c'est bu et oublié le soir même. Un diffuseur ou un extrait de parfum prestige, lui, parfume leur nouveau foyer pendant des mois. Et à chaque fois qu'ils le sentent, ils pensent à VOUS, l'agent qui leur a vendu le bien. En plus, c'est déductible et moins cher que le champagne. On regarde une sélection ? »", "args": [{"t": "🧠 L'ancrage mémoriel", "d": "L'odorat est le sens le plus lié à la mémoire. Le diffuseur rappelle l'agent à chaque usage. Argument 100% émotionnel."}, {"t": "🎁 Différenciation du closing", "d": "Sortez du champagne classique. Un cadeau parfumé marque les esprits et génère du bouche-à-oreille."}, {"t": "💼 Frais déductible", "d": "Cadeaux clients = charge déductible. Avantageux fiscalement, à prix direct usine."}, {"t": "🔁 Ambassadeurs", "d": "Un client marqué recommande l'agent. Le cadeau devient un outil de prospection rentable."}], "marge": {"titre": "Moins cher, plus mémorable", "lignes": [["Cadeau champagne moyen", "25-40 €"], ["Diffuseur prestige Chogan", "≈ 15-20 €"], ["Économie par cadeau", "≈ 10-20 €"], ["Impact mémoriel", "incomparable"]], "note": "L'argument massue : moins cher ET plus marquant. L'agent se persuade seul du bon sens."}}, "partenariat": {"accroche": "Agents et courtiers ont un <em>réseau et une fibre commerciale</em> hors pair. Ils peuvent développer Chogan sans empiéter sur leur métier.", "ouverture": "« Votre carnet d'adresses, c'est votre fonds de commerce. Et s'il pouvait vous rapporter une seconde fois ? »", "script": "« Vous avez un réseau et un vrai talent de vente — c'est rare. Beaucoup d'agents développent une activité Chogan en parallèle : revenus complémentaires, cadeaux clients à prix coûtant, et un réseau de qualité à activer. Sans aucune interférence avec votre métier, sur votre temps. Je vous montre comment d'autres l'ont structuré ? »", "args": [{"t": "📇 Carnet d'adresses en or", "d": "Réseau pro et perso : une base de prospection idéale, déjà qualifiée."}, {"t": "🎁 Cadeaux à prix coûtant", "d": "Vous fournissez vos propres cadeaux clients au prix consultant. Économie + revenu."}, {"t": "⏰ Activité flexible", "d": "Se développe sur votre temps libre, sans contrainte horaire."}]}, "objections": [{"o": "Je n'ai pas le temps de gérer ça.", "q": "Si tout était géré pour vous — sélection, commande, livraison — ça changerait quelque chose ?", "a": "Vous n'avez rien à gérer. Vous me dites combien de cadeaux par mois, je vous livre les coffrets prêts à offrir. Zéro logistique de votre côté.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Le champagne, c'est une tradition.", "q": "Et cette tradition, vos clients s'en souviennent combien de temps après ?", "a": "Le champagne se boit en une soirée. Un diffuseur parfume leur foyer pendant des mois — et leur rappelle votre nom à chaque fois. La tradition, c'est bien. L'empreinte durable, c'est mieux.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "Mes clients préfèrent peut-être autre chose.", "q": "Vos clients sont variés — un cadeau élégant qui s'adapte à chaque profil, ça vous irait ?", "a": "J'ai des coffrets pour tous les profils : masculin, féminin, mixte, ambiance maison. Vous choisissez selon le client. Toujours élégant, jamais déplacé.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "C'est un budget en plus.", "q": "Vous dépensez déjà combien par cadeau client aujourd'hui ?", "a": "C'est souvent MOINS cher que votre cadeau actuel, et c'est déductible. Vous dépensez moins, vous marquez plus les esprits. Le calcul est vite fait.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "Après RDV (Question ouverte)", "t": "Bonjour [Prénom], ravi de notre échange ! Avant la prochaine étape : un point vous fait encore hésiter sur l'idée du cadeau parfumé ? Dites-moi tout. — [Vous]"}, {"q": "Relance", "t": "Bonjour [Prénom] 🔑 Une signature prévue bientôt ? Je peux vous livrer un coffret prestige sous 48h, prêt à offrir. Moins cher que le champagne, et inoubliable."}, {"q": "Fidélisation", "t": "[Prénom], vos clients ont aimé le cadeau ? Je vous prépare un petit stock pour vos prochaines remises de clés. Toujours à prix direct."}]}, {"id": "evenementiel", "tab": {"icon": "💍", "label": "Événementiel"}, "color": "evenementiel", "emoji": "💍", "titre": "Événementiel & Mariage", "sous": "Wedding planners · Organisateurs · Salles de réception · Traiteurs · Fleuristes événement", "focus": ["🎀 Cadeaux invités", "✨ Ambiance signature", "📦 Commandes volume"], "gammes": ["Mini-parfums (cadeaux invités)", "Brumes", "Diffuseurs (déco)", "Coffrets personnalisables"], "checklist": {"ech": ["Mini-flacons de parfum (format « cadeau invité »)", "Brumes parfumées en petits formats", "Diffuseur d'ambiance pour la déco de réception", "Exemple de coffret personnalisé (étiquette aux couleurs des mariés)"], "mat": ["Grille tarifaire dégressive selon volume (50/100/200 pièces)", "Book photo « cadeaux invités » et mises en situation", "Délais de livraison clairs pour planning événement", "Options de personnalisation (étiquettes, couleurs)", "Carte de visite + plaquette événementiel"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "L'organisateur cherche le <em>détail mémorable</em> qui fait parler de l'événement. Le mini-parfum personnalisé bat la dragée — il se garde et s'utilise.", "ouverture": "« Les dragées, soyons honnêtes… combien d'invités les mangent vraiment ? Et si le cadeau se gardait et rappelait l'événement à chaque usage ? »", "script": "« Vos couples veulent marquer leurs invités. Les dragées, c'est joli, mais c'est oublié le lendemain. Imaginez à la place un mini-parfum élégant, personnalisé aux couleurs du mariage : l'invité le garde, l'utilise, et repense à la fête à chaque fois. Forte valeur perçue, prix dégressif sur le volume, livraison calée sur votre planning. Je vous montre des exemples ? »", "args": [{"t": "🎀 Cadeau invité mémorable", "d": "Un parfum se garde et s'utilise. L'invité se souvient de l'événement à chaque usage — l'ancrage mémoriel, appliqué au mariage."}, {"t": "💰 Prix dégressif volume", "d": "100-150 pièces = tarif très avantageux. Marge confortable pour l'organisateur."}, {"t": "🎨 Personnalisation", "d": "Étiquettes aux couleurs des mariés, message personnalisé. Effet sur-mesure haut de gamme."}, {"t": "✨ Ambiance de réception", "d": "Diffuseurs pour parfumer la salle : une signature olfactive pour l'événement entier."}], "marge": {"titre": "Le volume qui change tout", "lignes": [["Mini-parfum (achat volume)", "≈ 4 €"], ["Facturé au client / pièce", "8 €"], ["Marge par pièce", "+4 €"], ["× 120 invités (1 mariage)", "≈ 480 €"]], "note": "Un seul événement = un revenu concentré. Fais visualiser à l'organisateur le nombre de mariages par an."}}, "partenariat": {"accroche": "Le wedding planner a une <em>clientèle qui dépense et un sens du détail</em>. Internaliser les cadeaux, c'est capter une marge qu'il sous-traite aujourd'hui.", "ouverture": "« Les cadeaux invités, vous les sous-traitez à un fournisseur, non ? Et si vous gardiez cette marge pour vous ? »", "script": "« Vous gérez déjà des budgets et des prestataires. Aujourd'hui, les cadeaux invités, vous les référez à quelqu'un d'autre — qui prend la marge. En devenant partenaire Chogan, vous les fournissez EN INTERNE, à votre marge. Vous gagnez sur chaque événement, et vous pouvez même fédérer d'autres organisateurs de votre réseau. »", "args": [{"t": "🔄 Internaliser la marge", "d": "Au lieu de référer un fournisseur, vous fournissez et captez la marge. Logique imparable."}, {"t": "🎯 Clientèle premium", "d": "Les budgets mariage sont conséquents. Vos clients investissent volontiers dans le détail."}, {"t": "🤝 Réseau de prestataires", "d": "Traiteurs, salles, fleuristes : votre écosystème devient votre équipe potentielle."}]}, "objections": [{"o": "Mes clients veulent des dragées traditionnelles.", "q": "Vos couples cherchent la tradition à tout prix, ou ils veulent surprendre leurs invités ?", "a": "Les dragées restent une option ! Mais de plus en plus de couples veulent surprendre. Un mini-parfum personnalisé, c'est le cadeau dont on parle encore des mois après.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Les délais de livraison m'inquiètent.", "q": "Votre vraie crainte, c'est le retard le jour J, c'est ça ?", "a": "Je comprends, dans votre métier le timing est sacré. On cale la commande sur votre rétroplanning, avec 3 semaines d'avance. Je vous garantis la date de livraison par écrit.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "C'est un budget en plus pour mes clients.", "q": "Par rapport à des dragées de qualité, vous pensez que c'est vraiment plus cher ?", "a": "Au volume, le mini-parfum revient souvent au prix des dragées de qualité — pour un impact dix fois supérieur. Vos couples paient pareil, mais marquent bien plus.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "Je préfère mes fournisseurs habituels.", "q": "Qu'est-ce qui vous plaît le plus chez eux : la fiabilité, ou simplement l'habitude ?", "a": "Testez sur UN seul mariage. Comparez la réaction des invités et votre marge. Si ce n'est pas concluant, vous gardez vos fournisseurs, sans rancune.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "Après RDV (Question ouverte)", "t": "Bonjour [Prénom], merci pour votre temps ! Avant le book : un point vous fait hésiter (délais, budget, perso) ? Dites-le-moi, je veux que ce soit carré. — [Vous]"}, {"q": "Relance saison", "t": "Bonjour [Prénom] 💍 La saison des mariages approche ! Je bloque des créneaux de production pour les cadeaux invités personnalisés. On cale vos dates avant que ça se remplisse ?"}, {"q": "Devis", "t": "[Prénom], voici le devis pour [événement] : [X] mini-parfums personnalisés, livrés le [date], garanti par écrit. Je lance dès votre validation 🎀"}]}, {"id": "petiteenfance", "tab": {"icon": "👶", "label": "Petite enfance"}, "color": "petiteenfance", "emoji": "👶", "titre": "Crèches & Petite Enfance", "sous": "Crèches · Assistantes maternelles · Micro-crèches · MAM", "focus": ["🌿 Bio & sûr", "✅ Sans substances nocives", "📉 Coûts maîtrisés"], "gammes": ["Gamme Maison bio/douce", "Nettoyants sans substances agressives", "Diffuseurs naturels doux"], "checklist": {"ech": ["Nettoyant multi-surfaces doux (composition à montrer)", "Produit sol sans substances agressives", "Diffuseur d'ambiance aux notes douces (adapté lieux d'enfants)", "Fiche de composition complète et transparente"], "mat": ["Fiches de sécurité et compositions détaillées", "Comparatif coût vs produits actuels", "Certifications & origine des produits", "Catalogue gamme Maison + grille PRO", "Carte de visite + plaquette"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "La responsable petite enfance a une seule inquiétude qui prime sur tout : <em>la sécurité des enfants</em>. Rassure d'abord, économise ensuite.", "ouverture": "« Avant de parler de quoi que ce soit : pour vous, le produit d'entretien idéal, c'est lequel — le moins cher, ou le plus sain pour les enfants ? »", "script": "« Dans une structure d'accueil, le choix des produits, c'est d'abord une question de sécurité, on est d'accord ? C'est exactement ma priorité. Je vous propose une gamme aux compositions 100% transparentes, douces, et en plus économiques grâce au format concentré. Vous protégez les enfants ET votre budget. Je vous laisse consulter les fiches de composition, vous vérifiez vous-même ? »", "args": [{"t": "🌿 Compositions transparentes", "d": "Fiches détaillées disponibles. Le pro vérifie lui-même ce qu'il utilise autour des enfants. La transparence lève la peur."}, {"t": "📉 Économique", "d": "Format concentré : moins de bidons, moins de dépenses, moins de stockage. Argument secondaire, jamais premier."}, {"t": "🤝 Accompagnement", "d": "Conseil personnalisé sur les produits adaptés à un lieu d'accueil d'enfants."}, {"t": "🚚 Livraison directe", "d": "Réapprovisionnement simple, livré sur place. Gain de temps pour l'équipe."}], "marge": {"titre": "Sécurité ET économie", "lignes": [["Budget entretien mensuel (estimé)", "150 €"], ["Équivalent en concentré", "≈ 60 €"], ["Économie mensuelle", "90 €"], ["Sur l'année", "≈ 1 080 €"]], "note": "Ne mets ce tableau qu'APRÈS avoir rassuré sur la sécurité. L'ordre est crucial avec ce profil."}}, "partenariat": {"accroche": "Une pro de la petite enfance touche <em>un réseau immense de parents et de consœurs</em>. Son bouche-à-oreille est l'un des plus puissants qui soient.", "ouverture": "« Combien de parents vous font confiance les yeux fermés ? C'est exactement le genre de confiance qui fait une excellente recommandation. »", "script": "« Vous êtes en contact avec énormément de parents et d'autres professionnelles. Et ces parents vous font une confiance totale — ça, ça ne s'achète pas. C'est un réseau idéal pour recommander des produits naturels et doux. Beaucoup démarrent une activité Chogan en parallèle, à leur rythme, sans pression. Je vous explique le principe ? »", "args": [{"t": "👨‍👩‍👧 Réseau de parents", "d": "Les parents font confiance aux pros de la petite enfance. Recommandation à très fort impact."}, {"t": "🌱 Produits qui parlent", "d": "Soins doux, gammes bio : un univers cohérent avec le métier. Recommandation authentique."}, {"t": "⏰ À votre rythme", "d": "Activité flexible, sans contrainte, en complément. Démarrage gratuit."}]}, "objections": [{"o": "La sécurité des enfants avant tout, je suis prudente.", "q": "Vous avez 100% raison — qu'est-ce qui vous rassurerait le plus : les compositions détaillées, ou les certifications officielles ?", "a": "Vous avez entièrement raison, et c'est exactement ma priorité. Voici les compositions complètes, en toute transparence. Vous validez vous-même que chaque produit est adapté.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Je dois respecter un protocole d'hygiène strict.", "q": "Votre protocole impose des produits précis, ou surtout un certain niveau d'efficacité et de sécurité ?", "a": "Parfait, regardons votre protocole ensemble. Je vous montre quels produits s'y intègrent sans rien changer à vos exigences d'hygiène. On adapte à vous, pas l'inverse.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "Mon budget est très serré.", "q": "Si je vous montrais comment dépenser MOINS tout en gagnant en transparence, ça vous intéresserait ?", "a": "Justement, le format concentré va alléger votre budget. Vous dépensez moins tout en sachant exactement ce que vous utilisez. C'est gagnant sur les deux tableaux.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "Je ne connais pas cette marque.", "q": "C'est normal d'être exigeante dans votre métier — qu'est-ce qui vous donnerait confiance ?", "a": "Chogan est une entreprise italienne avec des certifications, et surtout tout est transparent : vous vérifiez chaque composition vous-même. Dans votre métier, c'est cette transparence qui compte, pas le nom.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "Après RDV (rassurer)", "t": "Bonjour [Prénom], merci de votre confiance ! Voici les fiches de composition complètes comme promis. Prenez le temps de tout vérifier — je reste dispo pour la moindre question de sécurité. — [Vous]"}, {"q": "Relance", "t": "Bonjour [Prénom] 🌿 Avez-vous pu consulter les compositions ? Si tout vous semble carré, je peux préparer un petit kit test pour votre structure, sans engagement."}, {"q": "Réseau parents", "t": "[Prénom], si des parents cherchent des produits doux et naturels, je peux leur proposer une remise. N'hésitez pas à me les orienter 😊"}]}, {"id": "liberal", "tab": {"icon": "🩺", "label": "Cabinets"}, "color": "liberal", "emoji": "🩺", "titre": "Cabinets & Professions Libérales", "sous": "Cabinets médicaux · Dentaires · Avocats · Experts-comptables · Études notariales", "focus": ["🪑 Ambiance d'attente", "🎁 Attention clients", "👩‍💼 Réseau pro CSP+"], "gammes": ["Diffuseurs d'ambiance", "Brumes d'accueil", "Coffrets cadeaux clients/confrères"], "checklist": {"ech": ["Diffuseur d'ambiance élégant (salle d'attente)", "Brume d'accueil aux notes apaisantes", "Coffret prestige (cadeau confrère / client fidèle)", "Sélection « notes neutres et professionnelles »"], "mat": ["Visuels « ambiance salle d'attente » haut de gamme", "Argumentaire bien-être patient/client", "Grille tarifaire (achat récurrent diffuseurs)", "Option coffrets cadeaux fin d'année (confrères/partenaires)", "Carte de visite + plaquette B2B"], "astuce": "Nada le dit toujours : ne déballe pas ton catalogue d'entrée. Pose UNE question sur son activité, écoute vraiment la réponse, puis propose. C'est la base du Q-Si-Arg-Cl."}, "vente": {"accroche": "Le libéral soigne son <em>image et l'expérience de ses patients/clients</em>. Une salle d'attente parfumée et apaisante est un investissement d'image, pas une dépense.", "ouverture": "« La première chose que ressent un patient dans votre salle d'attente, c'est quoi aujourd'hui ? Du stress… ou de l'apaisement ? »", "script": "« La première impression dans une salle d'attente compte énormément — c'est elle qui pose le ton avant même que le patient vous voie. Une ambiance olfactive discrète et apaisante réduit son stress et renforce votre image haut de gamme. Je vous propose des diffuseurs élégants, à prix direct, en réassort automatique pour que vous n'y pensiez jamais. Je vous montre les notes les plus adaptées à un cabinet ? »", "args": [{"t": "🪑 Confort & image", "d": "Une salle d'attente parfumée apaise les patients et projette une image soignée. Investissement d'image, pas coût."}, {"t": "🎁 Cadeaux confrères/clients", "d": "Coffrets élégants pour les fêtes : entretenir le réseau professionnel avec classe."}, {"t": "💼 Frais déductible", "d": "Diffuseurs et cadeaux clients : des charges déductibles à tarif direct."}, {"t": "🔁 Réassort simple", "d": "Commande en ligne, livraison au cabinet. Lève d'avance la peur « je n'aurai pas le temps de gérer »."}], "marge": {"titre": "Petit budget, grande image", "lignes": [["Diffuseur d'ambiance (achat)", "≈ 12 €"], ["Durée d'un diffuseur", "≈ 2 mois"], ["Coût mensuel ambiance cabinet", "≈ 6 €"], ["Impact sur l'image", "majeur"]], "note": "6€/mois pour une image premium permanente : un ratio que le libéral comprend immédiatement."}}, "partenariat": {"accroche": "Le libéral a un <em>réseau CSP+ et une crédibilité</em> qui en font un excellent apporteur d'affaires, en toute discrétion.", "ouverture": "« Vous évoluez dans un cercle de gens qui ont les moyens et le goût des belles choses. Ce réseau pourrait travailler pour vous, discrètement. »", "script": "« Vous évoluez dans un réseau de professionnels et de clients exigeants. Beaucoup de libéraux développent une activité Chogan discrète en parallèle : cadeaux à prix coûtant, revenus complémentaires, un réseau de qualité à activer. Sans aucune visibilité imposée, sans interférer avec votre métier. Je vous explique le principe en toute confidentialité ? »", "args": [{"t": "🎩 Réseau qualifié", "d": "Clientèle CSP+ et confrères : une base de prospection à fort pouvoir d'achat."}, {"t": "🤫 Activité discrète", "d": "Se développe en marge du métier principal, sans visibilité imposée. Lève la peur de l'image."}, {"t": "💰 Cadeaux à prix coûtant", "d": "Vous fournissez vos propres cadeaux clients/confrères au prix consultant."}]}, "objections": [{"o": "Ce n'est pas en lien avec mon activité.", "q": "L'image de votre cabinet, par contre, ça vous concerne directement, non ?", "a": "C'est vrai. Mais l'image de votre cabinet, elle, compte pour vous. Une salle d'attente soignée, c'est un patient rassuré et un cabinet qui inspire confiance avant même la consultation.", "cl": "Je vous laisse tester un échantillon, sans engagement — je repasse sous 48h pour votre avis."}, {"o": "Je n'ai pas le temps pour ça.", "q": "Si ça ne vous demandait strictement aucune gestion, le « temps » serait encore un frein ?", "a": "Vous n'avez rien à gérer. Je vous mets en réassort automatique : les diffuseurs arrivent au cabinet sans que vous y pensiez jamais.", "cl": "Aucune pression : je vous laisse juste de quoi tester. On en reparle quand vous voulez."}, {"o": "Certains patients sont sensibles aux odeurs.", "q": "Vous craignez une odeur trop forte, c'est ça la vraie inquiétude ?", "a": "Excellente remarque, et vous avez raison d'y penser. Je vous propose des notes très discrètes, à intensité réglable. L'objectif, c'est l'apaisement subtil — jamais l'odeur envahissante.", "cl": "Je vous propose un mini-kit sans engagement — vous me direz ce que vous en pensez."}, {"o": "C'est une dépense non prioritaire.", "q": "Si je vous disais que ça revient à environ 6€ par mois, ça change la perception ?", "a": "On parle de quelques euros par mois, déductibles, pour un effet premium permanent sur l'expérience de vos patients. Le ratio image/coût est imbattable.", "cl": "On regarde ensemble ce que ça donnerait sur votre semaine type, sans rien signer aujourd'hui."}], "sms": [{"q": "Après RDV (Question ouverte)", "t": "Bonjour [Prénom], merci pour votre accueil ! Avant d'aller plus loin : un point vous fait hésiter (notes, gestion, budget) ? Dites-le-moi franchement. — [Vous]"}, {"q": "Relance", "t": "Bonjour [Prénom] 🩺 Le diffuseur pour votre salle d'attente est dispo en réassort automatique — zéro gestion de votre côté. On met ça en place ?"}, {"q": "Fin d'année", "t": "[Prénom], pensez aux coffrets confrères pour les fêtes 🎁 Élégants, à prix direct et déductibles. Je vous prépare une sélection ?"}]}];
+const METHODE = {"titre": "La méthode Nada", "pitch": "Proposer, ce n'est pas imposer. Une question, une écoute vraie, un argument-clé, une conclusion nette. <em>Sans te sur-justifier.</em>", "vamp": {"titre": "Mon diagnostic VAMP", "d": "Avant même de parler produit : quel est mon angle de vente unique ? Mes passions et mon vécu sont ce que personne ne peut copier — c'est ça, mon P de Personnalité."}, "qpasiargcl": [{"l": "Q", "t": "Question", "d": "Poser une question directe pour ouvrir le dialogue.", "ex": ["« Tu connais les Extraits de Parfum ? »", "« C'est quoi ton parfum actuel ? »", "« Tu cherches pour toi ou pour offrir ? »"]}, {"l": "PA", "t": "Proposition Alternative", "d": "Proposer un choix : le cerveau choisit au lieu de refuser.", "ex": ["« Tu préfères florale ou boisée ? »", "« Format 30ml ou 70ml ? »", "« Plutôt notes chaudes ou fraîches ? »"]}, {"l": "Si", "t": "Méthode du Si", "d": "Commencer par « si » pour proposer sans forcer.", "ex": ["« Si tu aimes les notes fraîches, j'ai CE qu'il te faut. »", "« Si tu veux profiter de la promo, il reste 3 jours. »", "« Si c'est pour offrir, le coffret est parfait. »"]}, {"l": "Arg", "t": "Argument", "d": "Donner UN FAIT, pas une opinion.", "ex": ["« 30% d'essence = le double du standard. »", "« Même fournisseur que Dior et Chanel. »", "« Zéro pub = tu paies le parfum, pas la star. »"]}, {"l": "Cl", "t": "Conclusion", "d": "Fermer la vente. Ne pas laisser le silence.", "ex": ["« Je te mets le floral et le boisé ? »", "« Je t'envoie le lien pour commander ? »", "« Tu veux que je te prépare un petit panier ? »"]}], "soncas": [{"l": "S", "t": "Sécurité", "d": "Besoin d'être rassuré, de garanties."}, {"l": "O", "t": "Orgueil", "d": "Fierté, image de soi, prestige."}, {"l": "N", "t": "Nouveauté", "d": "Attrait pour la nouveauté."}, {"l": "C", "t": "Confort", "d": "Facilité, praticité, bien-être."}, {"l": "A", "t": "Argent", "d": "Prix, rentabilité, économies."}, {"l": "S2", "t": "Sympathie", "d": "Relation humaine, coup de cœur."}], "pca": [{"l": "P", "t": "Promo — Vente Promotionnelle", "d": "Mettre en valeur les promotions en osant les proposer.", "note": "🔥 Tu ne proposes pas la promo = tu laisses de l'argent sur la table."}, {"l": "C", "t": "Complément — Vente Complémentaire", "d": "Produit logique par rapport à l'achat initial."}, {"l": "A", "t": "Additionnel — Vente Additionnelle", "d": "Produit sans relation directe avec l'achat initial.", "note": "🔥 Change de sujet = ouvre une nouvelle porte."}], "regleor": "Proposer n'est pas imposer. Reformule, sors ton argument-clé en 15 secondes, conclus sans laisser le silence."};
+let current = 0;
+let angle = 'vente';
+let view = 'profil'; // 'profil' | 'suivi'
+let prospects = [];
+try { prospects = JSON.parse(localStorage.getItem('chogan_prospects')) || []; } catch(e){ prospects = []; }
+
+let methodeTab = 'qpasiargcl';
+function setMethodeTab(t){ methodeTab=t; renderMethode(); document.getElementById('methodeCard').classList.add('open'); }
+function renderMethode(){
+  const el = document.getElementById('methode');
+  const wasOpen = document.getElementById('methodeCard') && document.getElementById('methodeCard').classList.contains('open');
+  const tabs = [
+    {k:'vamp', l:'VAMP'},
+    {k:'qpasiargcl', l:'Q-PA-Si-Arg-Cl'},
+    {k:'soncas', l:'SONCAS'},
+    {k:'pca', l:'PCA'}
+  ];
+  let body = '';
+  if(methodeTab==='vamp'){
+    body = `<div class="peurs-title">${METHODE.vamp.titre}</div>
+      <div class="peur-row"><span class="pd">${METHODE.vamp.d}</span></div>`;
+  } else if(methodeTab==='qpasiargcl'){
+    body = `<div class="cdd-title">Ta méthode : Q-PA-Si-Arg-Cl</div>
+      ${METHODE.qpasiargcl.map(s=>`<div class="cdd-step"><div class="cdd-letter">${s.l}</div><div><span class="ct">${s.t}</span><span class="cd">${s.d}</span>
+        <div class="ex-list">${s.ex.map(e=>`<span class="ex-chip">${e}</span>`).join('')}</div>
+      </div></div>`).join('')}`;
+  } else if(methodeTab==='soncas'){
+    body = `<div class="cdd-title">La motivation d'achat des clients — SONCAS</div>
+      <div class="soncas-grid">${METHODE.soncas.map(s=>`<div class="soncas-card"><span class="soncas-letter">${s.l[0]}</span><div><span class="ct">${s.t}</span><span class="cd">${s.d}</span></div></div>`).join('')}</div>`;
+  } else if(methodeTab==='pca'){
+    body = `<div class="cdd-title">Les 3 méthodes de vente PCA</div>
+      ${METHODE.pca.map(s=>`<div class="cdd-step"><div class="cdd-letter">${s.l}</div><div><span class="ct">${s.t}</span><span class="cd">${s.d}</span>${s.note?`<div class="pca-note">${s.note}</div>`:''}</div></div>`).join('')}`;
+  }
+  el.innerHTML = `
+  <div class="methode ${wasOpen?'open':''}" id="methodeCard">
+    <div class="methode-tag">⚡ Méthode de vente</div>
+    <h2>${METHODE.titre}</h2>
+    <p class="pitch">${METHODE.pitch}</p>
+    <button class="methode-toggle" onclick="document.getElementById('methodeCard').classList.toggle('open')">
+      Voir VAMP, Q-PA-Si-Arg-Cl, SONCAS & PCA <span class="chev">▼</span>
+    </button>
+    <div class="methode-detail"><div class="methode-detail-inner">
+      <div class="methode-subtabs">${tabs.map(t=>`<button class="msub ${methodeTab===t.k?'active':''}" onclick="setMethodeTab('${t.k}')">${t.l}</button>`).join('')}</div>
+      ${body}
+      <div class="regleor">💡 ${METHODE.regleor}</div>
+    </div></div>
+  </div>`;
+}
+
+function renderTabs(){
+  const t = document.getElementById('tabs');
+  const suivi = `<button class="tab tab-suivi ${view==='suivi'?'active':''}" role="tab" onclick="selectSuivi()">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">Mon Suivi</span>
+    </button>
+    <button class="tab tab-finder ${view==='finder'?'active':''}" role="tab" onclick="selectFinder()">
+      <span class="tab-icon">🔍</span>
+      <span class="tab-label">Trouver</span>
+    </button>`;
+  t.innerHTML = suivi + PROFILS.map((p,i)=>
+    `<button class="tab ${(view==='profil'&&i===current)?'active':''}" role="tab" onclick="selectTab(${i})">
+      <span class="tab-icon">${p.tab.icon}</span>
+      <span class="tab-label">${p.tab.label}</span>
+    </button>`).join('');
+}
+
+function checkItem(x){return `<div class="check-item" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleCheck(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleCheck(this);}"><div class="check-box">✓</div>${x}</div>`;}
+
+function checklistHTML(c){
+  return `
+  <div class="section open">
+    <button class="section-trigger" onclick="toggleSec(this)">
+      <div class="section-num n1">1</div>
+      <div class="section-title-wrap"><span class="section-title">Check-list avant RDV</span><span class="section-subtitle">Comprendre avant de proposer</span></div>
+      <span class="section-chevron">▼</span>
+    </button>
+    <div class="section-body"><div class="section-inner">
+      <div class="check-group">
+        <div class="check-group-title">Échantillons ciblés</div>
+        ${c.ech.map(checkItem).join('')}
+      </div>
+      <div class="check-group">
+        <div class="check-group-title">Matériel &amp; supports</div>
+        ${c.mat.map(checkItem).join('')}
+      </div>
+      <div class="tip-box"><p><span class="tip-icon">💡</span><strong>Astuce de Nada :</strong> ${c.astuce}</p></div>
+    </div></div>
+  </div>`;
+}
+
+function discoursHTML(d, isVente){
+  const num = isVente ? '2' : '3';
+  const cls = isVente ? 'n2' : 'n3';
+  const title = isVente ? 'Discours — Vendre vos produits' : 'Discours — Recruter un partenaire';
+  const sub = isVente ? 'Persuader, pas convaincre' : 'Faire naître l\'envie';
+  let marge = '';
+  if(d.marge){
+    marge = `<div class="marge-box"><div class="marge-title">${d.marge.titre}</div>
+      ${d.marge.lignes.map(l=>`<div class="marge-line"><span class="lbl">${l[0]}</span><span class="val">${l[1]}</span></div>`).join('')}
+      <div class="marge-note">${d.marge.note}</div></div>`;
+  }
+  const ouverture = d.ouverture ? `<div class="ouverture-box"><div class="ouverture-label">☕ Ouverture — la question d'abord</div><div class="ouverture-text">${d.ouverture}</div></div>` : '';
+  return `
+  <div class="section">
+    <button class="section-trigger" onclick="toggleSec(this)">
+      <div class="section-num ${cls}">${num}</div>
+      <div class="section-title-wrap"><span class="section-title">${title}</span><span class="section-subtitle">${sub}</span></div>
+      <span class="section-chevron">▼</span>
+    </button>
+    <div class="section-body"><div class="section-inner">
+      ${ouverture}
+      <div class="discourse-block"><div class="discourse-label">🎯 L'angle</div><div class="discourse-text">${d.accroche}</div></div>
+      <div class="script-box"><p>${d.script}</p></div>
+      ${d.args.map(a=>`<div class="arg-card"><span class="arg-title">${a.t}</span><span class="arg-desc">${a.d}</span></div>`).join('')}
+      ${marge}
+    </div></div>
+  </div>`;
+}
+
+function objectionsHTML(objs){
+  return `
+  <div class="section">
+    <button class="section-trigger" onclick="toggleSec(this)">
+      <div class="section-num n3">4</div>
+      <div class="section-title-wrap"><span class="section-title">Traiter les objections</span><span class="section-subtitle">Méthode Q-Si-Arg-Cl — 15 secondes, sans se sur-justifier</span></div>
+      <span class="section-chevron">▼</span>
+    </button>
+    <div class="section-body"><div class="section-inner">
+      ${objs.map(o=>`<div class="obj-card">
+        <div class="obj-header">
+          <div class="obj-top"><span class="obj-icon">🚫</span><span class="obj-text">« ${o.o} »</span></div>
+        </div>
+        <div class="cdd-flow">
+          <div class="cdd-item"><div class="cdd-badge cdd-c">Si</div><div class="cdd-content"><div class="cdd-step-label cl-c">Situation — tu reformules</div><div class="cdd-step-text">${o.q}</div></div></div>
+          <div class="cdd-item dissiper"><div class="cdd-badge cdd-d2">Arg</div><div class="cdd-content"><div class="cdd-step-label cl-d2">Argument-clé</div><div class="cdd-step-text">${o.a}</div></div></div>
+          <div class="cdd-item"><div class="cdd-badge cdd-d1">Cl</div><div class="cdd-content"><div class="cdd-step-label cl-d1">Closing</div><div class="cdd-step-text">${o.cl}</div></div></div>
+        </div></div>`).join('')}
+    </div></div>
+  </div>`;
+}
+
+function smsHTML(sms){
+  return `
+  <div class="section">
+    <button class="section-trigger" onclick="toggleSec(this)">
+      <div class="section-num n4">5</div>
+      <div class="section-title-wrap"><span class="section-title">Scripts de relance SMS</span><span class="section-subtitle">Clarifier &amp; créer la confiance à distance</span></div>
+      <span class="section-chevron">▼</span>
+    </button>
+    <div class="section-body"><div class="section-inner">
+      ${sms.map((s,i)=>`<div class="sms-card">
+        <div class="sms-when">${s.q}</div>
+        <div class="sms-bubble" id="sms-${i}">${s.t}</div>
+        <div class="sms-copy"><button onclick="copySMS('sms-${i}',this)">Copier</button></div>
+      </div>`).join('')}
+    </div></div>
+  </div>`;
+}
+
+function renderPanel(){
+  if(view==='suivi'){ renderCockpit(); return; }
+  if(view==='finder'){ renderFinder(); return; }
+  const p = PROFILS[current];
+  const d = angle === 'vente' ? p.vente : p.partenariat;
+  const isVente = angle === 'vente';
+  document.getElementById('panel').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-banner" style="background:linear-gradient(135deg,var(--${p.color}),var(--${p.color}))">
+        <div class="profile-emoji">${p.emoji}</div>
+        <div class="profile-info"><h2>${p.titre}</h2><p>${p.sous}</p></div>
+      </div>
+      <div class="profile-focus">${p.focus.map(f=>`<span class="focus-chip">${f}</span>`).join('')}</div>
+      <div class="gammes-row"><div class="gammes-label">Gammes Chogan à mettre en avant</div>
+        <div class="gammes-tags">${p.gammes.map(g=>`<span class="gamme-tag">${g}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="angle-toggle">
+      <button class="angle-btn vente ${isVente?'active':''}" onclick="setAngle('vente')">🛍️ Vendre</button>
+      <button class="angle-btn recrut ${!isVente?'active':''}" onclick="setAngle('partenariat')">🤝 Recruter</button>
+    </div>
+    ${checklistHTML(p.checklist)}
+    ${discoursHTML(d, isVente)}
+    ${objectionsHTML(p.objections)}
+    ${smsHTML(p.sms)}
+  `;
+}
+
+// ── COCKPIT / SUIVI ──────────────────────────────────────────
+const STATUTS = [
+  { k:'prosp', label:'Prospection', next:'rdv' },
+  { k:'rdv',   label:'RDV Pris',    next:'clos' },
+  { k:'clos',  label:'Closing',     next:'sign' },
+  { k:'sign',  label:'Signé',       next:null },
+];
+function statutInfo(k){ return STATUTS.find(s=>s.k===k) || STATUTS[0]; }
+
+function saveProspects(){ try{ localStorage.setItem('chogan_prospects', JSON.stringify(prospects)); }catch(e){} }
+
+function rappelClass(date){
+  if(!date) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(date+'T00:00:00');
+  const diff = (d - today)/(1000*60*60*24);
+  if(diff < 0) return 'due';
+  if(diff <= 2) return 'soon';
+  return '';
+}
+function rappelTxt(date){
+  if(!date) return 'Pas de rappel';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(date+'T00:00:00');
+  const diff = Math.round((d - today)/(1000*60*60*24));
+  const fmt = d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+  if(diff < 0) return 'À relancer ! ('+fmt+')';
+  if(diff === 0) return "Aujourd'hui ("+fmt+')';
+  if(diff === 1) return 'Demain ('+fmt+')';
+  return 'Le '+fmt;
+}
+
+function renderCockpit(){
+  const counts = { prosp:0, rdv:0, clos:0, sign:0 };
+  prospects.forEach(p=>{ counts[p.statut] = (counts[p.statut]||0)+1; });
+  const profilOpts = PROFILS.map(p=>`<option value="${p.titre}">${p.tab.icon} ${p.tab.label}</option>`).join('');
+
+  // sort: closing first, then by rappel date (soonest first), signed last
+  const order = { clos:0, rdv:1, prosp:2, sign:3 };
+  const sorted = [...prospects].map((p,i)=>({p,i})).sort((a,b)=>{
+    if(order[a.p.statut]!==order[b.p.statut]) return order[a.p.statut]-order[b.p.statut];
+    if(a.p.dateRappel && b.p.dateRappel) return a.p.dateRappel.localeCompare(b.p.dateRappel);
+    if(a.p.dateRappel) return -1; if(b.p.dateRappel) return 1; return 0;
+  });
+
+  const list = prospects.length === 0
+    ? `<div class="empty-state"><span class="es-emoji">🗂️</span><p>Aucun prospect pour l'instant.<br>Ajoute ton premier contact terrain ci-dessus pour lancer ton pipeline !</p></div>`
+    : sorted.map(({p,i})=>{
+        const st = statutInfo(p.statut);
+        const maps = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((p.nom||'')+' '+(p.adresse||''));
+        const li = 'https://www.linkedin.com/search/results/companies/?keywords='+encodeURIComponent(p.nom||'');
+        const nxt = st.next ? statutInfo(st.next) : null;
+        return `<div class="pcard st-${p.statut}">
+          <div class="pcard-body">
+            <div class="pcard-top">
+              <div><div class="pcard-name">${p.nom||'—'}</div>${p.profil?`<span class="pcard-profil">${p.profil}</span>`:''}</div>
+              <span class="status-chip st-${p.statut}">${st.label}</span>
+            </div>
+            ${p.adresse?`<div class="pcard-meta">📍 ${p.adresse}</div>`:''}
+            <div class="pcard-rappel ${rappelClass(p.dateRappel)}">⏰ ${rappelTxt(p.dateRappel)}</div>
+            <div class="pcard-links">
+              <a class="plink" href="${maps}" target="_blank" rel="noopener">📍 Google Maps</a>
+              <a class="plink" href="${li}" target="_blank" rel="noopener">🔗 LinkedIn</a>
+            </div>
+            <div class="pcard-actions">
+              <button class="act-advance" ${nxt?'':'disabled'} onclick="advance(${i})">${nxt?'→ '+nxt.label:'✓ Signé'}</button>
+              <button class="act-del" onclick="delProspect(${i})">Suppr.</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('panel').innerHTML = `
+    <div class="cockpit-head">
+      <h2>📋 Mon Cockpit de Prospection</h2>
+      <p>Pilote ton terrain : ajoute tes prospects, suis ton pipeline et garde un œil sur tes relances.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card sc-prosp"><div class="stat-num">${counts.prosp}</div><div class="stat-lbl">Prospection</div></div>
+      <div class="stat-card sc-rdv"><div class="stat-num">${counts.rdv}</div><div class="stat-lbl">RDV Pris</div></div>
+      <div class="stat-card sc-clos"><div class="stat-num">${counts.clos}</div><div class="stat-lbl">Closing</div></div>
+      <div class="stat-card sc-sign"><div class="stat-num">${counts.sign}</div><div class="stat-lbl">Signé</div></div>
+    </div>
+    <div class="add-card">
+      <div class="add-title">➕ Nouveau prospect</div>
+      <div class="field"><label>Nom du prospect</label><input type="text" id="f-nom" placeholder="Ex : Institut Belle Étoile"></div>
+      <div class="field"><label>Adresse / Ville</label><input type="text" id="f-adresse" placeholder="Ex : 12 rue des Fleurs, Lyon"></div>
+      <div class="field"><label>Type de profil</label><select id="f-profil"><option value="">— Choisir —</option>${profilOpts}</select></div>
+      <div class="field-row">
+        <div class="field"><label>Statut</label><select id="f-statut">${STATUTS.map(s=>`<option value="${s.k}">${s.label}</option>`).join('')}</select></div>
+        <div class="field"><label>Date de rappel</label><input type="date" id="f-rappel"></div>
+      </div>
+      <button class="add-btn" onclick="addProspect()">Ajouter au pipeline</button>
+    </div>
+    <div class="prospect-list">${list}</div>
+    ${prospects.length?`<div class="export-row"><button onclick="exportProspects()">⬇️ Exporter (CSV)</button></div>`:''}
+  `;
+}
+
+function addProspect(){
+  const nom = document.getElementById('f-nom').value.trim();
+  if(!nom){ alert('Indique au moins le nom du prospect.'); return; }
+  prospects.push({
+    nom,
+    adresse: document.getElementById('f-adresse').value.trim(),
+    profil: document.getElementById('f-profil').value,
+    statut: document.getElementById('f-statut').value || 'prosp',
+    dateRappel: document.getElementById('f-rappel').value,
+  });
+  saveProspects();
+  renderCockpit();
+  window.scrollTo({top:document.querySelector('.prospect-list').offsetTop-80,behavior:'smooth'});
+}
+function advance(i){
+  const st = statutInfo(prospects[i].statut);
+  if(st.next){ prospects[i].statut = st.next; saveProspects(); renderCockpit(); }
+}
+function delProspect(i){
+  if(confirm('Supprimer « '+(prospects[i].nom||'ce prospect')+' » ?')){ prospects.splice(i,1); saveProspects(); renderCockpit(); }
+}
+function exportProspects(){
+  const rows = [['Nom','Adresse','Profil','Statut','Rappel']];
+  prospects.forEach(p=>rows.push([p.nom,p.adresse,p.profil,statutInfo(p.statut).label,p.dateRappel||'']));
+  const csv = rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(';')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'mes_prospects_chogan.csv'; a.click();
+}
+
+function selectTab(i){view='profil';current=i;angle='vente';renderTabs();renderPanel();window.scrollTo({top:document.querySelector('.tabs-scroll').offsetTop-70,behavior:'smooth'});}
+function selectSuivi(){view='suivi';renderTabs();renderPanel();window.scrollTo({top:document.querySelector('.tabs-scroll').offsetTop-70,behavior:'smooth'});}
+function setAngle(a){angle=a;renderPanel();}
+function toggleSec(btn){btn.closest('.section').classList.toggle('open');}
+function toggleCheck(el){const on=el.classList.toggle('checked');el.setAttribute('aria-checked',on?'true':'false');}
+function copySMS(id,btn){
+  const txt=document.getElementById(id).innerText;
+  navigator.clipboard.writeText(txt).then(()=>{btn.textContent='Copié ✓';setTimeout(()=>btn.textContent='Copier',1500);});
+}
+
+/* ════════════ PROSPECT FINDER ════════════ */
+const FINDER_TYPES = [
+  { key:'coiffeur',   g:'Beauté & bien-être', label:'💇 Salon de coiffure',   osm:'shop=hairdresser,craft=hairdresser', profil:'beaute', gender:true, gq:'salon de coiffure' , naf:'96.02A' },
+  { key:'institut',   g:'Beauté & bien-être', label:'💅 Institut / Esthétique', osm:'shop=beauty',          profil:'beaute' , naf:'96.02B' },
+  { key:'spa',        g:'Beauté & bien-être', label:'🧖 Spa / Massage',        osm:'leisure=spa',            profil:'beaute' , naf:'96.04Z' },
+  { key:'tatoueur',   g:'Beauté & bien-être', label:'🖋️ Tatoueur',            osm:'shop=tattoo',            profil:'beaute' , naf:'96.09Z' },
+  { key:'restaurant', g:'Restauration & hôtellerie', label:'🍽️ Restaurant',   osm:'amenity=restaurant',     profil:'hotellerie' , naf:'56.10A' },
+  { key:'cafe',       g:'Restauration & hôtellerie', label:'☕ Café / Bar',     osm:'amenity=cafe',           profil:'hotellerie' , naf:'56.30Z' },
+  { key:'boulangerie',g:'Restauration & hôtellerie', label:'🥖 Boulangerie',   osm:'shop=bakery',            profil:'hotellerie' , naf:'10.71C' },
+  { key:'hotel',      g:'Restauration & hôtellerie', label:'🏨 Hôtel',         osm:'tourism=hotel',          profil:'hotellerie' , naf:'55.10Z' },
+  { key:'hotes',      g:'Restauration & hôtellerie', label:"🛏️ Chambres d'hôtes", osm:'tourism=guest_house', profil:'hotellerie' , naf:'55.20Z' },
+  { key:'sport',      g:'Santé & sport', label:'💪 Salle de sport',  osm:'leisure=fitness_centre', profil:'sante' , naf:'93.13Z' },
+  { key:'optique',    g:'Santé & sport', label:'👓 Opticien',        osm:'shop=optician',          profil:'sante' , naf:'47.78A' },
+  { key:'pharmacie',  g:'Santé & sport', label:'➕ Pharmacie',       osm:'amenity=pharmacy',       profil:'sante' , naf:'47.73Z' },
+  { key:'dentiste',   g:'Santé & sport', label:'🦷 Dentiste',        osm:'amenity=dentist',        profil:'sante' , naf:'86.23Z' },
+  { key:'veto',       g:'Santé & sport', label:'🐾 Vétérinaire',     osm:'amenity=veterinary',     profil:'sante' , naf:'75.00Z' },
+  { key:'fleuriste',  g:'Commerces & déco', label:'💐 Fleuriste',     osm:'shop=florist',  profil:'concept' , naf:'47.76Z' },
+  { key:'cadeaux',    g:'Commerces & déco', label:'🎁 Boutique cadeaux', osm:'shop=gift',  profil:'concept' , naf:'47.78C' },
+  { key:'deco',       g:'Commerces & déco', label:'🛋️ Décoration',   osm:'shop=interior_decoration', profil:'concept' , naf:'47.59B' },
+  { key:'bijou',      g:'Commerces & déco', label:'💍 Bijouterie',    osm:'shop=jewelry',  profil:'concept' , naf:'47.77Z' },
+  { key:'pretaporter',g:'Commerces & déco', label:'👗 Prêt-à-porter', osm:'shop=clothes',  profil:'concept' , naf:'47.71Z' },
+  { key:'caviste',    g:'Commerces & déco', label:'🍷 Caviste',       osm:'shop=wine',     profil:'concept' , naf:'47.25Z' },
+  { key:'immo',       g:'Services & agences', label:'🏢 Agence immobilière', osm:'office=estate_agent', profil:'agence' , naf:'68.31Z' },
+  { key:'voyage',     g:'Services & agences', label:'✈️ Agence de voyage',   osm:'shop=travel_agency',  profil:'agence' , naf:'79.11Z' },
+  { key:'assurance',  g:'Services & agences', label:'🛡️ Assurance',          osm:'office=insurance',    profil:'agence' , naf:'66.22Z' },
+  { key:'pressing',   g:'Services & agences', label:'👔 Pressing',           osm:'shop=dry_cleaning',   profil:'agence' , naf:'96.01B' },
+  { key:'autoecole',  g:'Services & agences', label:'🚗 Auto-école',         osm:'amenity=driving_school', profil:'agence' , naf:'85.53Z' },
+  { key:'avocat',     g:'Professions libérales', label:'⚖️ Avocat',    osm:'office=lawyer',     profil:'liberal' , naf:'69.10Z' },
+  { key:'comptable',  g:'Professions libérales', label:'🧮 Comptable',  osm:'office=accountant', profil:'liberal' , naf:'69.20Z' },
+  { key:'notaire',    g:'Professions libérales', label:'📜 Notaire',    osm:'office=notary',     profil:'liberal' , naf:'69.10Z' },
+  { key:'creche',     g:'Petite enfance', label:'👶 Crèche', osm:'amenity=kindergarten', profil:'petiteenfance' , naf:'88.91A' },
+  { key:'autre',      g:'Autre', label:'✏️ Autre (à préciser…)', osm:'', profil:'concept', custom:true },
+];
+
+const CUSTOM_MAP = {
+  'tatoueur':'shop=tattoo','tatouage':'shop=tattoo','spa':'leisure=spa','massage':'shop=massage',
+  'ongle':'shop=beauty','onglerie':'shop=beauty','manucure':'shop=beauty','barbier':'shop=hairdresser',
+  'cafe':'amenity=cafe','bar':'amenity=bar','boulangerie':'shop=bakery','patisserie':'shop=pastry',
+  'boucherie':'shop=butcher','primeur':'shop=greengrocer','epicerie':'shop=convenience','traiteur':'shop=deli',
+  'chaussure':'shop=shoes','vetement':'shop=clothes','bijouterie':'shop=jewelry','animalerie':'shop=pet',
+  'toilettage':'shop=pet_grooming','caviste':'shop=wine','tabac':'shop=tobacco','photographe':'craft=photographer',
+  'photo':'shop=photo','pressing':'shop=dry_cleaning','cordonnerie':'craft=shoemaker','optique':'shop=optician',
+  'opticien':'shop=optician','pharmacie':'amenity=pharmacy','dentiste':'amenity=dentist','medecin':'amenity=doctors',
+  'kine':'amenity=physiotherapist','veterinaire':'amenity=veterinary','osteopathe':'amenity=doctors',
+  'avocat':'office=lawyer','comptable':'office=accountant','notaire':'office=notary','assurance':'office=insurance',
+  'immobilier':'office=estate_agent','voyage':'shop=travel_agency','autoecole':'amenity=driving_school',
+  'creche':'amenity=kindergarten','fleuriste':'shop=florist','garage':'shop=car_repair','restaurant':'amenity=restaurant',
+  'sport':'leisure=fitness_centre','yoga':'leisure=fitness_centre','hotel':'tourism=hotel','coiffeur':'shop=hairdresser',
+};
+
+let finder = { step:'form', type:'coiffeur', gender:'aucun', start:'', depart:'09:00', date:'', custom:'', results:[], route:[] };
+
+function angleFor(profilId){
+  const p = PROFILS.find(x=>x.id===profilId);
+  if(!p) return "Comprends d'abord son activité : pose une vraie question sur son quotidien avant de proposer quoi que ce soit.";
+  return (p.vente && p.vente.ouverture) ? p.vente.ouverture : (p.vente ? p.vente.accroche : '');
+}
+function tagToProfil(osm){ const f=FINDER_TYPES.find(t=>t.osm===osm); return f?f.profil:'concept'; }
+function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+function haversine(a,b,c,d){
+  const R=6371,r=Math.PI/180;
+  const dLat=(c-a)*r,dLon=(d-b)*r;
+  const x=Math.pow(Math.sin(dLat/2),2)+Math.cos(a*r)*Math.cos(c*r)*Math.pow(Math.sin(dLon/2),2);
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+function esc(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+
+function selectFinder(){ view='finder'; renderTabs(); renderFinder(); window.scrollTo({top:document.querySelector('.tabs-scroll').offsetTop-70,behavior:'smooth'}); }
+
+function renderFinder(){
+  if(finder.step==='results') return renderFinderResults();
+  if(finder.step==='route')   return renderFinderRoute();
+  if(!finder.date){ finder.date = new Date().toISOString().split('T')[0]; }
+  const groups=[...new Set(FINDER_TYPES.map(t=>t.g))];
+  const opts=groups.map(g=>'<optgroup label="'+g+'">'+FINDER_TYPES.filter(t=>t.g===g).map(t=>'<option value="'+t.key+'" '+(t.key===finder.type?'selected':'')+'>'+t.label+'</option>').join('')+'</optgroup>').join('');
+  const cur=FINDER_TYPES.find(t=>t.key===finder.type)||{};
+  document.getElementById('panel').innerHTML = `
+    <div class="finder-head">
+      <h2>🔍 Trouver des prospects</h2>
+      <p>Indique ta ville cible et ton point de départ : je te liste les établissements réels, avec un angle d'attaque sur mesure et une tournée optimisée.</p>
+    </div>
+    <div class="finder-note">📍 Deux sources <b>gratuites</b> combinées : le <b>registre officiel</b> (couverture quasi complète + <b>CA</b> quand l'entreprise a publié ses comptes) + <b>OpenStreetMap</b> (tél/horaires quand dispo). Les micro-entreprises n'ont pas de CA public. Avis : lien Google + champ à remplir.</div>
+    <div class="add-card">
+      <div class="field"><label>📍 Mon point de départ (adresse)</label><input type="text" id="f-start" placeholder="Ex : 10 rue de la Paix, Lyon" value="${esc(finder.start||'')}"></div>
+      <div class="field-row">
+        <div class="field"><label>📅 Date de la tournée</label><input type="date" id="f-date" value="${finder.date}"></div>
+        <div class="field"><label>🕒 Heure de départ</label><input type="time" id="f-depart" value="${finder.depart}"></div>
+      </div>
+      <div class="field"><label>🏙️ Ville à prospecter</label><input type="text" id="f-city" placeholder="Ex : Villeurbanne" value="${esc(finder.city||'')}"></div>
+      <div class="field"><label>Type d'établissement</label><select id="f-type" onchange="finder.type=this.value;renderFinder()">${opts}</select></div>
+      ${cur.custom?`<div class="field"><label>✏️ Précise ce que tu cherches</label><input type="text" id="f-custom" placeholder="Ex : tatoueur, caviste, garage, kiné…" value="${esc(finder.custom||'')}"></div>`:''}
+      ${cur.gender?`<div class="field"><label>Filtre clientèle</label><div class="gender-row">
+        ${['aucun','femme','homme','mixte'].map(g=>`<button class="gender-btn ${finder.gender===g?'active':''}" onclick="finder.gender='${g}';renderFinder()">${g==='aucun'?'Aucun':g.charAt(0).toUpperCase()+g.slice(1)}</button>`).join('')}
+      </div></div>`:''}
+      <button class="add-btn" onclick="runFinderSearch()">🔎 Rechercher les établissements</button>
+    </div>
+    <div id="finder-out"></div>`;
+}
+
+// Registre officiel des entreprises (gratuit, sans clé) — couverture quasi exhaustive
+async function gouvSearch(naf, lat, lon, prof, angle){
+  if(!naf) return [];
+  const out=[];
+  for(let page=1; page<=3; page++){
+    let j=null;
+    try{
+      const r=await fetch('https://recherche-entreprises.api.gouv.fr/near_point?lat='+lat+'&long='+lon+'&radius=25&activite_principale='+encodeURIComponent(naf)+'&per_page=25&page='+page,{headers:{'Accept':'application/json'}});
+      if(r.ok) j=await r.json();
+    }catch(e){}
+    if(!j||!j.results||!j.results.length) break;
+    j.results.forEach(c=>{
+      const et=(c.matching_etablissements&&c.matching_etablissements[0])||c.siege||{};
+      const name=(et.liste_enseignes&&et.liste_enseignes[0])||c.nom_complet||c.nom_raison_sociale||'';
+      let ca='', caY='';
+      if(c.finances && typeof c.finances==='object'){
+        const yrs=Object.keys(c.finances).filter(y=>/^\d{4}$/.test(y)).sort();
+        for(let i=yrs.length-1;i>=0;i--){
+          const fy=c.finances[yrs[i]]; const v=fy&&(fy.ca!=null?fy.ca:fy.chiffre_affaires);
+          if(v!=null && !isNaN(v)){ ca=fmtCA(v); caY=yrs[i]; break; }
+        }
+      }
+      out.push({ id:'reg'+(et.siret||c.siren||Math.random()), name:name, lat:parseFloat(et.latitude), lon:parseFloat(et.longitude),
+        phone:'', email:'', website:'', hours:'', addr:et.adresse||'', gtag:'', profil:prof, angle:angle, source:'registre', ca:ca, caY:caY });
+    });
+    if(j.total_pages && page>=j.total_pages) break;
+  }
+  return out.filter(x=>x.name);
+}
+function fmtCA(v){ v=Number(v); if(!v||v<0) return ''; if(v>=1e6) return (v/1e6).toFixed(v>=1e7?0:1).replace('.',',')+' M€'; return Math.round(v).toLocaleString('fr-FR')+' €'; }
+function mergeResults(osm, reg){
+  const out=osm.slice();
+  reg.forEach(g=>{
+    const gn=norm(g.name);
+    let match=null;
+    for(const o of out){
+      const sameName = norm(o.name)===gn || (gn.length>4 && norm(o.name).indexOf(gn.slice(0,Math.min(8,gn.length)))>=0);
+      const close = (o.lat&&g.lat) ? haversine(o.lat,o.lon,g.lat,g.lon)<0.15 : false;
+      if(sameName || (close && norm(o.name).slice(0,4)===gn.slice(0,4))){ match=o; break; }
+    }
+    if(match){ if(!match.ca && g.ca){ match.ca=g.ca; match.caY=g.caY; } }
+    else out.push(g);
+  });
+  return out;
+}
+
+async function geocode(q){
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=fr&q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}});
+    if(r.ok){ const j=await r.json(); if(j&&j.length) return {lat:parseFloat(j[0].lat),lon:parseFloat(j[0].lon),label:j[0].display_name}; }
+  }catch(e){}
+  try{
+    const r=await fetch('https://photon.komoot.io/api/?limit=1&lang=fr&q='+encodeURIComponent(q));
+    if(r.ok){ const j=await r.json(); if(j&&j.features&&j.features.length){ const c=j.features[0].geometry.coordinates; return {lat:c[1],lon:c[0],label:(j.features[0].properties.name||q)}; } }
+  }catch(e){}
+  return null;
+}
+async function overpass(ql){
+  const eps=[
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.openstreetmap.fr/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+  ];
+  for(const ep of eps){
+    try{
+      const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),26000);
+      const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(ql),signal:ctrl.signal});
+      clearTimeout(to);
+      if(r.ok){ const j=await r.json(); if(j&&j.elements) return j; }
+    }catch(e){}
+  }
+  return null;
+}
+
+async function runFinderSearch(){
+  finder.start  = document.getElementById('f-start').value.trim();
+  finder.city   = document.getElementById('f-city').value.trim();
+  finder.depart = document.getElementById('f-depart').value || '09:00';
+  finder.date   = document.getElementById('f-date').value || finder.date;
+  const cur = FINDER_TYPES.find(t=>t.key===finder.type)||{};
+  if(cur.custom){ finder.custom = ((document.getElementById('f-custom')||{}).value||'').trim(); }
+  if(!finder.city){ alert('Indique la ville à prospecter.'); return; }
+  if(cur.custom && !finder.custom){ alert('Précise ce que tu cherches (ex : tatoueur).'); return; }
+  const out = document.getElementById('finder-out');
+  out.innerHTML = '<div class="finder-status"><div class="spinner"></div>Recherche en cours…<br><span style="font-size:11px">(localisation de la ville puis recherche des établissements)</span></div>';
+
+  const cityGeo = await geocode(finder.city);
+  if(!cityGeo){ out.innerHTML='<div class="finder-status">❌ Ville introuvable. Vérifie l\'orthographe (ex : « Pont-à-Mousson »).</div>'; return; }
+  finder.cityGeo = cityGeo;
+  finder.startGeo = finder.start ? await geocode(finder.start) : null;
+
+  const radius = 10000;
+  const ar = '(around:'+radius+','+cityGeo.lat+','+cityGeo.lon+')';
+  function unionTags(spec){
+    return '('+spec.split(',').map(function(pair){
+      const kv=pair.split('='); return 'node["'+kv[0]+'"="'+kv[1]+'"]'+ar+';way["'+kv[0]+'"="'+kv[1]+'"]'+ar+';';
+    }).join('')+');';
+  }
+  let ql, prof;
+  if(cur.custom){
+    const key = norm(finder.custom);
+    let mapped = CUSTOM_MAP[key];
+    if(!mapped){ for(const k in CUSTOM_MAP){ if(key.indexOf(k)>=0){ mapped=CUSTOM_MAP[k]; break; } } }
+    if(mapped){
+      ql='[out:json][timeout:26];'+unionTags(mapped)+'out center tags 120;';
+      prof=tagToProfil(mapped);
+    }else{
+      const kw=finder.custom.replace(/"/g,'');
+      ql='[out:json][timeout:26];(nwr["shop"]["name"~"'+kw+'",i]'+ar+';nwr["amenity"]["name"~"'+kw+'",i]'+ar+';nwr["office"]["name"~"'+kw+'",i]'+ar+';nwr["craft"]["name"~"'+kw+'",i]'+ar+';nwr["leisure"]["name"~"'+kw+'",i]'+ar+';);out center tags 120;';
+      prof='concept';
+    }
+  }else{
+    ql='[out:json][timeout:26];'+unionTags(cur.osm)+'out center tags 120;';
+    prof=cur.profil;
+  }
+  finder.gq = cur.custom ? finder.custom : (cur.gq || cur.label.replace(/^[^0-9A-Za-zÀ-ÿ]+/,'').trim());
+  finder.prof = prof;
+
+  const j = await overpass(ql);
+  if(!j){ out.innerHTML='<div class="finder-status">❌ Les serveurs OpenStreetMap sont momentanément saturés.<br>Réessaie dans 10-20 secondes — la recherche bascule automatiquement sur d\'autres serveurs.</div>'; return; }
+
+  const angle = angleFor(prof);
+  let items = (j.elements||[]).map(el=>{
+    const t=el.tags||{};
+    const lat=el.lat||(el.center&&el.center.lat), lon=el.lon||(el.center&&el.center.lon);
+    const addr=[t['addr:housenumber'],t['addr:street'],t['addr:postcode'],t['addr:city']].filter(Boolean).join(' ');
+    return { id:el.type+el.id, name:t.name||'(sans nom)', lat, lon,
+      phone:t.phone||t['contact:phone']||'', email:t.email||t['contact:email']||'',
+      website:t.website||t['contact:website']||'', hours:t.opening_hours||'',
+      addr:addr||finder.city, gtag:(t.female==='yes'?'femme':t.male==='yes'?'homme':t.unisex==='yes'?'mixte':''),
+      profil:prof, angle:angle };
+  }).filter(x=>x.name!=='(sans nom)' && x.lat);
+
+  if(cur.gender && finder.gender==='femme') items=items.filter(x=>x.gtag!=='homme');
+  if(cur.gender && finder.gender==='homme') items=items.filter(x=>x.gtag!=='femme');
+
+  // Booster de couverture : registre officiel (gratuit) — fusionné par-dessus OSM
+  if(!cur.custom && cur.naf){
+    out.innerHTML='<div class="finder-status"><div class="spinner"></div>Complément registre officiel…</div>';
+    const reg = await gouvSearch(cur.naf, cityGeo.lat, cityGeo.lon, prof, angle);
+    items = mergeResults(items, reg);
+  }
+
+  const o = finder.startGeo || cityGeo;
+  items.forEach(x=>{ if(!x.lat||!x.lon){ x.lat=o.lat; x.lon=o.lon; x.noGeo=true; } x.dist=haversine(o.lat,o.lon,x.lat,x.lon); });
+  items.sort((a,b)=>a.dist-b.dist);
+  finder.results = items.slice(0,60);
+  finder.step='results';
+  renderFinder();
+}
+
+function renderFinderResults(){
+  const r=finder.results;
+  const selCount=r.filter(x=>x.sel).length;
+  const cards=r.map((x,i)=>{
+    const maps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.addr);
+    return `<div class="fcard ${x.sel?'sel':''}" id="fc-${i}">
+      <div class="fcard-body">
+        <div class="fcard-top"><div class="fcard-name">${esc(x.name)}</div><div class="fcard-dist">${x.dist.toFixed(1)} km</div></div>
+        <div class="fcard-meta">📍 ${esc(x.addr)}</div>
+        ${x.source==='registre'?`<div class="fcard-meta" style="color:var(--indigo);font-size:11px">🏛️ Registre officiel · tél/horaires à vérifier sur place ou via Google</div>`:''}
+        ${x.phone?`<div class="fcard-meta">📞 <a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></div>`:''}
+        ${x.email?`<div class="fcard-meta">✉️ <a href="mailto:${esc(x.email)}">${esc(x.email)}</a></div>`:''}
+        ${x.website?`<div class="fcard-meta">🌐 <a href="${esc(x.website)}" target="_blank" rel="noopener">Site web</a></div>`:''}
+        ${x.ca?`<div class="fcard-meta" style="color:#0a7d33;font-weight:700">💰 CA ${esc(x.ca)}${x.caY?' ('+x.caY+')':''}</div>`:''}
+        <div class="fcard-hours">🕒 ${x.hours?esc(x.hours):'Horaires non renseignés — à vérifier'}</div>
+        <div class="fcard-angle"><span class="al">🎯 Angle d'attaque</span><p>${esc(x.angle)}</p></div>
+        <div class="lookup-row">
+          <a class="lookup-btn" href="${maps}" target="_blank" rel="noopener">⭐ Voir les avis Google</a>
+        </div>
+        <button class="complete-toggle" onclick="document.getElementById('cb-${i}').classList.toggle('open')">📝 Compléter avis / CA / notes ▾</button>
+        <div class="complete-box" id="cb-${i}">
+          <div class="field"><label>Avis clients (note, nb d'avis…)</label><input type="text" value="${esc(x.avis||'')}" oninput="finder.results[${i}].avis=this.value" placeholder="Ex : 4,7★ (212 avis)"></div>
+          <div class="field"><label>Chiffre d'affaires ${x.ca?'(auto)':''}</label><input type="text" value="${esc(x.ca||'')}" oninput="finder.results[${i}].ca=this.value" placeholder="Auto si dispo, sinon à compléter"></div>
+          <div class="field"><label>Notes perso</label><textarea rows="2" oninput="finder.results[${i}].notes=this.value" placeholder="Gérant, meilleur créneau, remarques…">${esc(x.notes||'')}</textarea></div>
+        </div>
+        <button class="fcard-select" onclick="finder.results[${i}].sel=!finder.results[${i}].sel;renderFinder()">${x.sel?'✓ Dans ma tournée':'+ Ajouter à ma tournée'}</button>
+      </div>
+    </div>`;
+  }).join('');
+  const gall='https://www.google.com/maps/search/'+encodeURIComponent((finder.gq||'')+' '+(finder.city||''));
+  document.getElementById('panel').innerHTML=`
+    <div class="finder-head"><h2>🔍 ${r.length} établissements trouvés</h2><p>${esc(finder.city)} · triés du plus proche au plus loin. Sélectionne ceux à visiter.</p></div>
+    <button class="complete-toggle" style="margin-bottom:6px" onclick="finder.step='form';renderFinder()">← Modifier la recherche</button>
+    <div class="finder-note" style="margin-bottom:10px">ℹ️ OpenStreetMap ne référence pas tous les commerces. Vois la <b>liste complète sur Google</b>, et <b>ajoute à la main</b> ceux qui manquent — ils entreront dans ta tournée et ton Planner.</div>
+    <div class="lookup-row" style="margin-bottom:12px">
+      <a class="lookup-btn" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)" href="${gall}" target="_blank" rel="noopener">🗺️ Voir tous sur Google Maps</a>
+      <button class="lookup-btn" style="cursor:pointer" onclick="document.getElementById('manual-box').classList.toggle('open')">➕ Ajouter un manquant</button>
+    </div>
+    <div class="complete-box" id="manual-box" style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:13px;margin-bottom:12px">
+      <div class="field"><label>Nom de l'établissement</label><input type="text" id="m-name" placeholder="Ex : Salon Élégance"></div>
+      <div class="field"><label>Adresse (rue + ville)</label><input type="text" id="m-addr" placeholder="Ex : 8 rue Gambetta, Pont-à-Mousson"></div>
+      <div class="field"><label>Téléphone (optionnel)</label><input type="text" id="m-phone" placeholder="Ex : 03 83 ..."></div>
+      <button class="add-btn" onclick="addManual()">Ajouter à la liste</button>
+    </div>
+    <div class="res-count">${selCount} sélectionné(s) pour la tournée</div>
+    ${r.length?cards:'<div class="finder-status">Aucun résultat via OpenStreetMap. Utilise « Voir tous sur Google Maps » puis « Ajouter un manquant ».</div>'}
+    ${selCount?`<div class="route-bar"><span>${selCount} visite(s)</span><button onclick="organizeRoute()">🗺️ Organiser ma tournée →</button></div>`:''}`;
+}
+
+async function addManual(){
+  const name=(document.getElementById('m-name').value||'').trim();
+  const addr=(document.getElementById('m-addr').value||'').trim();
+  const phone=(document.getElementById('m-phone').value||'').trim();
+  if(!name){ alert('Indique au moins le nom.'); return; }
+  let lat, lon;
+  const g = addr ? await geocode(addr+' '+(finder.city||'')) : null;
+  if(g){ lat=g.lat; lon=g.lon; } else { const o=finder.cityGeo||{lat:0,lon:0}; lat=o.lat; lon=o.lon; }
+  const o=finder.startGeo||finder.cityGeo;
+  const dist=o?haversine(o.lat,o.lon,lat,lon):0;
+  finder.results.unshift({ id:'manual'+Date.now(), name, addr:addr||finder.city, lat, lon, phone, email:'', website:'', hours:'',
+    gtag:'', profil:finder.prof, angle:angleFor(finder.prof), dist, sel:true, manual:true });
+  renderFinder();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function organizeRoute(){
+  let pts=finder.results.filter(x=>x.sel);
+  if(!pts.length){ alert('Sélectionne au moins un établissement.'); return; }
+  const o=finder.startGeo||finder.cityGeo;
+  const route=[]; let cur={lat:o.lat,lon:o.lon}; const pool=[...pts];
+  while(pool.length){
+    let bi=0,bd=Infinity;
+    pool.forEach((p,i)=>{const d=haversine(cur.lat,cur.lon,p.lat,p.lon);if(d<bd){bd=d;bi=i;}});
+    const nx=pool.splice(bi,1)[0]; nx._leg=bd; route.push(nx); cur=nx;
+  }
+  finder.route=route; finder.step='route'; computeTimes(); renderFinder();
+}
+function computeTimes(){
+  const hm=(finder.depart||'09:00').split(':').map(Number);
+  let t=hm[0]*60+hm[1];
+  finder.route.forEach(p=>{
+    const travel=Math.max(5,Math.round((p._leg||0)/30*60));
+    t+=travel;
+    p._arr=String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+    t+=20;
+  });
+}
+function moveStop(i,dir){
+  const j=i+dir; if(j<0||j>=finder.route.length) return;
+  const a=finder.route; const tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+  const o=finder.startGeo||finder.cityGeo; let cur={lat:o.lat,lon:o.lon};
+  a.forEach(p=>{p._leg=haversine(cur.lat,cur.lon,p.lat,p.lon);cur=p;});
+  computeTimes(); renderFinder();
+}
+function renderFinderRoute(){
+  const a=finder.route;
+  const wp=a.map(p=>p.lat+','+p.lon).join('/');
+  const o=finder.startGeo||finder.cityGeo;
+  const gmaps='https://www.google.com/maps/dir/'+(o?o.lat+','+o.lon+'/':'')+wp;
+  const cards=a.map((p,i)=>`<div class="rcard">
+    <div class="ord">${i+1}</div>
+    <div class="rinfo"><div class="rname">${esc(p.name)}</div><div class="rtime">🕒 arrivée ~${p._arr} · ${p._leg.toFixed(1)} km</div></div>
+    <div class="rmove"><button onclick="moveStop(${i},-1)">▲</button><button onclick="moveStop(${i},1)">▼</button></div>
+  </div>`).join('');
+  document.getElementById('panel').innerHTML=`
+    <div class="finder-head"><h2>🗺️ Ma tournée (${a.length})</h2><p>Le ${finder.date} · départ ${finder.depart} · ordre optimisé par distance. Réorganise avec ▲▼.</p></div>
+    <button class="complete-toggle" style="margin-bottom:10px" onclick="finder.step='results';renderFinder()">← Retour aux résultats</button>
+    ${cards}
+    <a class="fcard-select" style="display:block;text-align:center;text-decoration:none;background:var(--blue-light);color:var(--blue)" href="${gmaps}" target="_blank" rel="noopener">🧭 Ouvrir l'itinéraire dans Google Maps</a>
+    <div class="add-card" style="margin-top:14px">
+      <div class="add-title">📅 Enregistrer dans le Planner</div>
+      <div class="field"><label>Jour de la tournée</label><input type="date" class="date-pick" id="finder-date" value="${finder.date}"></div>
+      <button class="add-btn" onclick="saveToPlanner()">📌 Créer les « rdv prospects »</button>
+    </div>`;
+}
+function saveToPlanner(){
+  const date=document.getElementById('finder-date').value;
+  if(!date){ alert('Choisis une date.'); return; }
+  let evs=[]; try{ evs=JSON.parse(localStorage.getItem('le_cevents')||'[]'); }catch(e){}
+  let consultant=''; try{ const s=JSON.parse(localStorage.getItem('chogan_hub_session')||'null'); if(s) consultant=((s.firstName||'')+' '+(s.lastName||'')).trim(); }catch(e){}
+  finder.route.forEach((p,i)=>{
+    evs.push({ id:String(Date.now())+'_'+i, n:(p._arr?p._arr+' ':'')+'RDV '+p.name, lbl:'rdv prospects', d:date,
+      email:p.email||'', tel:p.phone||'', consultant, adresse:p.addr||'', angle:p.angle||'', avis:p.avis||'', ca:p.ca||'', notes:p.notes||'' });
+  });
+  try{ localStorage.setItem('le_cevents',JSON.stringify(evs)); }catch(e){}
+  document.getElementById('panel').insertAdjacentHTML('afterbegin','<div class="finder-note" style="background:#D1FAE5;border-color:#10B981;color:#065F46">✅ '+finder.route.length+' « rdv prospects » enregistrés dans ton agenda le '+date+' ! Tu les retrouves dans l\'app Agenda/Planner.</div>');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+renderMethode();
+renderTabs();
+renderPanel();
+</script>
+</body>
+</html>
