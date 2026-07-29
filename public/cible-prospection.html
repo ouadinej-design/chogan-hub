@@ -479,18 +479,22 @@ function downloadCapture(){
   setTimeout(()=>{
     html2canvas(document.getElementById('target-wrap').parentElement,{scale:2,backgroundColor:'#fff',logging:false}).then(canvas=>{
       const final=document.createElement('canvas');
-      final.width=canvas.width;final.height=canvas.height+90;
+      const titleSize=Math.min(canvas.width*.055,40);
+      const subSize=Math.min(canvas.width*.03,20);
+      const headerH=Math.round(titleSize+subSize+50);
+      final.width=canvas.width;final.height=canvas.height+headerH;
       const ctx=final.getContext('2d');
       ctx.fillStyle='#fff';ctx.fillRect(0,0,final.width,final.height);
       ctx.fillStyle='#E24B4A';ctx.fillRect(0,0,final.width,5);
-      ctx.fillStyle='#1a1a1a';
-      ctx.font='bold '+(canvas.width*.07)+'px -apple-system,sans-serif';
       ctx.textAlign='center';
-      ctx.fillText('🎯 '+stagName,final.width/2,52);
+      ctx.textBaseline='alphabetic';
+      ctx.fillStyle='#1a1a1a';
+      ctx.font='bold '+titleSize+'px -apple-system,sans-serif';
+      ctx.fillText('🎯 '+stagName,final.width/2,titleSize+20);
       ctx.fillStyle='#888';
-      ctx.font=(canvas.width*.038)+'px -apple-system,sans-serif';
-      ctx.fillText('Formation Chogan · '+new Date().toLocaleDateString('fr-FR'),final.width/2,76);
-      ctx.drawImage(canvas,0,90);
+      ctx.font=subSize+'px -apple-system,sans-serif';
+      ctx.fillText('Formation Chogan · '+new Date().toLocaleDateString('fr-FR'),final.width/2,titleSize+subSize+32);
+      ctx.drawImage(canvas,0,headerH);
       const a=document.createElement('a');
       a.download='cible-'+stagName.replace(/ /g,'_')+'.png';
       a.href=final.toDataURL('image/png');a.click();
