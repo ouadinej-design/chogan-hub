@@ -9,6 +9,7 @@ const DEFAULT_TARGET = 500;
 
 const APP_GROUPS = [
   { label: '💼 Gestion commerciale', items: [
+    { id:'guide-rdv',   label:'Guide RDV Vente', desc:'SOC · SONCAS · Olfactif', icon:'🎯', color:'#9e5a7a', bg:'rgba(158,90,122,0.15)', path:'/app/guide-rdv' },
     { id:'commandes',   label:'Commandes',    desc:'Bon de commande auto',     icon:'🛒', color:'#B89A6A', bg:'rgba(184,154,106,0.15)', path:'/app/orders' },
     { id:'ventes',      label:'Ventes',       desc:"Chiffre d'affaires",       icon:'💰', color:'#2d7a4a', bg:'rgba(45,122,74,0.13)',   path:'/app/ventes' },
     { id:'clients',     label:'Clients',      desc:'Fiches & historique',      icon:'👥', color:'#3d6b9e', bg:'rgba(61,107,158,0.13)',  path:'/app/clients' },

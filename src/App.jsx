@@ -26,6 +26,7 @@ import Catalogues from './pages/apps/Catalogues';
 import Checklist  from './pages/apps/Checklist';
 import Prospection from './pages/apps/Prospection';
 import ProspectionNada from './pages/apps/ProspectionNada';
+import GuideRdvVente  from './pages/apps/GuideRdvVente';
 import './styles/globals.css';
 
 function AppRoutes() {
@@ -82,6 +83,7 @@ function AppRoutes() {
         <Route path="/app/checklist"      element={<Checklist />} />
         <Route path="/app/prospection"    element={<Prospection />} />
         <Route path="/app/prospection-nada" element={<ProspectionNada />} />
+        <Route path="/app/guide-rdv"        element={<GuideRdvVente />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </DataProvider>
