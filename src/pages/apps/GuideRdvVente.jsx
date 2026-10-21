@@ -3,208 +3,196 @@ import AppLayout from '../../components/AppLayout';
 import { FAMILLES, PERFUMES } from '../../utils/choganData';
 
 // ─────────────────────────────────────────────────────────────────
-// DONNÉES MÉTIER
+// DONNÉES MÉTIER — tirées du prompteur-formateur (oser-proposer.json)
 // ─────────────────────────────────────────────────────────────────
 
+// VAMP = Vente · Accueil · Méthodes · Personnalité
+// Autodiagnostic 20 questions, 5 par lettre (source : vamp.html + j1 du prompteur)
+const VAMP_CATS = [
+  { k:'V', label:'Vente', emoji:'💰', couleur:'#c0392b',
+    desc:"Est-ce que j'ose proposer mes parfums ?",
+    items:[
+      { q:"Je propose systématiquement les parfums", ex:"À chaque personne que je vois, je parle de mes parfums." },
+      { q:"Je fais des ventes complémentaires", ex:"Avec un parfum, je propose aussi la brume ou la crème." },
+      { q:"Je propose un choix au client", ex:"« Tu préfères le 30 ou le 70 ml ? »" },
+      { q:"J'utilise les promos pour vendre", ex:"« Ce mois-ci, il y a une promo. »" },
+      { q:"Je continue à proposer même après un refus", ex:"Après un « non », je propose autre chose." },
+    ]},
+  { k:'A', label:'Accueil', emoji:'😊', couleur:'#2980b9',
+    desc:"Est-ce que je mets les gens à l'aise ?",
+    items:[
+      { q:"J'accueille avec le sourire", ex:"Je souris dès le premier mot." },
+      { q:"Je suis à l'aise avec les inconnus", ex:"Je parle facilement à quelqu'un que je ne connais pas." },
+      { q:"Je crée une bonne ambiance", ex:"La cliente se sent bien, on rit ensemble." },
+      { q:"Je varie mes approches", ex:"En vrai, par message, en soirée, au travail…" },
+      { q:"Je remercie même sans achat", ex:"« Merci pour ton temps ! », même si elle n'achète pas." },
+    ]},
+  { k:'M', label:'Méthodes', emoji:'🎯', couleur:'#27ae60',
+    desc:"Est-ce que j'utilise les bonnes techniques de vente ?",
+    items:[
+      { q:"J'argumente sur mes produits systématiquement", ex:"Je donne une bonne raison d'acheter (30 % d'essence…)." },
+      { q:"Je détecte le SONCAS du client", ex:"Je devine ce qui lui donne envie : être rassurée, le prix, la nouveauté…" },
+      { q:"Je reformule pour comprendre le besoin du client", ex:"« Si je comprends bien, tu cherches un parfum léger ? »" },
+      { q:"Je sais conclure une vente", ex:"« Je te le mets de côté ? »" },
+      { q:"J'observe les détails qui comptent", ex:"Je remarque son style, ce qu'elle porte, ce qu'elle dit." },
+    ]},
+  { k:'P', label:'Personnalité', emoji:'✨', couleur:'#8e44ad',
+    desc:"Est-ce que j'ai la bonne attitude ?",
+    items:[
+      { q:"J'ai de l'énergie chaque jour", ex:"Je suis motivée, même les jours difficiles." },
+      { q:"Je suis confiante et rassurante", ex:"La cliente me fait confiance." },
+      { q:"J'argumente même mon produit non préféré", ex:"Je sais parler d'un parfum que je n'aime pas." },
+      { q:"J'ose proposer sans timidité", ex:"Je propose sans avoir peur du « non »." },
+      { q:"J'utilise l'humour naturellement", ex:"Je fais sourire la cliente." },
+    ]},
+];
+
+// SOC = Sujet · Objectif · Comment
+// Présentation en 30 secondes (source : j1 pages 15-16 du prompteur)
+const SOC_SCENARIOS = [
+  { id:'amie', label:'🤝 Une amie en ville', type:'amie',
+    sujet:"Bonjour [Prénom] ! Moi c'est [Ton prénom]. Je suis consultante Chogan.",
+    objectif:"J'adore aider les femmes à trouver leur parfum signature.",
+    comment:"Tu as 5 minutes ? On prend un café, je te fais sentir mes trois préférés.",
+    exemple:"Amina ! Ça fait longtemps ! Moi ? Je suis consultante Chogan. Je fais découvrir des parfums de qualité, à petit prix. J'adore aider les femmes à trouver leur parfum. Tu as cinq minutes ? On prend un café, je te fais sentir mes trois préférés." },
+  { id:'gouter', label:'☕ Un goûter / Soirée', type:'gouter',
+    sujet:"Bonjour à toutes ! Moi c'est [Prénom]. Je suis consultante Chogan. Je fais découvrir des parfums de qualité, à petit prix.",
+    objectif:"J'aime aider chacune à trouver son parfum.",
+    comment:"Pendant le café, je fais tourner trois testeurs. Vous sentez, vous me dites ce que vous aimez, et je vous conseille.",
+    exemple:"Bonjour à toutes, moi c'est Nej. Je suis consultante Chogan. Je fais découvrir des parfums de qualité, à petit prix. J'aime aider chacune à trouver son parfum. Pendant le café, je fais tourner trois testeurs. Vous sentez, vous me dites ce que vous aimez, et je vous conseille." },
+  { id:'demo', label:'🌸 Une démonstration cliente', type:'demo',
+    sujet:"Merci de m'accueillir ! Je suis consultante Chogan.",
+    objectif:"Mon but, c'est de t'aider à trouver le parfum qui te ressemble vraiment.",
+    comment:"Je t'ai préparé une sélection. On va sentir ensemble, et tu me dis ce qui te parle.",
+    exemple:"Merci de m'accueillir ! Je suis consultante Chogan. Mon but, c'est de t'aider à trouver le parfum qui te ressemble vraiment. Je t'ai préparé une sélection. On va sentir ensemble, et tu me dis ce qui te parle." },
+  { id:'commercant', label:'🏪 Un commerçant / Pro', type:'commercant',
+    sujet:"Bonjour ! Je suis consultante Chogan, parfumerie italienne de niche.",
+    objectif:"Je travaille avec des professionnels comme vous pour développer une offre complémentaire à votre activité.",
+    comment:"Est-ce que vous avez 5 minutes pour que je vous présente notre gamme ? Je vous laisse un testeur.",
+    exemple:"Bonjour ! Je suis consultante Chogan, parfumerie italienne de niche. Je travaille avec des professionnels comme vous pour développer une offre complémentaire. Est-ce que vous avez 5 minutes pour que je vous présente notre gamme ? Je vous laisse un testeur." },
+];
+
+// SONCAS — source : j2 page 10 du prompteur (phrases exactes)
 const SONCAS_DATA = [
-  { id:'S', label:'Sécurité',   emoji:'🛡️', couleur:'#3d6b9e',
-    desc:"La cliente a besoin d'être rassurée. Elle craint de se tromper, de perdre son argent.",
-    arguments:["Qualité Made in Italy certifiée","Satisfaction garantie ou remboursée","Des milliers de clientes fidèles","Composition contrôlée, sans allergènes majeurs"],
-    questions:["Qu'est-ce qui est important pour vous dans un parfum ?","Avez-vous déjà eu une mauvaise expérience avec un parfum ?","Qu'est-ce qui vous rassurerait pour passer commande ?"] },
-  { id:'O', label:'Orgueil',    emoji:'👑', couleur:'#9e7a3d',
-    desc:"La cliente veut se sentir unique, valorisée, appartenir à une élite.",
-    arguments:["Qualité identique aux grandes maisons (Dior, Chanel…) à prix accessible","Vous faites partie d'un cercle privilégié","Nos parfums ne se trouvent pas en grande surface","Vous serez celle qui aura trouvé la perle rare"],
-    questions:["Qu'est-ce qui vous différencie des autres selon vous ?","Aimez-vous les choses exclusives ?","Quelle image souhaitez-vous donner ?"] },
-  { id:'N', label:'Nouveauté',  emoji:'✨', couleur:'#9e5a7a',
-    desc:"La cliente aime la nouveauté, les tendances, découvrir avant les autres.",
-    arguments:["Nouvelles références chaque saison","Collection exclusive non disponible partout","Les dernières tendances olfactives de niche","Vous serez la première à le porter"],
-    questions:["Aimez-vous découvrir de nouvelles choses ?","Suivez-vous les tendances en parfumerie ?","Qu'est-ce qui vous attire dans le fait d'essayer quelque chose de nouveau ?"] },
-  { id:'C', label:'Confort',    emoji:'🛋️', couleur:'#4a7c59',
-    desc:"La cliente veut simplicité, praticité, sans effort. Elle apprécie le service.",
-    arguments:["Livraison à domicile sans se déplacer","Commande en quelques clics","Je gère tout pour vous","Paiement simple et rapide"],
-    questions:["Qu'est-ce qui vous faciliterait la vie ?","Comment préférez-vous faire vos achats ?","Aimez-vous que quelqu'un s'occupe de tout pour vous ?"] },
-  { id:'A', label:'Argent',     emoji:'💰', couleur:'#5a8a5a',
-    desc:"La cliente est sensible au rapport qualité/prix, aux économies, aux offres.",
-    arguments:["Jusqu'à 80% moins cher qu'un parfum de luxe comparable","70ml pour le prix d'un 30ml en boutique","Programme fidélité : chaque achat rapporte des points","Offres groupées avantageuses"],
-    questions:["Quel budget avez-vous en tête ?","Est-ce que le rapport qualité/prix est important pour vous ?","Vous aimez faire de bonnes affaires ?"] },
+  { id:'S', label:'Sécurité', emoji:'🛡️', couleur:'#3d6b9e',
+    signal:"Elle veut être rassurée. Elle pose des questions sur la qualité.",
+    phrase_cle:"« Nos essences viennent de Grasse, la référence. »",
+    arguments:["Haute concentration : 30 % d'essence, comme les grandes maisons","Fabriqué en Italie, contrôlé, sans allergènes majeurs","Des milliers de clientes fidèles — et elles reviennent"],
+    questions:["Qu'est-ce qui est important pour vous dans un parfum ?","Avez-vous déjà eu une mauvaise expérience avec un parfum ?"] },
+  { id:'O', label:'Orgueil', emoji:'👑', couleur:'#9e7a3d',
+    signal:"Elle parle de marques, de luxe. Elle compare.",
+    phrase_cle:"« C'est de l'extrait de parfum, le plus noble. »",
+    arguments:["Qualité identique aux grandes maisons (Dior, Chanel…) à prix accessible","Nos parfums ne se trouvent pas en grande surface — c'est exclusif","Vous serez celle qui a trouvé la perle rare"],
+    questions:["Aimez-vous les choses exclusives ?","Quelle image souhaitez-vous donner ?"] },
+  { id:'N', label:'Nouveauté', emoji:'✨', couleur:'#9e5a7a',
+    signal:"« C'est nouveau ? » Elle aime être parmi les premières.",
+    phrase_cle:"« Il vient de sortir. Tu serais parmi les premières. »",
+    arguments:["Nouvelles références chaque saison","Collection exclusive non disponible partout","Les dernières tendances olfactives de niche"],
+    questions:["Aimez-vous découvrir de nouvelles choses ?","Suivez-vous les tendances en parfumerie ?"] },
+  { id:'C', label:'Confort', emoji:'🛋️', couleur:'#4a7c59',
+    signal:"« Je n'ai pas le temps. » Elle veut que ce soit simple.",
+    phrase_cle:"« C'est simple : tu testes, je livre. »",
+    arguments:["Livraison à domicile, sans se déplacer","Je gère tout pour vous — commande, livraison, suivi","Paiement simple et rapide"],
+    questions:["Comment préférez-vous faire vos achats ?","Aimez-vous que quelqu'un s'occupe de tout pour vous ?"] },
+  { id:'A', label:'Argent', emoji:'💰', couleur:'#5a8a5a',
+    signal:"« C'est combien ? » Elle est sensible au rapport qualité/prix.",
+    phrase_cle:"« Tu paies le parfum, pas la publicité. »",
+    arguments:["Jusqu'à 80 % moins cher qu'un parfum de luxe comparable","70 ml pour le prix d'un 30 ml en boutique","Programme fidélité : chaque achat rapporte des points"],
+    questions:["Quel budget avez-vous en tête ?","Vous aimez faire de bonnes affaires ?"] },
   { id:'S2', label:'Sympathie', emoji:'🤝', couleur:'#c97c3a',
-    desc:"La cliente achète parce qu'elle vous fait confiance, elle vous apprécie.",
-    arguments:["Je vous le conseille personnellement","Je porte ce parfum moi-même","Je suis là pour vous accompagner, même après la commande","Mes clientes reviennent toujours vers moi"],
-    questions:["Qu'est-ce qui vous a donné envie qu'on se rencontre ?","Comment vous sentez-vous par rapport à notre échange ?","Avez-vous des questions sur moi ou sur mon activité ?"] },
+    signal:"Elle sourit, elle discute. Elle achète parce qu'elle vous apprécie.",
+    phrase_cle:"« On prend le temps de trouver le tien. »",
+    arguments:["Je vous le conseille personnellement — je porte ce parfum moi-même","Je suis là pour vous accompagner, même après la commande","Mes clientes reviennent toujours vers moi"],
+    questions:["Comment vous sentez-vous par rapport à notre échange ?","Qu'est-ce qui vous a donné envie qu'on se rencontre ?"] },
 ];
 
-const TECHNIQUES_DATA = [
-  { id:'reformulation', label:'Reformulation', emoji:'🔄',
-    desc:"Répétez les mots de la cliente pour lui montrer que vous l'avez bien compris.",
-    exemple:"« Si je comprends bien, vous cherchez un parfum qui dure longtemps et qui vous donne confiance en vous, c'est bien ça ? »",
-    quand:"Après qu'elle a exprimé un besoin ou une préférence." },
-  { id:'silence', label:'Silence', emoji:'🤫',
-    desc:"Après votre argument ou votre proposition, taisez-vous. Laissez le silence travailler.",
-    exemple:"« Ce parfum est inspiré d'Angel de Thierry Mugler, à 9€ au lieu de 90€… » [silence]",
-    quand:"Après une proposition de prix ou un argument fort. Ne remplissez pas le vide !" },
-  { id:'benefice', label:'Bénéfice client', emoji:'💡',
-    desc:"Ne parlez pas du produit, parlez de ce que la cliente va RESSENTIR ou GAGNER.",
-    exemple:"Pas « Ce parfum a des notes de vanille » → mais « Vous allez sentir ce sillage doux qui fait se retourner les gens sur vous »",
-    quand:"À chaque présentation produit. Toujours traduire la caractéristique en bénéfice." },
-  { id:'urgence', label:'Urgence douce', emoji:'⏰',
-    desc:"Créez un sentiment d'opportunité limitée, sans pression excessive.",
-    exemple:"« On a quelques unités disponibles en ce moment » ou « Cette offre se termine en fin de mois »",
-    quand:"Quand la cliente hésite, pour la faire passer à l'action naturellement." },
-  { id:'preuve', label:'Preuve sociale', emoji:'⭐',
-    desc:"Mentionnez que d'autres personnes ont déjà acheté et sont satisfaites.",
-    exemple:"« Ma cliente Marie a pris ce même parfum il y a 3 mois, elle vient d'en recommander deux » ou « C'est notre best-seller »",
-    quand:"Face aux doutes ou à l'hésitation. La cliente se rassure en sachant qu'elle n'est pas seule." },
+// PCA = Promo · Complément · Additionnel
+// Pour vendre PLUS à la même cliente (source : j2 pages 4-9 du prompteur)
+const PCA_DATA = [
+  { id:'P', label:'Promo', emoji:'🎁', couleur:'#c0392b',
+    desc:"Tu ne proposes pas la promo ? Tu laisses de l'argent sur la table.",
+    quand:"Dès qu'elle a dit oui à un premier achat.",
+    exemple:"« Ce mois-ci : deux achetés, le troisième à moitié prix. »",
+    conseil:"Ne pas attendre qu'elle demande — proposer systématiquement." },
+  { id:'C', label:'Complément', emoji:'➕', couleur:'#2980b9',
+    desc:"La cliente a déjà dit oui. Tu proposes un produit qui va avec.",
+    quand:"Après la première vente conclue.",
+    exemple:"« Pour garder l'odeur plus longtemps, la brume assortie est parfaite. »",
+    conseil:"Elle a dit oui une fois. Elle peut dire oui deux fois." },
+  { id:'A', label:'Additionnel', emoji:'🔓', couleur:'#27ae60',
+    desc:"Un autre produit, pour ouvrir une nouvelle porte.",
+    quand:"Quand la vente principale est faite.",
+    exemple:"« Au fait, tu connais nos parfums d'ambiance ? C'est parfait pour la maison. »",
+    conseil:"Ce n'est pas forcer. C'est penser à ce dont elle aura besoin." },
 ];
 
-const SOC_TEMPLATES = [
-  { id:'amie', label:'🤝 Amie / Proche', type:'amie',
-    situation:"[Prénom], on est amies, je sais que tu es sensible aux belles choses.",
-    obstacle:"Mais je sais aussi qu'avec tous les parfums en grande surface, difficile de trouver quelque chose d'unique qui tient vraiment.",
-    consequence:"Résultat, on finit par avoir les mêmes parfums que tout le monde, et ça coûte une fortune.",
-    solution:"Ce que je te propose, c'est de découvrir les parfums Chogan : qualité luxe, à petit prix, et exclusifs." },
-  { id:'collegue', label:'💼 Collègue', type:'collegue',
-    situation:"On travaille ensemble, et je sais que l'image professionnelle compte pour toi.",
-    obstacle:"Mais trouver un parfum discret le matin et qui reste présent toute la journée, c'est pas évident.",
-    consequence:"Alors on se retrouve à mettre trop de parfum ou à en changer souvent.",
-    solution:"Avec Chogan, la concentration est élevée : quelques sprays le matin et ça tient jusqu'au soir." },
-  { id:'rencontre', label:'🌸 Nouvelle rencontre', type:'rencontre',
-    situation:"On vient juste de se rencontrer, et je veux être directe avec toi.",
-    obstacle:"Souvent quand on parle de parfums ou de cosmétiques, les gens imaginent tout de suite quelque chose de cher ou de compliqué.",
-    consequence:"Alors ils passent à côté de quelque chose d'exceptionnel par peur de se tromper.",
-    solution:"Je vais juste te montrer 2-3 fragrances, tu me dis ce qui te correspond, et tu décides en toute liberté." },
-  { id:'rdv_olfactif', label:'👃 RDV Olfactif', type:'rdv_olfactif',
-    situation:"Je t'ai invitée aujourd'hui pour qu'on explore ensemble ce qui te correspond.",
-    obstacle:"Le problème avec les parfums classiques, c'est qu'on achète souvent sur le coup, sans vraiment réfléchir à ce qu'on veut.",
-    consequence:"Et on se retrouve avec des parfums qu'on n'utilise plus au bout de 3 semaines.",
-    solution:"Aujourd'hui, on va prendre le temps de trouver TA fragrance signature, celle qui te ressemble vraiment." },
-];
-
-const VAMP_PROFILS = [
-  { id:'v', label:'Valeurs', emoji:'💎', couleur:'#9e7a3d',
-    desc:"Ce qui compte profondément pour elle (famille, élégance, authenticité, nature...)",
-    questions:["Qu'est-ce qui est important pour vous dans votre quotidien ?","Quelles valeurs vous guident dans vos choix ?","Qu'est-ce qui vous rend fière ?"],
-    familles_suggerees:['fleurie','ambree','boisee'] },
-  { id:'a', label:'Ambitions', emoji:'🚀', couleur:'#4a7c59',
-    desc:"Ce qu'elle aspire à être ou à atteindre (carrière, image, lifestyle...)",
-    questions:["Où vous voyez-vous dans 2 ans ?","Quel style de vie vous inspire ?","Quelle image souhaitez-vous projeter ?"],
-    familles_suggerees:['boisee','chypree','aromatique'] },
-  { id:'m', label:'Motivations', emoji:'💡', couleur:'#3d6b9e',
-    desc:"Ce qui la fait agir aujourd'hui (événement, occasion, envie de changement...)",
-    questions:["Qu'est-ce qui vous a donné envie de me rencontrer aujourd'hui ?","Y a-t-il un événement particulier pour lequel vous cherchez un parfum ?","Qu'est-ce qui vous a poussée à changer de parfum ?"],
-    familles_suggerees:['hesperidee','fleurie','ambree'] },
-  { id:'p', label:'Problèmes', emoji:'🎯', couleur:'#8a4d4d',
-    desc:"Ses frustrations avec ses parfums actuels (tenue, prix, originalité...)",
-    questions:["Qu'est-ce qui ne vous satisfait pas dans vos parfums actuels ?","Qu'est-ce que vous voudriez éviter ?","Qu'est-ce qui vous a déçue par le passé ?"],
-    familles_suggerees:['hesperidee','fougere','aromatique'] },
-];
-
-const CIBLE_PROFILS = [
-  { id:'femme_elegante', label:'Femme élégante', emoji:'👗', genre:'femme',
-    ages:['adulte','mature'],
-    familles_principales:['fleurie','ambree','chypree'],
-    notes_preferees:'Rose, jasmin, vanille, patchouli, bois précieux',
-    refs_suggerees:['007','027','042','051','054','055','085','095'],
-    soncas_dominant:'O',
-    desc:"Femme sûre d'elle, qui soigne son image, sensible à l'exclusivité et au prestige." },
-  { id:'femme_jeune', label:'Jeune femme tendance', emoji:'🌸', genre:'femme',
-    ages:['jeune'],
-    familles_principales:['hesperidee','fleurie','ambree'],
-    notes_preferees:'Agrumes, fruits rouges, fleurs légères, musc doux',
-    refs_suggerees:['009','021','026','029','090'],
-    soncas_dominant:'N',
-    desc:"Jeune femme qui suit les tendances, aime la nouveauté et les parfums légers et fruités." },
-  { id:'femme_naturelle', label:'Femme naturelle', emoji:'🌿', genre:'femme',
-    ages:['jeune','adulte'],
-    familles_principales:['aromatique','hesperidee','boisee'],
-    notes_preferees:'Lavande, menthe, bergamote, cèdre',
-    refs_suggerees:['002','063','065','086'],
-    soncas_dominant:'C',
-    desc:"Femme authentique, proche de la nature, qui préfère les fragrances simples et vraies." },
-  { id:'homme_classique', label:'Homme classique', emoji:'👔', genre:'homme',
-    ages:['adulte','mature'],
-    familles_principales:['boisee','fougere','aromatique'],
-    notes_preferees:'Bois de santal, cuir, cèdre, lavande, vétiver',
-    refs_suggerees:['003','004','016','017','018','038','043','086'],
-    soncas_dominant:'O',
-    desc:"Homme de caractère, mature, qui apprécie les parfums virils et raffinés." },
-  { id:'homme_sportif', label:'Homme sportif', emoji:'💪', genre:'homme',
-    ages:['jeune','adulte'],
-    familles_principales:['aromatique','hesperidee','fougere'],
-    notes_preferees:'Menthe, romarin, agrumes, bois frais',
-    refs_suggerees:['002','020','044','065','084','087','091'],
-    soncas_dominant:'C',
-    desc:"Homme dynamique et actif, recherche fraîcheur et vitalité." },
-  { id:'homme_seducteur', label:'Homme séducteur', emoji:'✨', genre:'homme',
-    ages:['jeune','adulte'],
-    familles_principales:['ambree','boisee','chypree'],
-    notes_preferees:'Ambre, épices, vétiver, muscs chauds',
-    refs_suggerees:['001','006','010','014','019','030','037','055'],
-    soncas_dominant:'O',
-    desc:"Homme charismatique qui aime marquer les esprits avec un sillage envoûtant." },
-  { id:'mixte_frais', label:'Profil mixte / Frais', emoji:'💧', genre:'mixte',
-    ages:['jeune','adulte'],
-    familles_principales:['hesperidee','aromatique'],
-    notes_preferees:'Agrumes, bergamote, aromates',
-    refs_suggerees:['009','012','021','062','091','099'],
-    soncas_dominant:'C',
-    desc:"Profil universel qui aime les fragrances légères et fraîches, sans genre défini." },
-];
-
+// OBJECTIONS — méthode 4 temps (source : j2 pages 13-14 du prompteur)
 const OBJECTIONS_DATA = [
   { objection:"C'est trop cher",
-    reponses:["En grande surface, un parfum de luxe équivalent coûte 80 à 150€. Ici, vous l'avez pour 9 à 35€, c'est 80% d'économie.",
-      "Pour un parfum de luxe à ce prix-là, j'ai des clientes qui en commandent 2 ou 3 en une seule fois.",
-      "Et si on regardait ensemble ce que ça représente par jour ? 70ml qui dure 6 mois, c'est moins de 10 centimes par jour."] },
+    reformulation:"Tu trouves que c'est un budget.",
+    reponse:"C'est un extrait de parfum — il tient toute la journée. Une goutte suffit, il dure longtemps.",
+    reproposer:"On part sur le 30 ml, à 18 € ?",
+    plus:["En grande surface, un équivalent luxe coûte 80 à 150 €. Ici, c'est 80 % d'économie.","Pour un parfum à ce prix, mes clientes en commandent souvent 2 ou 3 d'un coup.","Ça fait moins de 10 centimes par jour pour 6 mois de plaisir."] },
   { objection:"Je dois réfléchir",
-    reponses:["Bien sûr, c'est important de prendre son temps. Qu'est-ce qui vous freine encore ?",
-      "Pour vous aider à décider, qu'est-ce qui serait important que vous sachiez ?",
-      "Je comprends. Ce qui fait que la plupart de mes clientes se décident, c'est qu'elles peuvent sentir avant d'acheter."] },
+    reformulation:"Tu veux prendre le temps d'être sûre.",
+    reponse:"C'est sage. Qu'est-ce qui te freine encore ? Je peux t'aider à décider.",
+    reproposer:"On peut commencer par le 15 ml pour tester sans engagement ?",
+    plus:["Ce qui fait que la plupart de mes clientes se décident, c'est qu'elles peuvent sentir avant d'acheter.","Pour vous aider à décider, qu'est-ce qui serait important que vous sachiez ?"] },
   { objection:"Je ne connais pas la marque",
-    reponses:["Chogan est une maison italienne fondée en 2013, référence dans la parfumerie de niche en Europe.",
-      "Nos parfums sont fabriqués par les mêmes nez que les grandes maisons, avec les mêmes matières premières.",
-      "La différence, c'est qu'on ne paie pas la publicité et les vitrines des boutiques chic. Donc vous payez le parfum, pas l'image."] },
+    reformulation:"Tu veux être sûre de la qualité.",
+    reponse:"Chogan est une maison italienne fondée en 2013. Les mêmes nez que les grandes maisons, les mêmes matières premières.",
+    reproposer:"Tu veux que je te laisse un testeur pour sentir par toi-même ?",
+    plus:["La différence : on ne paie pas la pub ni les vitrines chic. Tu paies le parfum, pas l'image.","Nos essences viennent de Grasse — la même référence que Chanel ou Dior."] },
   { objection:"J'ai déjà mon parfum",
-    reponses:["C'est justement pour ça que je pense à vous. Vous méritez d'avoir plusieurs parfums selon votre humeur, votre tenue.",
-      "Beaucoup de mes clientes ont gardé leur parfum habituel et ont découvert un parfum de soirée ou de saison en plus.",
-      "Et si je vous trouvais quelque chose de complémentaire à ce que vous portez déjà ?"] },
+    reformulation:"Tu as déjà un parfum que tu aimes.",
+    reponse:"Justement — vous méritez d'avoir plusieurs parfums selon votre humeur et votre tenue.",
+    reproposer:"Et si je vous trouvais quelque chose de complémentaire à ce que vous portez déjà ?",
+    plus:["Beaucoup de mes clientes ont gardé leur parfum habituel et ont découvert un parfum de soirée en plus.","On peut trouver votre parfum du quotidien ET votre parfum signature."] },
   { objection:"Je veux sentir avant",
-    reponses:["Absolument, c'est indispensable ! Je peux vous faire sentir directement sur la peau pour voir comment ça évolue.",
-      "Je vous conseille toujours d'attendre 5 minutes après le spray, c'est là qu'on voit la vraie signature du parfum.",
-      "Quel est le meilleur moment cette semaine pour qu'on se rencontre avec ma mallette ?"] },
-  { objection:"Mon mari décide",
-    reponses:["Je comprends tout à fait. Et si on lui réservait une petite surprise ? Je peux vous conseiller quelque chose qui vous différencie.",
-      "Vous savez, souvent les hommes adorent quand leur femme sent bon. Je peux vous aider à choisir quelque chose qu'il va adorer.",
-      "Si vous le souhaitez, je peux aussi vous montrer notre gamme masculine, pour faire une belle découverte en couple."] },
+    reformulation:"Tu veux être certaine avant de te décider.",
+    reponse:"Absolument, c'est indispensable ! Je vous conseille toujours de sentir sur la peau — le vrai parfum apparaît après 5 minutes.",
+    reproposer:"Quel est le meilleur moment cette semaine pour qu'on se rencontre avec ma mallette ?",
+    plus:["Je peux faire tourner des testeurs chez vous ou chez vos amies.","Le parfum évolue sur la peau — ce que vous sentez dans le flacon n'est pas ce que vous porterez."] },
+  { objection:"Mon mari / ma famille décide",
+    reformulation:"Tu veux leur en parler avant.",
+    reponse:"Je comprends tout à fait. Et si on lui réservait une petite surprise ?",
+    reproposer:"Je peux aussi vous montrer notre gamme masculine — une belle découverte en couple ?",
+    plus:["Les hommes adorent souvent quand leur femme sent bon — je peux vous conseiller quelque chose qu'il va adorer.","Si vous souhaitez, je vous envoie une fiche cadeau à lui montrer."] },
 ];
 
 // ─────────────────────────────────────────────────────────────────
 // COMPOSANT PRINCIPAL
 // ─────────────────────────────────────────────────────────────────
 
-const ONGLETS = [
-  { id:'rdv',    label:'🎯 Préparer', desc:'Mon RDV' },
-  { id:'soncas', label:'🧠 SONCAS',   desc:'Motivation' },
-  { id:'olfactif',label:'👃 Olfactif', desc:'Trouver le parfum' },
-  { id:'objections',label:'💬 Objections', desc:'Arguments' },
+const TABS = [
+  { id:'soc',       label:'📝 Mon SOC',    desc:'Présentation 30s' },
+  { id:'vamp',      label:'🪞 VAMP',       desc:'Autodiagnostic' },
+  { id:'soncas',    label:'🧠 SONCAS',     desc:'Motivations' },
+  { id:'pca',       label:'💡 PCA',        desc:'Vendre plus' },
+  { id:'olfactif',  label:'🌸 Olfactif',   desc:'Guide parfum' },
+  { id:'objections',label:'🛡️ Objections', desc:'4 temps' },
 ];
 
 export default function GuideRdvVente() {
-  const [tab, setTab] = useState('rdv');
+  const [tab, setTab] = useState('soc');
 
   return (
-    <AppLayout title="Guide RDV Vente" icon="🎯">
-      {/* Onglets */}
-      <div style={S.tabBar}>
-        {ONGLETS.map(t => (
-          <button key={t.id} style={{ ...S.tabBtn, ...(tab===t.id ? S.tabActive : {}) }}
+    <AppLayout title="Guide RDV Vente" subtitle="Méthodes · Formation · Techniques">
+      {/* TABS */}
+      <div style={S.tabsWrap}>
+        {TABS.map(t => (
+          <button key={t.id} style={{ ...S.tab, ...(tab===t.id ? S.tabActive : {}) }}
             onClick={() => setTab(t.id)}>
-            <span style={S.tabLabel}>{t.label}</span>
+            <span style={S.tabEmoji}>{t.label.split(' ')[0]}</span>
+            <span style={S.tabLabel}>{t.label.slice(t.label.indexOf(' ')+1)}</span>
           </button>
         ))}
       </div>
 
-      {tab === 'rdv'        && <TabRdv />}
+      {tab === 'soc'        && <TabSoc />}
+      {tab === 'vamp'       && <TabVamp />}
       {tab === 'soncas'     && <TabSoncas />}
+      {tab === 'pca'        && <TabPca />}
       {tab === 'olfactif'   && <TabOlfactif />}
       {tab === 'objections' && <TabObjections />}
     </AppLayout>
@@ -212,527 +200,440 @@ export default function GuideRdvVente() {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// TAB 1 — PRÉPARER MON RDV (SOC + CIBLE + VAMP)
+// TAB SOC — Sujet · Objectif · Comment
 // ─────────────────────────────────────────────────────────────────
-
-function TabRdv() {
-  const [section, setSection] = useState('cible'); // 'cible' | 'vamp' | 'soc'
-  const [cibleChoisi, setCibleChoisi] = useState(null);
-  const [vampReponses, setVampReponses] = useState({});
-  const [socChoisi, setSocChoisi]   = useState(null);
-  const [socPerso, setSocPerso]     = useState({});
-  const [showSocModal, setShowSocModal] = useState(false);
-
-  const savedSocs = (() => { try { return JSON.parse(localStorage.getItem('chogan_socs_perso')||'[]'); } catch { return []; } })();
-
-  function saveSoc(soc) {
-    const newSoc = { ...soc, ...socPerso, id: Date.now() };
-    const list = [...savedSocs, newSoc];
-    localStorage.setItem('chogan_socs_perso', JSON.stringify(list));
-    setShowSocModal(false);
-    alert('✅ SOC sauvegardé !');
-  }
-
-  const cible = CIBLE_PROFILS.find(c => c.id === cibleChoisi);
+function TabSoc() {
+  const [sel, setSel] = useState(null);
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('chogan_soc_notes') || '{}'); } catch { return {}; }
+  });
+  const saveNote = (id, val) => {
+    const n = { ...notes, [id]: val };
+    setNotes(n);
+    try { localStorage.setItem('chogan_soc_notes', JSON.stringify(n)); } catch {}
+  };
 
   return (
     <div style={S.pad}>
-      {/* Sous-navigation */}
-      <div style={S.subNav}>
-        {[['cible','🎯 Cible'],['vamp','💎 VAMP'],['soc','📝 SOC']].map(([id,l]) => (
-          <button key={id} style={{ ...S.subBtn, ...(section===id ? S.subActive : {}) }}
-            onClick={() => setSection(id)}>{l}</button>
-        ))}
+      <div style={S.infoCard}>
+        <p style={S.infoTitle}>📝 La méthode SOC — Ta présentation en 30 secondes</p>
+        <p style={S.infoText}>
+          <b>S</b> = <b>Sujet</b> : qui je suis, ce que je fais<br/>
+          <b>O</b> = <b>Objectif</b> : ce que j'aime, mon envie<br/>
+          <b>C</b> = <b>Comment</b> : ce que je propose concrètement<br/><br/>
+          <em>Le C est la lettre la plus importante — c'est là qu'on gagne la vente.</em>
+        </p>
       </div>
 
-      {/* ── CIBLE ── */}
-      {section === 'cible' && (
-        <>
-          <div style={S.infoCard}>
-            <p style={S.infoTitle}>🎯 La Cible — Qui est face à moi ?</p>
-            <p style={S.infoText}>Identifiez le profil de votre cliente AVANT le RDV. Chaque profil guide vos questions, vos arguments et vos recommandations parfums.</p>
+      <p style={{ fontSize:12, color:'var(--text-muted)', marginBottom:10 }}>Choisis ta situation et personnalise ton discours :</p>
+
+      {SOC_SCENARIOS.map(sc => (
+        <div key={sc.id} style={S.card}>
+          <div style={S.cardHeader} onClick={() => setSel(sel === sc.id ? null : sc.id)}>
+            <p style={S.cardTitle}>{sc.label}</p>
+            <span style={S.chevron}>{sel === sc.id ? '▲' : '▼'}</span>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:16 }}>
-            {CIBLE_PROFILS.map(c => (
-              <div key={c.id}
-                style={{ ...S.cibleCard, ...(cibleChoisi===c.id ? { border:'2px solid var(--or-deep)', background:'rgba(210,183,149,0.15)' } : {}) }}
-                onClick={() => setCibleChoisi(cibleChoisi===c.id ? null : c.id)}>
-                <span style={{ fontSize:28, marginBottom:4, display:'block' }}>{c.emoji}</span>
-                <p style={{ fontSize:11, fontWeight:700, color:'var(--taupe)', textAlign:'center', lineHeight:1.3 }}>{c.label}</p>
-                <span style={{ fontSize:9, color:'var(--text-muted)', background:'rgba(0,0,0,0.04)', borderRadius:10, padding:'2px 6px', marginTop:4, display:'inline-block' }}>
-                  {c.genre}
-                </span>
+          {sel === sc.id && (
+            <div style={S.cardBody}>
+              {[['🔵 S — Sujet', sc.sujet], ['🟡 O — Objectif', sc.objectif], ['🟢 C — Comment', sc.comment]].map(([lab, val]) => (
+                <div key={lab} style={{ marginBottom:10 }}>
+                  <p style={S.rowLabel}>{lab}</p>
+                  <p style={S.rowVal}>{val}</p>
+                </div>
+              ))}
+              <div style={S.exBox}>
+                <p style={S.exTitle}>💬 Exemple complet (25 secondes)</p>
+                <p style={S.exText}>{sc.exemple}</p>
+              </div>
+              <div style={{ marginTop:12 }}>
+                <p style={S.rowLabel}>✏️ Ma version personnalisée</p>
+                <textarea
+                  style={S.textarea}
+                  rows={4}
+                  placeholder="Écris ton SOC ici…"
+                  value={notes[sc.id] || ''}
+                  onChange={e => saveNote(sc.id, e.target.value)}
+                />
+                <p style={{ fontSize:10, color:'var(--text-muted)', marginTop:4 }}>Sauvegardé automatiquement ✓</p>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// TAB VAMP — Vente · Accueil · Méthodes · Personnalité
+// ─────────────────────────────────────────────────────────────────
+function TabVamp() {
+  const SYMS = ['−', '=', '+'];
+  const LABELS = ['Pas encore', 'Parfois', 'Oui, souvent'];
+  const [ans, setAns] = useState({});
+  const [openCat, setOpenCat] = useState('V');
+
+  const setVal = (key, val) => setAns(prev => ({ ...prev, [key]: val }));
+
+  const score = (k) => {
+    const cat = VAMP_CATS.find(c => c.k === k);
+    return cat ? cat.items.reduce((sum, _, i) => {
+      const v = ans[k + i];
+      return sum + (v !== undefined ? v : 0);
+    }, 0) : 0;
+  };
+  const totalDone = Object.keys(ans).length;
+  const totalScore = VAMP_CATS.reduce((sum, c) => sum + score(c.k), 0);
+
+  const level = (s, max) => {
+    if (max === 40) return s <= 16 ? 'Débutante' : s <= 28 ? 'En progression' : 'Performante';
+    return s <= 4 ? 'Débutante' : s <= 7 ? 'En progression' : 'Performante';
+  };
+  const lvlColor = (lv) => lv === 'Performante' ? '#27ae60' : lv === 'En progression' ? '#e08a00' : '#c0392b';
+
+  return (
+    <div style={S.pad}>
+      <div style={S.infoCard}>
+        <p style={S.infoTitle}>🪞 Mon profil VAMP — Bilan sur soi</p>
+        <p style={S.infoText}>
+          Avant de vendre, on apprend à se connaître. Pour chaque phrase, note ton niveau honnêtement.<br/>
+          <b>−</b> = Pas encore (0 pt) · <b>=</b> = Parfois (1 pt) · <b>+</b> = Oui, souvent (2 pts)
+        </p>
+      </div>
+
+      {VAMP_CATS.map(cat => {
+        const s = score(cat.k);
+        const done = cat.items.filter((_, i) => ans[cat.k + i] !== undefined).length;
+        const lv = done === 5 ? level(s, 10) : null;
+        return (
+          <div key={cat.k} style={{ ...S.vampCat, borderLeft: `4px solid ${cat.couleur}` }}>
+            <div style={S.vampHeader} onClick={() => setOpenCat(openCat === cat.k ? null : cat.k)}>
+              <div style={{ ...S.vampBadge, background: cat.couleur }}>{cat.k}</div>
+              <div style={{ flex:1 }}>
+                <p style={{ fontWeight:700, fontSize:13, color: cat.couleur, margin:0 }}>{cat.label}</p>
+                <p style={{ fontSize:11, color:'var(--text-muted)', margin:0 }}>{cat.desc}</p>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <p style={{ fontWeight:900, fontSize:18, color: cat.couleur, margin:0 }}>{done === 5 ? s : '—'}<span style={{ fontSize:11, color:'var(--text-muted)' }}>/10</span></p>
+                {lv && <span style={{ fontSize:10, color: lvlColor(lv), fontWeight:700 }}>{lv}</span>}
+              </div>
+            </div>
+
+            {openCat === cat.k && cat.items.map((item, i) => (
+              <div key={i} style={S.vampItem}>
+                <div style={{ flex:1 }}>
+                  <p style={{ fontSize:12, color:'var(--taupe)', margin:0 }}>{item.q}</p>
+                  <p style={{ fontSize:11, color:'var(--text-muted)', fontStyle:'italic', margin:'2px 0 0' }}>Ex : {item.ex}</p>
+                </div>
+                <div style={S.vampBtns}>
+                  {[0, 1, 2].map(v => (
+                    <button key={v} style={{
+                      ...S.vampBtn,
+                      background: ans[cat.k+i] === v ? cat.couleur : 'var(--bg-card)',
+                      color: ans[cat.k+i] === v ? '#fff' : 'var(--text-muted)',
+                      borderColor: ans[cat.k+i] === v ? cat.couleur : 'var(--or-border)',
+                    }} onClick={() => setVal(cat.k+i, v)}>
+                      {SYMS[v]}
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
+        );
+      })}
 
-          {cible && (
-            <div style={{ background:'var(--bg-card)', border:'2px solid var(--or-deep)', borderRadius:16, padding:16, marginBottom:12 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
-                <span style={{ fontSize:32 }}>{cible.emoji}</span>
-                <div>
-                  <p style={{ fontSize:15, fontWeight:700, color:'var(--taupe)', fontFamily:'var(--font-display)' }}>{cible.label}</p>
-                  <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:2 }}>{cible.desc}</p>
-                </div>
-              </div>
-              <Row label="🧠 SONCAS dominant" val={SONCAS_DATA.find(s=>s.id===cible.soncas_dominant||s.id===cible.soncas_dominant)?.label || cible.soncas_dominant} />
-              <Row label="🎵 Notes préférées" val={cible.notes_preferees} />
-              <div style={{ marginTop:10 }}>
-                <p style={S.rowLabel}>💐 Familles recommandées</p>
-                <div style={S.tags}>
-                  {cible.familles_principales.map(f => {
-                    const fam = FAMILLES.find(x=>x.id===f);
-                    return fam ? (
-                      <span key={f} style={{ ...S.tag, borderColor: fam.couleur+'66', color: fam.couleur }}>{fam.emoji} {fam.nom}</span>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-              <div style={{ marginTop:10 }}>
-                <p style={S.rowLabel}>✨ Références suggérées</p>
-                <div style={S.tags}>
-                  {cible.refs_suggerees.slice(0,6).map(ref => {
-                    const p = PERFUMES.find(x=>String(x.ref)===ref||x.ref===parseInt(ref));
-                    return (
-                      <span key={ref} style={S.tagRef}>{ref}{p?` · ${p.name}`:''}</span>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* ── VAMP ── */}
-      {section === 'vamp' && (
-        <>
-          <div style={S.infoCard}>
-            <p style={S.infoTitle}>💎 Méthode VAMP</p>
-            <p style={S.infoText}>Creusez les 4 dimensions pour comprendre profondément ce qui motive votre cliente. Posez 1-2 questions par dimension, écoutez, notez.</p>
+      {/* Résultat global */}
+      {totalDone >= 20 && (
+        <div style={{ background:'var(--or-deep)', borderRadius:14, padding:20, marginTop:16, textAlign:'center' }}>
+          <p style={{ fontSize:11, color:'rgba(255,255,255,0.8)', letterSpacing:'0.1em', textTransform:'uppercase', margin:'0 0 4px' }}>Ma note finale</p>
+          <p style={{ fontSize:42, fontWeight:900, color:'#fff', margin:0 }}>{totalScore}<span style={{ fontSize:14, opacity:0.7 }}>/40</span></p>
+          <p style={{ fontSize:13, color:'rgba(255,255,255,0.9)', marginTop:6 }}>
+            {level(totalScore, 40)}
+          </p>
+          <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop:12, textAlign:'left' }}>
+            {VAMP_CATS.map(c => (
+              <p key={c.k} style={{ fontSize:12, color:'rgba(255,255,255,0.85)', margin:0 }}>
+                <b>{c.k}</b> {c.label} : {score(c.k)}/10 · {level(score(c.k), 10)}
+              </p>
+            ))}
           </div>
-          {VAMP_PROFILS.map(v => (
-            <div key={v.id} style={{ ...S.vampCard, borderLeftColor: v.couleur }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-                <span style={{ fontSize:24 }}>{v.emoji}</span>
-                <div>
-                  <p style={{ fontSize:14, fontWeight:700, color: v.couleur }}>{v.label}</p>
-                  <p style={{ fontSize:11, color:'var(--text-muted)', lineHeight:1.4 }}>{v.desc}</p>
-                </div>
-              </div>
-              <p style={S.rowLabel}>❓ Questions à poser</p>
-              {v.questions.map((q,i) => (
-                <div key={i} style={S.questionItem}>
-                  <span style={{ fontSize:12, color:'var(--text-muted)', marginRight:6 }}>›</span>
-                  <p style={{ fontSize:12, color:'var(--taupe)', fontStyle:'italic', flex:1 }}>« {q} »</p>
-                </div>
-              ))}
-              <textarea
-                placeholder={`Notes sur ses ${v.label.toLowerCase()}...`}
-                style={S.textarea}
-                value={vampReponses[v.id]||''}
-                onChange={e => setVampReponses(r => ({ ...r, [v.id]: e.target.value }))}
-              />
-              <p style={S.rowLabel}>💐 Familles olfactives suggérées</p>
-              <div style={S.tags}>
-                {v.familles_suggerees.map(f => {
-                  const fam = FAMILLES.find(x=>x.id===f);
-                  return fam ? <span key={f} style={{ ...S.tag, borderColor: fam.couleur+'66', color: fam.couleur }}>{fam.emoji} {fam.nom}</span> : null;
-                })}
-              </div>
-            </div>
-          ))}
-        </>
+          <p style={{ fontSize:11, color:'rgba(255,255,255,0.75)', marginTop:12 }}>
+            💪 Force : <b>{VAMP_CATS.sort((a,b) => score(b.k)-score(a.k))[0].label}</b>
+            &nbsp;· 🎯 À travailler : <b>{VAMP_CATS.sort((a,b) => score(a.k)-score(b.k))[0].label}</b>
+          </p>
+        </div>
       )}
-
-      {/* ── SOC ── */}
-      {section === 'soc' && (
-        <>
-          <div style={S.infoCard}>
-            <p style={S.infoTitle}>📝 Méthode SOC</p>
-            <p style={S.infoText}>Situation → Obstacle → Conséquence → Solution. Sélectionnez un modèle selon le contexte, personnalisez et sauvegardez vos SOC favoris.</p>
-          </div>
-
-          {/* SOC sauvegardés */}
-          {savedSocs.length > 0 && (
-            <div style={{ marginBottom:12 }}>
-              <p style={{ ...S.rowLabel, marginBottom:6 }}>⭐ MES SOC SAUVEGARDÉS</p>
-              {savedSocs.map((s,i) => (
-                <div key={i} style={{ ...S.socCard, border:'2px solid var(--or-deep)' }}>
-                  <p style={{ fontSize:13, fontWeight:700, color:'var(--taupe)', marginBottom:8 }}>{s.label}</p>
-                  <SocDetail soc={s} />
-                </div>
-              ))}
-            </div>
-          )}
-
-          <p style={{ ...S.rowLabel, marginBottom:6 }}>📋 MODÈLES PAR CONTEXTE</p>
-          {SOC_TEMPLATES.map(t => (
-            <div key={t.id} style={{ ...S.socCard, ...(socChoisi===t.id ? { border:'2px solid var(--or-deep)' } : {}) }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                <p style={{ fontSize:13, fontWeight:700, color:'var(--taupe)' }}>{t.label}</p>
-                <button style={S.btnSmall} onClick={() => setSocChoisi(socChoisi===t.id?null:t.id)}>
-                  {socChoisi===t.id ? 'Fermer' : 'Voir'}
-                </button>
-              </div>
-              {socChoisi === t.id && (
-                <>
-                  <SocDetail soc={t} />
-                  <div style={{ marginTop:12 }}>
-                    <p style={{ ...S.rowLabel, marginBottom:6 }}>✏️ PERSONNALISER</p>
-                    {['situation','obstacle','consequence','solution'].map(k => (
-                      <div key={k} style={{ marginBottom:8 }}>
-                        <p style={{ fontSize:10, color:'var(--text-muted)', fontWeight:700, textTransform:'uppercase', marginBottom:3 }}>{k}</p>
-                        <textarea
-                          style={S.textarea}
-                          placeholder={t[k]}
-                          value={socPerso[k]||''}
-                          onChange={e => setSocPerso(p => ({ ...p, [k]: e.target.value }))}
-                        />
-                      </div>
-                    ))}
-                    <button style={S.btnSave} onClick={() => saveSoc(t)}>💾 Sauvegarder ce SOC</button>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-        </>
+      {totalDone < 20 && (
+        <div style={{ ...S.infoCard, textAlign:'center', marginTop:16 }}>
+          <p style={{ color:'var(--text-muted)', fontSize:12 }}>Encore {20 - totalDone} phrase{20-totalDone > 1 ? 's' : ''} à noter pour voir ta note finale</p>
+        </div>
       )}
     </div>
   );
 }
 
-function SocDetail({ soc }) {
-  return (
-    <>
-      {[
-        ['🔵 Situation', soc.situation],
-        ['🔴 Obstacle',  soc.obstacle],
-        ['🟡 Conséquence', soc.consequence],
-        ['🟢 Solution',  soc.solution],
-      ].map(([l,v]) => (
-        <div key={l} style={{ background:'rgba(210,183,149,0.08)', borderRadius:8, padding:'8px 10px', marginBottom:6 }}>
-          <p style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)', marginBottom:3, textTransform:'uppercase', letterSpacing:'0.06em' }}>{l}</p>
-          <p style={{ fontSize:12, color:'var(--taupe)', lineHeight:1.6, fontStyle:'italic' }}>« {v} »</p>
-        </div>
-      ))}
-    </>
-  );
-}
-
 // ─────────────────────────────────────────────────────────────────
-// TAB 2 — SONCAS + PCA + 5 TECHNIQUES
+// TAB SONCAS
 // ─────────────────────────────────────────────────────────────────
-
 function TabSoncas() {
-  const [section, setSection] = useState('soncas');
-  const [openId, setOpenId] = useState(null);
+  const [sel, setSel] = useState(null);
 
   return (
     <div style={S.pad}>
-      <div style={S.subNav}>
-        {[['soncas','🧠 SONCAS'],['pca','💡 PCA'],['techniques','🎯 5 Techniques']].map(([id,l]) => (
-          <button key={id} style={{ ...S.subBtn, ...(section===id ? S.subActive : {}) }}
-            onClick={() => setSection(id)}>{l}</button>
-        ))}
+      <div style={S.infoCard}>
+        <p style={S.infoTitle}>🧠 SONCAS — Ce qui fait acheter</p>
+        <p style={S.infoText}>
+          Pourquoi une cliente achète ? Pas pour le produit.<br/>
+          Pour <b>une de ces six raisons</b>. Le secret : <b>écouter d'abord</b>, puis répondre avec <b>sa raison</b> — pas la tienne.
+        </p>
       </div>
-
-      {/* ── SONCAS ── */}
-      {section === 'soncas' && (
-        <>
-          <div style={S.infoCard}>
-            <p style={S.infoTitle}>🧠 SONCAS — La motivation d'achat</p>
-            <p style={S.infoText}>Identifiez le moteur principal de votre cliente et adaptez vos arguments. Cliquez sur chaque lettre pour voir les arguments et questions associés.</p>
-          </div>
-          {SONCAS_DATA.map(s => (
-            <div key={s.id} style={{ ...S.soncasCard, borderLeftColor: s.couleur }}>
-              <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer' }}
-                onClick={() => setOpenId(openId===s.id ? null : s.id)}>
-                <div style={{ width:40, height:40, borderRadius:20, background: s.couleur, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                  <span style={{ fontSize:18 }}>{s.emoji}</span>
-                </div>
-                <div style={{ flex:1 }}>
-                  <p style={{ fontSize:15, fontWeight:700, color: s.couleur }}>{s.id.replace('2','')} — {s.label}</p>
-                  <p style={{ fontSize:11, color:'var(--text-muted)', lineHeight:1.4, marginTop:2 }}>{s.desc}</p>
-                </div>
-                <span style={{ color:'var(--text-muted)', fontSize:14 }}>{openId===s.id?'▲':'▼'}</span>
-              </div>
-              {openId === s.id && (
-                <div style={{ marginTop:12, paddingTop:12, borderTop:'1px solid var(--or-border)' }}>
-                  <p style={S.rowLabel}>💬 Arguments</p>
-                  {s.arguments.map((a,i) => (
-                    <div key={i} style={S.argItem}>
-                      <span style={{ color: s.couleur, fontWeight:700, marginRight:6 }}>✓</span>
-                      <p style={{ fontSize:12, color:'var(--taupe)', flex:1, lineHeight:1.5 }}>{a}</p>
-                    </div>
-                  ))}
-                  <p style={{ ...S.rowLabel, marginTop:10 }}>❓ Questions révélatrices</p>
-                  {s.questions.map((q,i) => (
-                    <div key={i} style={S.questionItem}>
-                      <span style={{ fontSize:12, color:'var(--text-muted)', marginRight:6 }}>›</span>
-                      <p style={{ fontSize:12, color:'var(--taupe)', fontStyle:'italic', flex:1 }}>« {q} »</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* ── PCA ── */}
-      {section === 'pca' && (
-        <>
-          <div style={S.infoCard}>
-            <p style={S.infoTitle}>💡 Méthode PCA</p>
-            <p style={S.infoText}>Pour chaque produit présenté : Produit → Caractéristique → Avantage client. Transformez chaque caractéristique en bénéfice concret.</p>
-          </div>
-          {[
-            { produit:'Parfum 70ml', car:'Concentration 25-35% (Extrait de Parfum)', avantage:'Tient toute la journée avec seulement 2-3 sprays. Économique sur le long terme.' },
-            { produit:'Parfum Chogan', car:'Inspiré des grandes maisons (Dior, Chanel, YSL...)', avantage:'Vous avez l\'essence du parfum de luxe, sans payer la publicité et les boutiques.' },
-            { produit:'Gamme Chogan', car:'Fabriqué en Italie, certifié', avantage:'Qualité garantie, composition contrôlée. Vous portez quelque chose de sérieux.' },
-            { produit:'Prix Chogan', car:'5 à 35€ selon le format', avantage:'Vous pouvez vous permettre plusieurs parfums : un quotidien, un pour les soirées, un pour l\'été.' },
-            { produit:'Service consultant', car:'Commande personnalisée et livrée', avantage:'Vous n\'avez rien à faire. Je m\'occupe de tout, de la commande à la livraison.' },
-            { produit:'Programme fidélité', car:'Points cumulés à chaque achat', avantage:'Plus vous achetez, plus vous économisez. Vos prochains parfums vous coûteront encore moins.' },
-          ].map((item,i) => (
-            <div key={i} style={S.pcaCard}>
-              <div style={{ display:'flex', gap:8, marginBottom:8 }}>
-                <span style={{ fontSize:14, fontWeight:700, color:'var(--or-deep)', background:'rgba(210,183,149,0.2)', borderRadius:20, padding:'3px 10px' }}>
-                  {item.produit}
-                </span>
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:6 }}>
-                <div style={S.pcaRow}>
-                  <p style={{ fontSize:9, fontWeight:700, color:'#3d6b9e', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:2 }}>📦 Produit / Caractéristique</p>
-                  <p style={{ fontSize:12, color:'var(--taupe)' }}>{item.car}</p>
-                </div>
-                <div style={S.pcaRow}>
-                  <p style={{ fontSize:9, fontWeight:700, color:'#4a7c59', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:2 }}>✨ Avantage pour la cliente</p>
-                  <p style={{ fontSize:12, color:'var(--taupe)' }}>{item.avantage}</p>
-                </div>
+      {SONCAS_DATA.map(s => (
+        <div key={s.id} style={S.card}>
+          <div style={S.cardHeader} onClick={() => setSel(sel === s.id ? null : s.id)}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ width:34, height:34, borderRadius:'50%', background:s.couleur, display:'grid', placeItems:'center', fontSize:18, flexShrink:0 }}>{s.emoji}</div>
+              <div>
+                <p style={{ ...S.cardTitle, margin:0 }}>{s.id.replace('2','') } — {s.label}</p>
+                <p style={{ fontSize:11, color:'var(--text-muted)', margin:0 }}>{s.signal}</p>
               </div>
             </div>
-          ))}
-        </>
-      )}
-
-      {/* ── 5 TECHNIQUES ── */}
-      {section === 'techniques' && (
-        <>
-          <div style={S.infoCard}>
-            <p style={S.infoTitle}>🎯 Les 5 Techniques de Vente</p>
-            <p style={S.infoText}>Ces techniques s'utilisent EN SITUATION, pendant le RDV. Maîtrisez-les et votre taux de transformation va exploser.</p>
+            <span style={S.chevron}>{sel === s.id ? '▲' : '▼'}</span>
           </div>
-          {TECHNIQUES_DATA.map((t,i) => (
-            <div key={t.id} style={{ ...S.techCard, borderLeftColor:['#3d6b9e','#4a7c59','#9e7a3d','#8a4d4d','#9e5a7a'][i]+'cc' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                <span style={{ fontSize:28 }}>{t.emoji}</span>
-                <div>
-                  <p style={{ fontSize:14, fontWeight:700, color:'var(--taupe)', fontFamily:'var(--font-display)' }}>
-                    {i+1}. {t.label}
-                  </p>
-                  <p style={{ fontSize:11, color:'var(--text-muted)', marginTop:2, lineHeight:1.4 }}>{t.desc}</p>
+          {sel === s.id && (
+            <div style={S.cardBody}>
+              <div style={{ background:`${s.couleur}15`, border:`1px solid ${s.couleur}40`, borderRadius:10, padding:'10px 12px', marginBottom:12 }}>
+                <p style={{ fontSize:11, color:s.couleur, fontWeight:700, margin:'0 0 4px' }}>📌 Ta phrase clé</p>
+                <p style={{ fontSize:13, fontStyle:'italic', color:'var(--taupe)', margin:0 }}>{s.phrase_cle}</p>
+              </div>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:6 }}>3 arguments</p>
+              {s.arguments.map((a, i) => (
+                <div key={i} style={{ display:'flex', gap:8, marginBottom:6 }}>
+                  <span style={{ fontSize:10, color:'var(--text-muted)', minWidth:16, marginTop:2 }}>{i+1}.</span>
+                  <p style={{ fontSize:12, color:'var(--taupe)', margin:0, lineHeight:1.5 }}>{a}</p>
                 </div>
-              </div>
-              <div style={{ background:'rgba(210,183,149,0.1)', borderRadius:10, padding:'10px 12px', marginBottom:8 }}>
-                <p style={{ fontSize:9, fontWeight:700, color:'var(--or-deep)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:4 }}>💬 Exemple concret</p>
-                <p style={{ fontSize:12, color:'var(--taupe)', fontStyle:'italic', lineHeight:1.6 }}>« {t.exemple} »</p>
-              </div>
-              <div style={{ background:'rgba(74,124,89,0.08)', borderRadius:10, padding:'8px 12px' }}>
-                <p style={{ fontSize:9, fontWeight:700, color:'#4a7c59', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:3 }}>⏱ Quand l'utiliser</p>
-                <p style={{ fontSize:11, color:'var(--taupe)' }}>{t.quand}</p>
-              </div>
+              ))}
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', margin:'10px 0 6px' }}>Questions à poser</p>
+              {s.questions.map((q, i) => (
+                <p key={i} style={{ fontSize:12, color:'var(--text-muted)', fontStyle:'italic', marginBottom:4 }}>• {q}</p>
+              ))}
             </div>
-          ))}
-        </>
-      )}
+          )}
+        </div>
+      ))}
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────
-// TAB 3 — GUIDE OLFACTIF (familles → parfum)
+// TAB PCA — Promo · Complément · Additionnel
 // ─────────────────────────────────────────────────────────────────
+function TabPca() {
+  const [sel, setSel] = useState(null);
 
+  return (
+    <div style={S.pad}>
+      <div style={S.infoCard}>
+        <p style={S.infoTitle}>💡 PCA — Vendre plus à la même cliente</p>
+        <p style={S.infoText}>
+          <b>P</b> = <b>Promo</b> : propose toujours la promo en cours<br/>
+          <b>C</b> = <b>Complément</b> : un produit qui va avec ce qu'elle vient d'acheter<br/>
+          <b>A</b> = <b>Additionnel</b> : ouvrir une nouvelle porte<br/><br/>
+          <em>Ce n'est pas forcer. C'est penser à ce dont elle aura besoin.</em>
+        </p>
+      </div>
+      {PCA_DATA.map(p => (
+        <div key={p.id} style={S.card}>
+          <div style={S.cardHeader} onClick={() => setSel(sel === p.id ? null : p.id)}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ width:34, height:34, borderRadius:'50%', background:p.couleur, display:'grid', placeItems:'center', fontSize:18, flexShrink:0 }}>{p.emoji}</div>
+              <div>
+                <p style={{ ...S.cardTitle, margin:0 }}>{p.id} — {p.label}</p>
+                <p style={{ fontSize:11, color:'var(--text-muted)', margin:0 }}>{p.quand}</p>
+              </div>
+            </div>
+            <span style={S.chevron}>{sel === p.id ? '▲' : '▼'}</span>
+          </div>
+          {sel === p.id && (
+            <div style={S.cardBody}>
+              <p style={{ fontSize:13, color:'var(--taupe)', lineHeight:1.6, marginBottom:12 }}>{p.desc}</p>
+              <div style={S.exBox}>
+                <p style={S.exTitle}>💬 Exemple</p>
+                <p style={S.exText}>{p.exemple}</p>
+              </div>
+              <div style={{ background:'rgba(210,183,149,0.1)', borderRadius:8, padding:'8px 12px', marginTop:10 }}>
+                <p style={{ fontSize:12, color:'var(--or-deep)', margin:0 }}>💡 {p.conseil}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// TAB OLFACTIF
+// ─────────────────────────────────────────────────────────────────
 function TabOlfactif() {
-  const [genre, setGenre] = useState('tous');
-  const [age, setAge] = useState('tous');
-  const [notesPref, setNotesPref] = useState([]);
-  const [famChoisie, setFamChoisie] = useState(null);
-  const [selection, setSelection] = useState([]);
+  const [genre, setGenre] = useState('');
+  const [age, setAge] = useState('');
+  const [notesPreferees, setNotes] = useState([]);
+  const [selFam, setSelFam] = useState(null);
 
-  const NOTES_OPTIONS = [
-    { id:'fruite', label:'🍓 Fruité', familles:['hesperidee','fleurie'] },
-    { id:'floral', label:'🌸 Floral', familles:['fleurie','chypree'] },
-    { id:'boise', label:'🪵 Boisé', familles:['boisee','fougere','aromatique'] },
-    { id:'chaud', label:'🔥 Chaud / Épicé', familles:['ambree'] },
-    { id:'frais', label:'💧 Frais', familles:['hesperidee','aromatique'] },
-    { id:'musque', label:'☁️ Musqué / Doux', familles:['ambree','fleurie'] },
-    { id:'viril', label:'💪 Viril / Puissant', familles:['fougere','boisee'] },
-    { id:'sucre', label:'🍬 Sucré', familles:['ambree','fleurie'] },
-  ];
+  const noteOptions = ['Fruité','Floral','Boisé','Oriental','Frais','Épicé','Musqué','Vanillé','Agrumes'];
+  const toggleNote = n => setNotes(prev => prev.includes(n) ? prev.filter(x=>x!==n) : [...prev, n]);
 
-  const toggleNote = (id) => {
-    setNotesPref(n => n.includes(id) ? n.filter(x=>x!==id) : [...n, id]);
+  // Scoring des familles
+  const scores = FAMILLES.map(f => {
+    let s = 0;
+    const g = f.pourQui?.toLowerCase() || '';
+    if (genre === 'femme' && (g.includes('femme') || g.includes('féminin'))) s += 2;
+    if (genre === 'homme' && (g.includes('homme') || g.includes('mascul') || g.includes('viril'))) s += 2;
+    if (genre === 'mixte') s += 1;
+    if (age === 'jeune' && (g.includes('jeune') || g.includes('tout âge') || g.includes('légèr'))) s += 2;
+    if (age === 'adulte') s += 1;
+    if (age === 'mature' && (g.includes('matur') || g.includes('personnali'))) s += 2;
+    const notes = (f.notes || '').toLowerCase();
+    notesPreferees.forEach(n => {
+      if (n==='Fruité' && (notes.includes('fruit') || notes.includes('mangue') || notes.includes('berry'))) s += 3;
+      if (n==='Floral' && (notes.includes('rose') || notes.includes('jasmin') || notes.includes('fleur'))) s += 3;
+      if (n==='Boisé' && (notes.includes('bois') || notes.includes('cèdre') || notes.includes('santal'))) s += 3;
+      if (n==='Oriental' && (notes.includes('vanille') || notes.includes('ambr') || notes.includes('benjoin'))) s += 3;
+      if (n==='Frais' && (notes.includes('frais') || notes.includes('aquatique') || notes.includes('marine'))) s += 3;
+      if (n==='Épicé' && (notes.includes('épice') || notes.includes('poivre') || notes.includes('cannelle'))) s += 3;
+      if (n==='Musqué' && (notes.includes('musc') || notes.includes('musque'))) s += 3;
+      if (n==='Vanillé' && (notes.includes('vanille') || notes.includes('gourmand'))) s += 3;
+      if (n==='Agrumes' && (notes.includes('citron') || notes.includes('bergamote') || notes.includes('orange') || notes.includes('mandarine'))) s += 3;
+    });
+    return { ...f, score: s };
+  }).sort((a,b) => b.score - a.score);
+
+  const hasFilter = genre || age || notesPreferees.length > 0;
+  const topFamilies = hasFilter ? scores.filter(f => f.score > 0).slice(0, 4) : [];
+
+  const refsForFam = (famId) => {
+    const fam = FAMILLES.find(f => f.id === famId);
+    if (!fam || !fam.refs || !PERFUMES) return [];
+    return fam.refs.slice(0, 8);
   };
 
-  // Calculer les familles recommandées
-  const famReccos = (() => {
-    const scores = {};
-    FAMILLES.forEach(f => { scores[f.id] = 0; });
-
-    // Bonus genre
-    const genreBonus = { femme:['fleurie','ambree','chypree','hesperidee'], homme:['boisee','fougere','aromatique','chypree'], mixte:['hesperidee','aromatique'] };
-    if (genre !== 'tous') {
-      (genreBonus[genre]||[]).forEach(f => { scores[f] = (scores[f]||0) + 2; });
-    }
-
-    // Bonus age
-    const ageBonus = { jeune:['hesperidee','fleurie','aromatique'], adulte:['ambree','boisee','fleurie','chypree'], mature:['boisee','ambree','chypree'] };
-    if (age !== 'tous') {
-      (ageBonus[age]||[]).forEach(f => { scores[f] = (scores[f]||0) + 2; });
-    }
-
-    // Bonus notes
-    notesPref.forEach(noteId => {
-      const note = NOTES_OPTIONS.find(n=>n.id===noteId);
-      if (note) note.familles.forEach(f => { scores[f] = (scores[f]||0) + 3; });
-    });
-
-    return FAMILLES.map(f => ({ ...f, score: scores[f.id]||0 }))
-      .sort((a,b) => b.score - a.score)
-      .filter(f => f.score > 0 || notesPref.length === 0);
-  })();
-
-  const famActive = famChoisie ? FAMILLES.find(f=>f.id===famChoisie) : null;
-  const parfumsFam = famActive ? PERFUMES.filter(p => {
-    const refStr = String(p.ref).padStart(3,'0');
-    return famActive.refs.includes(refStr) || famActive.refs.includes(String(p.ref));
-  }).slice(0, 12) : [];
-
   return (
     <div style={S.pad}>
       <div style={S.infoCard}>
-        <p style={S.infoTitle}>👃 Guide Olfactif Personnalisé</p>
-        <p style={S.infoText}>Renseignez le profil de votre cliente pour obtenir une recommandation parfum sur-mesure. Les familles les plus adaptées s'affichent en premier.</p>
+        <p style={S.infoTitle}>🌸 Guide Olfactif — Trouver le parfum de la cliente</p>
+        <p style={S.infoText}>Réponds aux questions pour identifier les familles qui correspondent à ta cliente.</p>
       </div>
 
-      {/* GENRE */}
-      <div style={S.filterSection}>
-        <p style={S.rowLabel}>👤 Genre</p>
-        <div style={S.btnRow}>
-          {[['tous','Tous'],['femme','♀ Femme'],['homme','♂ Homme'],['mixte','⚧ Mixte']].map(([v,l]) => (
-            <button key={v} style={{ ...S.filterBtn, ...(genre===v ? S.filterActive : {}) }} onClick={() => setGenre(v)}>{l}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* AGE */}
-      <div style={S.filterSection}>
-        <p style={S.rowLabel}>🎂 Âge approximatif</p>
-        <div style={S.btnRow}>
-          {[['tous','Tous'],['jeune','Jeune (- 30)'],['adulte','Adulte (30-55)'],['mature','Mature (55+)']].map(([v,l]) => (
-            <button key={v} style={{ ...S.filterBtn, ...(age===v ? S.filterActive : {}) }} onClick={() => setAge(v)}>{l}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* NOTES */}
-      <div style={S.filterSection}>
-        <p style={S.rowLabel}>🎵 Notes préférées (peut en choisir plusieurs)</p>
-        <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-          {NOTES_OPTIONS.map(n => (
-            <button key={n.id} style={{ ...S.filterBtn, ...(notesPref.includes(n.id) ? S.filterActive : {}) }}
-              onClick={() => toggleNote(n.id)}>{n.label}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* FAMILLES RECOMMANDÉES */}
-      <div style={{ marginBottom:16 }}>
-        <p style={{ ...S.rowLabel, marginBottom:8 }}>💐 Familles recommandées</p>
-        {famReccos.slice(0,4).map((f,i) => (
-          <div key={f.id}
-            style={{ ...S.famCard, borderLeftColor: f.couleur, ...(famChoisie===f.id ? { background:'rgba(210,183,149,0.12)', border:`1px solid ${f.couleur}` } : {}) }}
-            onClick={() => setFamChoisie(famChoisie===f.id ? null : f.id)}>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              {i===0 && <span style={{ fontSize:10, background:'var(--or-deep)', color:'#fff', borderRadius:10, padding:'2px 8px', fontWeight:700 }}>⭐ TOP</span>}
-              <span style={{ fontSize:22 }}>{f.emoji}</span>
-              <div style={{ flex:1 }}>
-                <p style={{ fontSize:13, fontWeight:700, color: f.couleur }}>{f.nom}</p>
-                <p style={{ fontSize:10, color:'var(--text-muted)' }}>{f.style}</p>
-              </div>
-              <p style={{ fontSize:10, color:'var(--text-muted)' }}>{f.refs.length} réf.</p>
-              <span style={{ color:'var(--text-muted)', fontSize:12 }}>{famChoisie===f.id?'▲':'▼'}</span>
-            </div>
-            {famChoisie === f.id && (
-              <div style={{ marginTop:12, paddingTop:12, borderTop:'1px solid var(--or-border)' }}>
-                <Row label="🎵 Notes" val={f.notes} />
-                <Row label="👤 Pour qui" val={f.pourQui} />
-                <p style={{ ...S.rowLabel, marginTop:10, marginBottom:6 }}>✨ Nos références</p>
-                <div style={S.tags}>
-                  {parfumsFam.map(p => (
-                    <span key={p.ref} style={S.tagRef}>{String(p.ref).padStart(3,'0')} · {p.name}</span>
-                  ))}
-                </div>
-                {parfumsFam.length === 0 && (
-                  <p style={{ fontSize:11, color:'var(--text-muted)', fontStyle:'italic' }}>Voir catalogue pour les références de cette famille.</p>
-                )}
-              </div>
-            )}
-          </div>
+      <p style={S.filterLabel}>Genre</p>
+      <div style={S.filterRow}>
+        {[['femme','👩 Femme'],['homme','👨 Homme'],['mixte','🧑 Mixte']].map(([v,l]) => (
+          <button key={v} style={{ ...S.filterBtn, ...(genre===v ? S.filterBtnActive : {}) }} onClick={() => setGenre(genre===v?'':v)}>{l}</button>
         ))}
       </div>
+
+      <p style={S.filterLabel}>Tranche d'âge</p>
+      <div style={S.filterRow}>
+        {[['jeune','🌱 Jeune (-30)'],['adulte','🌿 Adulte (30-50)'],['mature','🌳 Mature (50+)']].map(([v,l]) => (
+          <button key={v} style={{ ...S.filterBtn, ...(age===v ? S.filterBtnActive : {}) }} onClick={() => setAge(age===v?'':v)}>{l}</button>
+        ))}
+      </div>
+
+      <p style={S.filterLabel}>Notes préférées <span style={{ fontSize:10, color:'var(--text-muted)' }}>(plusieurs possibles)</span></p>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:16 }}>
+        {noteOptions.map(n => (
+          <button key={n} style={{ ...S.filterBtn, ...(notesPreferees.includes(n) ? S.filterBtnActive : {}) }} onClick={() => toggleNote(n)}>{n}</button>
+        ))}
+      </div>
+
+      {hasFilter && topFamilies.length === 0 && (
+        <div style={S.infoCard}><p style={{ textAlign:'center', color:'var(--text-muted)', fontSize:12 }}>Essaie d'affiner les filtres</p></div>
+      )}
+
+      {topFamilies.map((f, idx) => (
+        <div key={f.id} style={{ ...S.card, ...(idx === 0 ? { border:'2px solid var(--or-deep)' } : {}) }}>
+          <div style={S.cardHeader} onClick={() => setSelFam(selFam === f.id ? null : f.id)}>
+            <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+              {idx === 0 && <span style={{ fontSize:10, background:'var(--or-deep)', color:'#fff', padding:'2px 6px', borderRadius:8, fontWeight:700 }}>⭐ 1er choix</span>}
+              <div style={{ width:28, height:28, borderRadius:'50%', background:f.couleur, flexShrink:0 }}/>
+              <div>
+                <p style={{ ...S.cardTitle, margin:0 }}>{f.emoji} {f.nom}</p>
+                <p style={{ fontSize:11, color:'var(--text-muted)', margin:0 }}>{f.style}</p>
+              </div>
+            </div>
+            <span style={S.chevron}>{selFam === f.id ? '▲' : '▼'}</span>
+          </div>
+          {selFam === f.id && (
+            <div style={S.cardBody}>
+              <p style={{ fontSize:12, color:'var(--taupe)', marginBottom:6 }}><b>Pour qui :</b> {f.pourQui}</p>
+              <p style={{ fontSize:12, color:'var(--taupe)', marginBottom:10 }}><b>Notes :</b> {f.notes}</p>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:6 }}>Références suggérées</p>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                {refsForFam(f.id).map(ref => (
+                  <span key={ref} style={{ background:'rgba(210,183,149,0.2)', border:'1px solid var(--or-border)', borderRadius:8, padding:'4px 10px', fontSize:12, fontWeight:600, color:'var(--taupe)' }}>
+                    N°{ref}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {!hasFilter && (
+        <div style={{ ...S.infoCard, textAlign:'center' }}>
+          <p style={{ color:'var(--text-muted)', fontSize:12 }}>Sélectionne le genre, l'âge et les notes pour voir les recommandations</p>
+        </div>
+      )}
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────
-// TAB 4 — OBJECTIONS
+// TAB OBJECTIONS — méthode 4 temps
 // ─────────────────────────────────────────────────────────────────
-
 function TabObjections() {
-  const [openId, setOpenId] = useState(null);
+  const [sel, setSel] = useState(null);
 
   return (
     <div style={S.pad}>
       <div style={S.infoCard}>
-        <p style={S.infoTitle}>💬 Répondre aux objections</p>
-        <p style={S.infoText}>Une objection n'est pas un refus — c'est une demande d'informations supplémentaires. Voici comment rebondir avec élégance.</p>
+        <p style={S.infoTitle}>🛡️ Objections — La méthode 4 temps</p>
+        <p style={S.infoText}>
+          Une objection n'est pas un refus. C'est une question que la cliente se pose à voix haute.<br/><br/>
+          <b>1. J'écoute</b> sans couper&emsp;
+          <b>2. Je reformule</b>&emsp;
+          <b>3. Je réponds</b> en une phrase&emsp;
+          <b>4. Je repropose</b><br/><br/>
+          <em>15 secondes suffisent. Plus on se justifie, moins on convainc.</em>
+        </p>
       </div>
-      {OBJECTIONS_DATA.map((o,i) => (
-        <div key={i} style={S.objCard}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer' }}
-            onClick={() => setOpenId(openId===i ? null : i)}>
-            <p style={{ fontSize:13, fontWeight:700, color:'var(--taupe)' }}>❝ {o.objection}</p>
-            <span style={{ fontSize:14, color:'var(--text-muted)' }}>{openId===i?'▲':'▼'}</span>
+      {OBJECTIONS_DATA.map((obj, idx) => (
+        <div key={idx} style={S.card}>
+          <div style={S.cardHeader} onClick={() => setSel(sel === idx ? null : idx)}>
+            <p style={S.cardTitle}>❝ {obj.objection}</p>
+            <span style={S.chevron}>{sel === idx ? '▲' : '▼'}</span>
           </div>
-          {openId === i && (
-            <div style={{ marginTop:10, paddingTop:10, borderTop:'1px solid var(--or-border)' }}>
-              {o.reponses.map((r,j) => (
-                <div key={j} style={S.argItem}>
-                  <span style={{ color:'var(--or-deep)', fontWeight:700, marginRight:6, fontSize:14 }}>{j+1}</span>
-                  <p style={{ fontSize:12, color:'var(--taupe)', flex:1, lineHeight:1.6 }}>« {r} »</p>
+          {sel === idx && (
+            <div style={S.cardBody}>
+              {[
+                ['🔵 2. Je reformule', obj.reformulation],
+                ['🟡 3. Je réponds', obj.reponse],
+                ['🟢 4. Je repropose', obj.reproposer],
+              ].map(([lab, val]) => (
+                <div key={lab} style={{ marginBottom:10 }}>
+                  <p style={S.rowLabel}>{lab}</p>
+                  <p style={S.rowVal}>{val}</p>
                 </div>
+              ))}
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--or-deep)', margin:'10px 0 6px' }}>Arguments supplémentaires</p>
+              {obj.plus.map((p, i) => (
+                <p key={i} style={{ fontSize:12, color:'var(--text-muted)', marginBottom:4 }}>• {p}</p>
               ))}
             </div>
           )}
         </div>
       ))}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────
-// COMPOSANTS UTILITAIRES
-// ─────────────────────────────────────────────────────────────────
-
-function Row({ label, val }) {
-  return (
-    <div style={{ background:'rgba(210,183,149,0.08)', borderRadius:8, padding:'8px 10px', marginBottom:6 }}>
-      <p style={{ fontSize:10, fontWeight:700, color:'var(--or-deep)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:3 }}>{label}</p>
-      <p style={{ fontSize:12, color:'var(--taupe)', lineHeight:1.5 }}>{val}</p>
     </div>
   );
 }
@@ -741,39 +642,35 @@ function Row({ label, val }) {
 // STYLES
 // ─────────────────────────────────────────────────────────────────
 const S = {
-  pad:        { padding:16, paddingBottom:40 },
-  tabBar:     { display:'flex', overflowX:'auto', gap:0, background:'var(--bg-card)', borderBottom:'1px solid var(--or-border)', scrollbarWidth:'none', flexShrink:0 },
-  tabBtn:     { flexShrink:0, padding:'10px 14px', border:'none', background:'transparent', fontSize:11, fontWeight:600, color:'var(--text-muted)', cursor:'pointer', whiteSpace:'nowrap', borderBottom:'2px solid transparent', fontFamily:'inherit' },
-  tabActive:  { color:'var(--or-deep)', borderBottom:'2px solid var(--or-deep)', background:'rgba(210,183,149,0.08)' },
-  tabLabel:   { display:'block' },
-  subNav:     { display:'flex', gap:6, marginBottom:14 },
-  subBtn:     { flex:1, padding:'8px 6px', border:'1px solid var(--or-border)', borderRadius:10, background:'var(--bg-card)', fontSize:11, fontWeight:600, color:'var(--text-muted)', cursor:'pointer', fontFamily:'inherit' },
-  subActive:  { background:'rgba(210,183,149,0.2)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
-  infoCard:   { background:'rgba(210,183,149,0.1)', border:'1px solid var(--or-border)', borderRadius:12, padding:'12px 14px', marginBottom:14 },
-  infoTitle:  { fontSize:12, fontWeight:700, color:'var(--or-deep)', marginBottom:4 },
-  infoText:   { fontSize:12, color:'var(--text-muted)', lineHeight:1.6 },
-  rowLabel:   { fontSize:10, fontWeight:700, color:'var(--or-deep)', textTransform:'uppercase', letterSpacing:'0.08em' },
-  tags:       { display:'flex', flexWrap:'wrap', gap:6, marginTop:4 },
-  tag:        { fontSize:10, padding:'3px 10px', borderRadius:20, border:'1px solid', background:'transparent', display:'inline-block', fontWeight:600 },
-  tagRef:     { fontSize:10, padding:'3px 8px', borderRadius:20, border:'1px solid var(--or-border)', background:'rgba(210,183,149,0.1)', color:'var(--taupe)', display:'inline-block' },
-  textarea:   { width:'100%', minHeight:52, border:'1px solid var(--or-border)', borderRadius:10, padding:'8px 10px', fontSize:12, color:'var(--taupe)', fontFamily:'inherit', background:'var(--bg-card)', resize:'vertical', outline:'none', boxSizing:'border-box' },
-  questionItem:{ display:'flex', alignItems:'flex-start', gap:4, marginBottom:4 },
-  argItem:    { display:'flex', alignItems:'flex-start', gap:4, marginBottom:6 },
-  // Cards
-  cibleCard:  { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:'12px 10px', display:'flex', flexDirection:'column', alignItems:'center', cursor:'pointer' },
-  vampCard:   { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderLeft:'3px solid', borderRadius:14, padding:14, marginBottom:10 },
-  socCard:    { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:14, marginBottom:10 },
-  soncasCard: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderLeft:'4px solid', borderRadius:14, padding:14, marginBottom:10 },
-  pcaCard:    { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:14, marginBottom:10 },
-  techCard:   { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderLeft:'4px solid', borderRadius:14, padding:14, marginBottom:10 },
-  famCard:    { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderLeft:'3px solid', borderRadius:14, padding:14, marginBottom:10, cursor:'pointer' },
-  objCard:    { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:14, padding:14, marginBottom:10 },
-  pcaRow:     { background:'rgba(210,183,149,0.07)', borderRadius:8, padding:'8px 10px' },
-  // Filtres
-  filterSection: { marginBottom:14 },
-  btnRow:     { display:'flex', flexWrap:'wrap', gap:6, marginTop:6 },
-  filterBtn:  { padding:'6px 12px', border:'1px solid var(--or-border)', borderRadius:20, background:'var(--bg-card)', fontSize:11, fontWeight:600, color:'var(--text-muted)', cursor:'pointer', fontFamily:'inherit' },
-  filterActive:{ background:'rgba(210,183,149,0.25)', borderColor:'var(--or-deep)', color:'var(--or-deep)' },
-  btnSmall:   { padding:'4px 10px', border:'1px solid var(--or-border)', borderRadius:8, background:'transparent', fontSize:11, color:'var(--or-deep)', cursor:'pointer', fontFamily:'inherit' },
-  btnSave:    { width:'100%', padding:'12px', border:'none', borderRadius:12, background:'var(--or-deep)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit', marginTop:4 },
+  tabsWrap: { display:'flex', overflowX:'auto', borderBottom:'1px solid var(--or-border)', background:'var(--bg-card)', scrollbarWidth:'none' },
+  tab: { flex:'0 0 auto', padding:'10px 14px', background:'none', color:'var(--text-muted)', fontSize:11, borderBottom:'2px solid transparent', display:'flex', flexDirection:'column', alignItems:'center', gap:2, whiteSpace:'nowrap' },
+  tabActive: { color:'var(--or-deep)', borderBottom:'2px solid var(--or-deep)' },
+  tabEmoji: { fontSize:16 },
+  tabLabel: { fontSize:10, fontWeight:600 },
+  pad: { padding:16 },
+  infoCard: { background:'rgba(210,183,149,0.12)', border:'1px solid var(--or-border)', borderRadius:12, padding:'12px 14px', marginBottom:14 },
+  infoTitle: { fontSize:12, fontWeight:700, color:'var(--or-deep)', marginBottom:6 },
+  infoText: { fontSize:12, color:'var(--text-muted)', lineHeight:1.7 },
+  card: { background:'var(--bg-card)', border:'1px solid var(--or-border)', borderRadius:12, marginBottom:10, overflow:'hidden' },
+  cardHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 14px', cursor:'pointer', gap:10 },
+  cardTitle: { fontSize:13, fontWeight:600, color:'var(--taupe)', margin:0 },
+  cardBody: { padding:'0 14px 14px', borderTop:'1px solid var(--or-border)' },
+  chevron: { color:'var(--text-muted)', fontSize:10, flexShrink:0 },
+  rowLabel: { fontSize:10, fontWeight:700, color:'var(--or-deep)', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' },
+  rowVal: { fontSize:13, color:'var(--taupe)', lineHeight:1.6, background:'rgba(210,183,149,0.08)', border:'1px solid var(--or-border)', borderRadius:8, padding:'8px 10px' },
+  exBox: { background:'rgba(78,70,63,0.06)', border:'1px solid var(--or-border)', borderRadius:10, padding:'10px 12px', marginBottom:4 },
+  exTitle: { fontSize:10, fontWeight:700, color:'var(--or-deep)', marginBottom:4 },
+  exText: { fontSize:13, fontStyle:'italic', color:'var(--taupe)', lineHeight:1.6, margin:0 },
+  textarea: { width:'100%', fontFamily:'inherit', fontSize:13, color:'var(--taupe)', background:'rgba(210,183,149,0.08)', border:'1px solid var(--or-border)', borderRadius:10, padding:'10px 12px', resize:'vertical', lineHeight:1.6, boxSizing:'border-box' },
+  filterLabel: { fontSize:11, fontWeight:700, color:'var(--or-deep)', marginBottom:8, marginTop:4 },
+  filterRow: { display:'flex', flexWrap:'wrap', gap:8, marginBottom:14 },
+  filterBtn: { padding:'7px 14px', borderRadius:20, border:'1px solid var(--or-border)', background:'var(--bg-card)', color:'var(--text-muted)', fontSize:12, cursor:'pointer' },
+  filterBtnActive: { background:'var(--or-deep)', color:'#fff', borderColor:'var(--or-deep)', fontWeight:700 },
+  // VAMP
+  vampCat: { background:'var(--bg-card)', borderRadius:12, marginBottom:10, overflow:'hidden' },
+  vampHeader: { display:'flex', alignItems:'center', gap:12, padding:'12px 14px', cursor:'pointer' },
+  vampBadge: { width:36, height:36, borderRadius:'50%', color:'#fff', display:'grid', placeItems:'center', fontWeight:900, fontSize:16, flexShrink:0 },
+  vampItem: { display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderTop:'1px solid var(--or-border)' },
+  vampBtns: { display:'flex', gap:5, flexShrink:0 },
+  vampBtn: { width:38, height:38, borderRadius:9, border:'2px solid', fontWeight:900, fontSize:16, cursor:'pointer', display:'grid', placeItems:'center' },
 };
